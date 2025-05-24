@@ -1,0 +1,17 @@
+[project]
+name = "nba-betting-model"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "yirga reminick", email = "yirgareminick@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = ["prefect (>=3.4.3,<4.0.0)", "polars (>=1.30.0,<2.0.0)"]
+
+[tool.poetry]
+packages = [{ include = "src" }]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
