@@ -1031,6 +1031,31 @@ files = [
 referencing = ">=0.31.0"
 
 [[package]]
+name = "kagglehub"
+version = "0.3.12"
+description = "Access Kaggle resources anywhere"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "kagglehub-0.3.12-py3-none-any.whl", hash = "sha256:6eeb7c5c8e1f25a28e9b26d3d8ed0c24a4a32f763ea5de6e1b3aabba442f2a26"},
+    {file = "kagglehub-0.3.12.tar.gz", hash = "sha256:45e75854630a30605b794eb786b3757beccbbea1acca71600642f67b60e0d7bf"},
+]
+
+[package.dependencies]
+packaging = "*"
+pandas = {version = "*", optional = true, markers = "extra == \"pandas-datasets\""}
+pyyaml = "*"
+requests = "*"
+tqdm = "*"
+
+[package.extras]
+hf-datasets = ["datasets", "pandas"]
+pandas-datasets = ["pandas"]
+polars-datasets = ["polars"]
+signing = ["betterproto (>=2.0.0b6)", "model-signing", "sigstore (>=3.6.1)"]
+
+[[package]]
 name = "lxml"
 version = "5.4.0"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -2816,6 +2841,28 @@ files = [
 ]
 
 [[package]]
+name = "tqdm"
+version = "4.67.1"
+description = "Fast, Extensible Progress Meter"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "tqdm-4.67.1-py3-none-any.whl", hash = "sha256:26445eca388f82e72884e0d580d5464cd801a3ea01e63e5601bdff9ba6a48de2"},
+    {file = "tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["nbval", "pytest (>=6)", "pytest-asyncio (>=0.24)", "pytest-cov", "pytest-timeout"]
+discord = ["requests"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["slack-sdk"]
+telegram = ["requests"]
+
+[[package]]
 name = "typer"
 version = "0.15.4"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -3319,4 +3366,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "7c0f418396bfca489e1d65e28e4cd1bdf50ab771d6ba984441be11ca970eb6bd"
+content-hash = "2e1c8e0f4961c2f95647ce96e1988b21a068190723e92eea91e886ec945df938"
