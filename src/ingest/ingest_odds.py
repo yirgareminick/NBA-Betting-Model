@@ -55,16 +55,40 @@ def parse_odds(json_data):
             if not h2h:
                 continue
             odds = {o["name"]: o["price"] for o in h2h["outcomes"]}
+            home_odds = odds.get(home)
+            away_odds = odds.get(away)
+            # Calculate implied probabilities for American odds
+            def implied_prob(odds_val):
+                if odds_val is None:
+                    return None
+                try:
+                    odds_val = float(odds_val)
+                except Exception:
+                    return None
+                if odds_val > 0:
+                    return 100 / (odds_val + 100)
+                else:
+                    return abs(odds_val) / (abs(odds_val) + 100)
+            home_prob = implied_prob(home_odds)
+            away_prob = implied_prob(away_odds)
             records.append({
                 "game_id": game_id,
                 "commence_time": ct,
                 "home_team": home,
                 "away_team": away,
                 "bookmaker": book_name,
-                "home_odds": odds.get(home),
-                "away_odds": odds.get(away),
+                "home_odds": home_odds,
+                "away_odds": away_odds,
+                "home_prob": home_prob,
+                "away_prob": away_prob,
             })
-    return pl.DataFrame(records)
+    df = pl.DataFrame(records)
+    # Parse commence_time as datetime
+    if "commence_time" in df.columns:
+        df = df.with_columns([
+            pl.col("commence_time").str.strptime(pl.Datetime, strict=False).alias("commence_time")
+        ])
+    return df
 
 def pull_odds_to_csv(regions="us", bookmakers=None, out_csv=None):
     data = fetch_odds(regions=regions, bookmakers=bookmakers)
