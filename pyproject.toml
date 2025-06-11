@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
-dependencies = ["prefect (>=3.4.3,<4.0.0)", "polars (>=1.30.0,<2.0.0)", "requests (>=2.32.3,<3.0.0)", "beautifulsoup4 (>=4.13.4,<5.0.0)", "lxml (>=5.4.0,<6.0.0)", "pandas (>=2.2.3,<3.0.0)", "kagglehub[pandas-datasets] (>=0.3.12,<0.4.0)"]
+dependencies = ["prefect (>=3.4.3,<4.0.0)", "polars (>=1.30.0,<2.0.0)", "requests (>=2.32.3,<3.0.0)", "beautifulsoup4 (>=4.13.4,<5.0.0)", "lxml (>=5.4.0,<6.0.0)", "pandas (>=2.2.3,<3.0.0)", "kagglehub[pandas-datasets] (>=0.3.12,<0.4.0)", "python-dotenv (>=1.1.0,<2.0.0)"]
 
 [tool.poetry]
 packages = [{ include = "src" }]
