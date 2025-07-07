@@ -191,9 +191,19 @@ class NBADataIngestion:
     
     def _is_date_column(self, series: pd.Series) -> bool:
         """Check if series contains date data"""
-        try:
-            pd.to_datetime(series.iloc[:5], errors='coerce')
+        if series.empty:
+            return False
+            
+        # Check if it's already datetime
+        if pd.api.types.is_datetime64_any_dtype(series):
             return True
+            
+        # Try to parse a few samples
+        try:
+            sample_size = min(5, len(series))
+            parsed = pd.to_datetime(series.iloc[:sample_size], errors='coerce')
+            valid_dates = parsed.notna().sum()
+            return valid_dates > 0  # At least one valid date
         except:
             return False
     
