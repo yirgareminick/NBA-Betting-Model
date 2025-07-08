@@ -1,0 +1,78 @@
+# Configuration file for NBA Betting Model Scheduler
+#
+# This file defines scheduled tasks for automated data pipeline execution.
+# 
+# Schedule format:
+#   - time: "HH:MM" (24-hour format)
+#   - days: [0, 1, 2, 3, 4, 5, 6] where 0=Monday, 6=Sunday
+#   - interval_hours: Run every N hours (alternative to day/time)
+
+tasks:
+  # Daily update during NBA season
+  daily_update:
+    script: "scripts/daily_update.py"
+    schedule:
+      time: "02:00"  # 2:00 AM
+      days: [0, 1, 2, 3, 4, 5, 6]  # Every day
+    enabled: true
+    max_retries: 2
+    retry_delay: 300  # 5 minutes
+    timeout: 3600     # 1 hour
+    args: ["--notify"]
+
+  # Weekly comprehensive refresh
+  weekly_refresh:
+    script: "scripts/weekly_refresh.py"
+    schedule:
+      time: "01:00"  # 1:00 AM
+      days: [0]      # Monday
+    enabled: true
+    max_retries: 1
+    retry_delay: 600   # 10 minutes
+    timeout: 7200      # 2 hours
+    args: ["--backup", "--notify"]
+
+  # Mid-week odds update (Wednesday)
+  midweek_odds:
+    script: "scripts/manual_update.py"
+    schedule:
+      time: "12:00"  # Noon
+      days: [2]      # Wednesday
+    enabled: true
+    max_retries: 2
+    retry_delay: 300
+    timeout: 1800     # 30 minutes
+    args: ["--odds-only", "--notify"]
+
+  # Weekend feature refresh (Saturday)
+  weekend_features:
+    script: "scripts/manual_update.py"
+    schedule:
+      time: "06:00"  # 6:00 AM
+      days: [5]      # Saturday
+    enabled: false   # Disabled by default
+    max_retries: 1
+    retry_delay: 300
+    timeout: 1800
+    args: ["--features-only"]
+
+# Global scheduler settings
+global:
+  log_retention_days: 30
+  max_concurrent_tasks: 2
+  notification_webhook: "${SLACK_WEBHOOK_URL}"
+  check_interval_seconds: 60
+
+# Environment-specific overrides
+# Uncomment and modify for different environments
+# development:
+#   daily_update:
+#     enabled: false
+#   weekly_refresh:
+#     schedule:
+#       time: "03:00"
+
+# production:
+#   global:
+#     max_concurrent_tasks: 1
+#     check_interval_seconds: 30
