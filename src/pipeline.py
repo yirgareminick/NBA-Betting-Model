@@ -2,6 +2,7 @@ from datetime import date
 from prefect import flow, task
 from ingest.ingest_games_new import NBADataIngestion
 from features.build_features import FeatureEngineer
+from models.train_model import NBAModelTrainer
 
 # ── placeholder tasks flesh out later ─────────────────────────
 @task
@@ -29,8 +30,11 @@ def build_features(df):
     
 @task
 def train_model(feats): 
-    print("Model training not implemented yet")
-    return "model_placeholder"
+    print("Training NBA prediction model...")
+    trainer = NBAModelTrainer()
+    metrics = trainer.train_and_save()
+    print(f"Model trained with accuracy: {metrics['test_accuracy']:.3f}")
+    return metrics
     
 @task
 def size_bets(model_artifact): 
