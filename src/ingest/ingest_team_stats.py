@@ -15,7 +15,13 @@ RAW_DIR.mkdir(parents=True, exist_ok=True)
 def fetch_bbref_table(season: int) -> pl.DataFrame:
     url = f"https://www.basketball-reference.com/leagues/NBA_{season}_ratings.html"
     print(f"[fetch] Requesting: {url}")
-    resp = requests.get(url, timeout=15)
+    
+    # Add headers to avoid 403 errors
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    resp = requests.get(url, timeout=15, headers=headers)
     resp.raise_for_status()
 
     soup = BeautifulSoup(resp.text, "lxml")
@@ -40,14 +46,33 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
 
 def fetch_season(season: int) -> pl.DataFrame:
     csv_path = RAW_DIR / f"team_stats_{season}.csv"
+    
+    # Check if file already exists and is recent (within 7 days)
     if csv_path.exists():
-        print(f"[cache] {csv_path} exists — deleting for fresh scrape")
-        csv_path.unlink()
+        from datetime import datetime, timedelta
+        file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
+        
+        if file_age < timedelta(days=7):
+            print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
+            return pl.read_csv(csv_path)
+        else:
+            print(f"[cache] {csv_path} exists but is old ({file_age.days} days) — attempting fresh scrape")
 
-    df = fetch_bbref_table(season)
-    print(f"[save] Writing data to: {csv_path}")
-    df.write_csv(csv_path)
-    return df
+    try:
+        df = fetch_bbref_table(season)
+        print(f"[save] Writing data to: {csv_path}")
+        df.write_csv(csv_path)
+        return df
+    except Exception as e:
+        print(f"[error] Failed to fetch season {season}: {e}")
+        
+        # Fallback to existing file if scraping fails
+        if csv_path.exists():
+            print(f"[fallback] Using existing {csv_path} as fallback")
+            return pl.read_csv(csv_path)
+        else:
+            print(f"[error] No fallback data available for season {season}")
+            raise e
 
 def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
     print(f"[start] Pulling team stats for seasons: {seasons}")
