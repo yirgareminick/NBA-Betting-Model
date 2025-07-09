@@ -94,7 +94,8 @@ class AutomationBase:
         return ['python']
         
     def run_command(self, description: str, command: List[str], 
-                   check: bool = True, cwd: Optional[Path] = None) -> subprocess.CompletedProcess:
+                   check: bool = True, cwd: Optional[Path] = None, 
+                   allow_failure: bool = False) -> subprocess.CompletedProcess:
         """Run a command with proper logging and error handling."""
         if cwd is None:
             cwd = self.project_root
@@ -119,16 +120,25 @@ class AutomationBase:
             return result
             
         except subprocess.CalledProcessError as e:
-            self.logger.error(f"Failed: {description}")
-            self.logger.error(f"Error code: {e.returncode}")
-            if e.stdout:
-                self.logger.error(f"Stdout: {e.stdout.strip()}")
-            if e.stderr:
-                self.logger.error(f"Stderr: {e.stderr.strip()}")
-            raise
+            if allow_failure:
+                self.logger.warning(f"Failed (continuing): {description}")
+                self.logger.warning(f"Error code: {e.returncode}")
+                if e.stdout:
+                    self.logger.warning(f"Stdout: {e.stdout.strip()}")
+                if e.stderr:
+                    self.logger.warning(f"Stderr: {e.stderr.strip()}")
+                return e  # Return the error as a result
+            else:
+                self.logger.error(f"Failed: {description}")
+                self.logger.error(f"Error code: {e.returncode}")
+                if e.stdout:
+                    self.logger.error(f"Stdout: {e.stdout.strip()}")
+                if e.stderr:
+                    self.logger.error(f"Stderr: {e.stderr.strip()}")
+                raise
             
     def run_python_script(self, script_path: str, args: List[str] = None, 
-                         description: str = None) -> subprocess.CompletedProcess:
+                         description: str = None, allow_failure: bool = False) -> subprocess.CompletedProcess:
         """Run a Python script with the configured Python command."""
         if args is None:
             args = []
@@ -137,7 +147,7 @@ class AutomationBase:
             description = f"Running {script_path}"
             
         command = self.python_cmd + [script_path] + args
-        return self.run_command(description, command)
+        return self.run_command(description, command, allow_failure=allow_failure)
         
     def is_nba_season(self) -> bool:
         """Check if we're currently in NBA season (October through June)."""
@@ -178,16 +188,22 @@ class AutomationBase:
             try:
                 # Try to get record count using polars
                 cmd = self.python_cmd + ["-c", 
-                    f"import polars as pl; df = pl.read_parquet('{features_file}'); "
-                    f"print(f'{{len(df)}},{{df[\"game_date\"].max()}}')"]
+                    "import polars as pl; "
+                    f"df = pl.read_parquet('{features_file}'); "
+                    f"print(len(df), df['game_date'].max(), sep=',')"]
                 result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
                 
                 if result.returncode == 0:
-                    count, latest_date = result.stdout.strip().split(',')
-                    quality_report['feature_records'] = int(count)
-                    quality_report['latest_date'] = latest_date
-                    self.logger.info(f"Feature records: {count:,}")
-                    self.logger.info(f"Latest game date: {latest_date}")
+                    parts = result.stdout.strip().split(',')
+                    if len(parts) >= 2:
+                        count, latest_date = parts[0], parts[1]
+                        quality_report['feature_records'] = int(count)
+                        quality_report['latest_date'] = latest_date
+                        self.logger.info(f"Feature records: {count}")
+                        self.logger.info(f"Latest game date: {latest_date}")
+                    else:
+                        quality_report['feature_records'] = "parse_error"
+                        quality_report['latest_date'] = "parse_error"
                 else:
                     quality_report['feature_records'] = "error"
                     quality_report['latest_date'] = "error"
