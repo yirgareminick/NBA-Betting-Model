@@ -60,7 +60,8 @@ class DailyUpdater(AutomationBase):
             self.run_python_script(
                 "src/ingest/ingest_team_stats.py",
                 ["--seasons", str(current_year)],
-                "Updating team statistics"
+                "Updating team statistics",
+                allow_failure=True  # Allow this to fail without stopping pipeline
             )
         else:
             self.logger.info("Skipping team stats update (only runs Tuesday/Wednesday)")
@@ -90,7 +91,8 @@ class DailyUpdater(AutomationBase):
         self.run_python_script(
             "src/ingest/ingest_team_stats.py",
             ["--seasons", str(current_year)],
-            "Updating team statistics (off-season)"
+            "Updating team statistics (off-season)",
+            allow_failure=True  # Allow this to fail without stopping pipeline
         )
         
         # Rebuild features
@@ -128,9 +130,12 @@ class DailyUpdater(AutomationBase):
             quality_report = self.check_data_quality()
             
             # Log quality metrics
-            if quality_report.get('feature_records') != "missing":
-                self.logger.info(f"Feature records: {quality_report['feature_records']:,}")
-            if quality_report.get('latest_date') != "missing":
+            if quality_report.get('feature_records') not in ["missing", "error"]:
+                if isinstance(quality_report['feature_records'], int):
+                    self.logger.info(f"Feature records: {quality_report['feature_records']:,}")
+                else:
+                    self.logger.info(f"Feature records: {quality_report['feature_records']}")
+            if quality_report.get('latest_date') not in ["missing", "error"]:
                 self.logger.info(f"Latest game date: {quality_report['latest_date']}")
                 
             # Finalize with success
