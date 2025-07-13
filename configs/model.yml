@@ -1,0 +1,40 @@
+# Model configuration for NBA Betting Model
+
+# Feature engineering settings
+features:
+  lookback_games: 10           # Number of games for rolling averages
+  season_lookback_games: 5     # Number of recent games for trend analysis
+  min_games_for_rolling: 3     # Minimum games before including rolling stats
+  
+  # Feature categories to include
+  include_team_stats: true
+  include_odds: true
+  include_rest_days: true
+  include_home_advantage: true
+  include_season_trends: true
+
+# Model training settings
+model:
+  algorithm: "RandomForest"
+  test_size: 0.2
+  random_state: 42
+  
+  # Random Forest specific parameters
+  n_estimators: 100
+  max_depth: 10
+  min_samples_split: 10
+  min_samples_leaf: 5
+  
+  # Cross-validation
+  cv_folds: 5
+
+# Betting strategy settings
+betting:
+  kelly_fraction: 0.5          # Fractional Kelly (50% of full Kelly)
+  min_edge: 0.02              # Minimum edge required to place bet (2%)
+  max_bet_size: 0.1           # Maximum bet size as fraction of bankroll (10%)
+  
+# Performance thresholds
+thresholds:
+  min_accuracy: 0.55          # Minimum model accuracy to use predictions
+  retrain_threshold: 0.05     # Accuracy drop that triggers retraining
