@@ -164,13 +164,16 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
 3. **Use automation scripts**:
    ```bash
    # Daily update
-   ./scripts/daily_update.sh
+   python scripts/daily_update.py
    
    # Weekly full refresh  
-   ./scripts/weekly_refresh.sh
+   python scripts/weekly_refresh.py
    
    # Emergency manual update
-   ./scripts/manual_update.sh
+   python scripts/manual_update.py
+   
+   # Enhanced daily pipeline (recommended)
+   python scripts/daily_betting_pipeline.py
    ```
 
 4. **Monitor and optimize**:
