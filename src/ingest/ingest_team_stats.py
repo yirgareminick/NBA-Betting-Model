@@ -37,15 +37,20 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         raise ValueError(f"Failed to fetch data for season {season}") from e
 
     soup = BeautifulSoup(resp.text, "lxml")
-    table = soup.select_one("table#ratings")
-    if table is None:
-        raise ValueError(f"Could not find 'ratings' table on page for season {season}")
-    print("[fetch] Ratings table found.")
+    try:
+        table = soup.select_one("table#ratings")
+        if table is None:
+            raise ValueError(f"Could not find 'ratings' table on page for season {season}")
+        print("[fetch] Ratings table found.")
 
-    # Use pandas as bridge since polars cannot read HTML directly
-    import pandas as pd
-    from io import StringIO
-    pd_df = pd.read_html(StringIO(str(table)), header=[0, 1])[0]
+        # Use pandas as bridge since polars cannot read HTML directly
+        import pandas as pd
+        from io import StringIO
+        try:
+            pd_df = pd.read_html(StringIO(str(table)), header=[0, 1])[0]
+        except Exception as e:
+            print(f"[error] Failed to parse HTML table: {e}")
+            raise ValueError(f"Failed to parse data table for season {season}") from e
     pd_df.columns = [
         f"{col[0]}_{col[1]}".strip().replace(" ", "_").lower()
         if isinstance(col, tuple) else str(col).strip().replace(" ", "_").lower()
