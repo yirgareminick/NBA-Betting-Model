@@ -93,7 +93,26 @@ def fetch_season(season: int) -> pl.DataFrame:
 
 def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
     print(f"[start] Pulling team stats for seasons: {seasons}")
-    return pl.concat([fetch_season(s) for s in seasons])
+    
+    all_data = []
+    failed_seasons = []
+    
+    for season in seasons:
+        try:
+            df = fetch_season(season)
+            all_data.append(df)
+        except Exception as e:
+            print(f"[warning] Failed to fetch season {season}: {e}")
+            failed_seasons.append(season)
+            continue
+    
+    if not all_data:
+        raise ValueError(f"Failed to fetch data for all seasons: {failed_seasons}")
+    
+    if failed_seasons:
+        print(f"[warning] Some seasons failed: {failed_seasons}")
+        
+    return pl.concat(all_data)
 
 if __name__ == "__main__":
     import argparse
