@@ -21,8 +21,20 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
-    resp = requests.get(url, timeout=15, headers=headers)
-    resp.raise_for_status()
+    try:
+        resp = requests.get(url, timeout=15, headers=headers)
+        resp.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 403:
+            print(f"[error] Access forbidden (403) - possibly rate limited or off-season data not available")
+            raise ValueError(f"Access forbidden for season {season} - possibly off-season") from e
+        raise
+    except requests.exceptions.Timeout:
+        print(f"[error] Request timed out for season {season}")
+        raise ValueError(f"Request timed out fetching data for season {season}")
+    except requests.exceptions.RequestException as e:
+        print(f"[error] Failed to fetch data: {e}")
+        raise ValueError(f"Failed to fetch data for season {season}") from e
 
     soup = BeautifulSoup(resp.text, "lxml")
     table = soup.select_one("table#ratings")
