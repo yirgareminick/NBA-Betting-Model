@@ -18,8 +18,26 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
     
     # Add headers to avoid 403 errors
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'max-age=0',
+        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'DNT': '1',
+        'Upgrade-Insecure-Requests': '1',
+        'Connection': 'keep-alive'
     }
+    
+    # Add a small delay to avoid rate limiting
+    import time
+    time.sleep(2)
     
     try:
         resp = requests.get(url, timeout=15, headers=headers)
@@ -37,20 +55,21 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         raise ValueError(f"Failed to fetch data for season {season}") from e
 
     soup = BeautifulSoup(resp.text, "lxml")
-    try:
-        table = soup.select_one("table#ratings")
-        if table is None:
-            raise ValueError(f"Could not find 'ratings' table on page for season {season}")
-        print("[fetch] Ratings table found.")
+    table = soup.select_one("table#ratings")
+    if table is None:
+        print(f"[error] Could not find ratings table for season {season}")
+        raise ValueError(f"Could not find 'ratings' table on page for season {season}")
+    print("[fetch] Ratings table found.")
 
-        # Use pandas as bridge since polars cannot read HTML directly
-        import pandas as pd
-        from io import StringIO
-        try:
-            pd_df = pd.read_html(StringIO(str(table)), header=[0, 1])[0]
-        except Exception as e:
-            print(f"[error] Failed to parse HTML table: {e}")
-            raise ValueError(f"Failed to parse data table for season {season}") from e
+    # Use pandas as bridge since polars cannot read HTML directly
+    import pandas as pd
+    from io import StringIO
+    try:
+        pd_df = pd.read_html(StringIO(str(table)), header=[0, 1])[0]
+    except Exception as e:
+        print(f"[error] Failed to parse HTML table: {e}")
+        raise ValueError(f"Failed to parse data table for season {season}") from e
+
     pd_df.columns = [
         f"{col[0]}_{col[1]}".strip().replace(" ", "_").lower()
         if isinstance(col, tuple) else str(col).strip().replace(" ", "_").lower()
@@ -66,19 +85,32 @@ def fetch_season(season: int) -> pl.DataFrame:
     
     # Check if file already exists and is recent (within 7 days)
     if csv_path.exists():
-        from datetime import datetime, timedelta
-        file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
-        
-        if file_age < timedelta(days=7):
-            print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
-            return pl.read_csv(csv_path)
-        else:
-            print(f"[cache] {csv_path} exists but is old ({file_age.days} days) — attempting fresh scrape")
+        try:
+            from datetime import datetime, timedelta
+            file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
+            
+            if file_age < timedelta(days=7):
+                print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
+                try:
+                    return pl.read_csv(csv_path)
+                except Exception as e:
+                    print(f"[error] Failed to read cached file: {e}")
+                    print("[cache] Cache file may be corrupted, attempting fresh scrape")
+            else:
+                print(f"[cache] {csv_path} exists but is old ({file_age.days} days) — attempting fresh scrape")
+        except Exception as e:
+            print(f"[error] Failed to check cache file age: {e}")
+            print("[cache] Cache validation failed, attempting fresh scrape")
 
     try:
         df = fetch_bbref_table(season)
-        print(f"[save] Writing data to: {csv_path}")
-        df.write_csv(csv_path)
+        try:
+            print(f"[save] Writing data to: {csv_path}")
+            df.write_csv(csv_path)
+            print(f"[save] Successfully saved data for season {season}")
+        except Exception as e:
+            print(f"[warning] Failed to save data to {csv_path}: {e}")
+            print("[warning] Continuing with in-memory data")
         return df
     except Exception as e:
         print(f"[error] Failed to fetch season {season}: {e}")
