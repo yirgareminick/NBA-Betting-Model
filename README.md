@@ -1,6 +1,15 @@
 NBA Moneyline Betting Pipeline
 ==============================
 
+![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)
+![Poetry](https://img.shields.io/badge/dependency_management-poetry-blue.svg)
+![Machine Learning](https://img.shields.io/badge/ML-Machine%20Learning-red.svg)
+![NBA](https://img.shields.io/badge/sport-NBA-orange.svg)
+![Kelly Criterion](https://img.shields.io/badge/bet_sizing-Kelly_Criterion-gold.svg)
+![GitHub last commit](https://img.shields.io/github/last-commit/yirgareminick/NBA-Betting-Model)
+![GitHub repo size](https://img.shields.io/github/repo-size/yirgareminick/NBA-Betting-Model)
+![License](https://img.shields.io/github/license/yirgareminick/NBA-Betting-Model)
+
 **A comprehensive machine learning pipeline designed to predict NBA moneyline outcomes, size bets using the Kelly criterion, and generate daily betting insights with advanced performance monitoring.**
 
 This project processes historical NBA games (2020-2025), team statistics, and real-time betting odds to model and recommend daily bets. The pipeline includes automated data ingestion, feature engineering, advanced model training with ensemble methods, comprehensive performance tracking, and production-ready scheduling capabilities.
