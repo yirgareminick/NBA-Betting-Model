@@ -11,10 +11,9 @@ import os
 
 @pytest.fixture
 def visualization_data():
-    """Create comprehensive sample data for visualization testing."""
+    """Create sample data for visualization testing."""
     np.random.seed(42)
     
-    # Generate time series data
     start_date = datetime(2024, 1, 1)
     dates = [start_date + timedelta(days=i) for i in range(100)]
     
@@ -22,8 +21,7 @@ def visualization_data():
     cumulative_profit = 0
     
     for i, date in enumerate(dates):
-        # Simulate game results with some trends
-        win_prob = 0.5 + 0.1 * np.sin(i / 10)  # Seasonal variation
+        win_prob = 0.5 + 0.1 * np.sin(i / 10)
         actual_win = np.random.random() < win_prob
         predicted_prob = win_prob + np.random.normal(0, 0.1)
         predicted_prob = np.clip(predicted_prob, 0.1, 0.9)
@@ -82,18 +80,14 @@ def test_profit_timeline_data_preparation(visualization_data):
     """Test data preparation for profit timeline visualization."""
     viz_df = visualization_data.copy()
     
-    # Prepare data for timeline plot
     viz_df['game_date'] = pd.to_datetime(viz_df['game_date'])
     viz_df = viz_df.sort_values('game_date')
     
-    # Test data structure for timeline
     assert 'cumulative_profit' in viz_df.columns
     assert 'game_date' in viz_df.columns
     assert len(viz_df) > 0
     
-    # Test that cumulative profit is actually cumulative
     if len(viz_df) > 1:
-        # Check that values generally increase or decrease (allowing for some variance)
         total_change = viz_df['cumulative_profit'].iloc[-1] - viz_df['cumulative_profit'].iloc[0]
         assert isinstance(total_change, (int, float))
 
@@ -101,7 +95,6 @@ def test_accuracy_trend_data_preparation(visualization_data):
     """Test data preparation for accuracy trend visualization."""
     viz_df = visualization_data.copy()
     
-    # Calculate rolling accuracy
     window_size = 20
     viz_df['correct_prediction'] = (viz_df['predicted_outcome'] == viz_df['actual_outcome']).astype(int)
     
@@ -110,7 +103,6 @@ def test_accuracy_trend_data_preparation(visualization_data):
             window=window_size, min_periods=1
         ).mean()
         
-        # Test rolling accuracy calculation
         assert 'rolling_accuracy' in viz_df.columns
         rolling_data = viz_df['rolling_accuracy'].dropna()
         assert len(rolling_data) > 0
@@ -121,7 +113,6 @@ def test_monthly_performance_aggregation(visualization_data):
     """Test monthly performance aggregation for bar charts."""
     viz_df = visualization_data.copy()
     
-    # Monthly aggregation
     monthly_stats = viz_df.groupby('month').agg({
         'profit': ['sum', 'count', 'mean'],
         'bet_amount': 'sum',
@@ -129,22 +120,18 @@ def test_monthly_performance_aggregation(visualization_data):
         'predicted_prob': 'mean'
     }).round(2)
     
-    # Test monthly aggregation
-    assert len(monthly_stats) <= 12  # Max 12 months
-    assert len(monthly_stats) >= 1   # At least 1 month
+    assert len(monthly_stats) <= 12
+    assert len(monthly_stats) >= 1
     
-    # Test that all months are valid
     for month in monthly_stats.index:
         assert 1 <= month <= 12
     
-    # Test aggregation columns exist
-    assert monthly_stats.columns.nlevels == 2  # MultiIndex columns
+    assert monthly_stats.columns.nlevels == 2
 
 def test_confidence_distribution_analysis(visualization_data):
     """Test confidence distribution analysis for histograms."""
     viz_df = visualization_data.copy()
     
-    # Confidence analysis
     confidence_stats = {
         'mean_confidence': viz_df['confidence'].mean(),
         'median_confidence': viz_df['confidence'].median(),
@@ -208,10 +195,8 @@ def test_scatter_plot_data_preparation(visualization_data):
     """Test data preparation for scatter plots."""
     viz_df = visualization_data.copy()
     
-    # Prepare scatter plot data (confidence vs accuracy)
     viz_df['correct'] = (viz_df['predicted_outcome'] == viz_df['actual_outcome']).astype(int)
     
-    # Create confidence bins for scatter plot
     viz_df['confidence_bin'] = pd.cut(viz_df['confidence'], bins=5, labels=False)
     
     scatter_data = viz_df.groupby('confidence_bin').agg({
@@ -220,11 +205,9 @@ def test_scatter_plot_data_preparation(visualization_data):
         'game_date': 'count'
     }).reset_index()
     
-    # Test scatter plot data
-    assert len(scatter_data) <= 5  # Max 5 bins
-    assert len(scatter_data) >= 1  # At least 1 bin with data
+    assert len(scatter_data) <= 5
+    assert len(scatter_data) >= 1
     
-    # Test that accuracy values are valid
     assert (scatter_data['correct'] >= 0).all()
     assert (scatter_data['correct'] <= 1).all()
 
@@ -234,18 +217,15 @@ def test_time_series_resampling(visualization_data):
     viz_df['game_date'] = pd.to_datetime(viz_df['game_date'])
     viz_df = viz_df.set_index('game_date')
     
-    # Weekly resampling
     weekly_data = viz_df.resample('W').agg({
         'profit': 'sum',
         'bet_amount': 'sum',
         'actual_outcome': 'mean'
     })
     
-    # Test weekly resampling
-    assert len(weekly_data) <= len(viz_df)  # Should be fewer or equal weeks than days
-    assert len(weekly_data) >= 1           # At least one week
+    assert len(weekly_data) <= len(viz_df)
+    assert len(weekly_data) >= 1
     
-    # Test that resampled data maintains structure
     expected_columns = {'profit', 'bet_amount', 'actual_outcome'}
     assert set(weekly_data.columns) == expected_columns
 
@@ -253,7 +233,6 @@ def test_performance_metrics_visualization_data(visualization_data):
     """Test data preparation for performance metrics visualization."""
     viz_df = visualization_data.copy()
     
-    # Calculate key performance metrics
     total_games = len(viz_df)
     total_bets = len(viz_df[viz_df['bet_amount'] > 0])
     win_rate = viz_df['actual_outcome'].mean()
@@ -307,24 +286,20 @@ def test_visualization_edge_cases(visualization_data):
 
 def test_color_palette_generation():
     """Test color palette generation for visualizations."""
-    # Test different color schemes
     colors_categorical = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
     colors_sequential = ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26']
     colors_diverging = ['#ca0020', '#f4a582', '#ffffff', '#92c5de', '#0571b0']
     
-    # Test that we have valid color palettes
     assert len(colors_categorical) == 5
     assert len(colors_sequential) == 5
     assert len(colors_diverging) == 5
     
-    # Test hex color format
     for color in colors_categorical + colors_sequential + colors_diverging:
         assert color.startswith('#')
-        assert len(color) == 7  # #RRGGBB format
+        assert len(color) == 7
 
 def test_chart_data_validation():
     """Test validation of chart data before plotting."""
-    # Test data validation function
     def validate_chart_data(data, required_columns):
         """Validate data for chart creation."""
         if data is None or len(data) == 0:
@@ -336,7 +311,6 @@ def test_chart_data_validation():
         
         return True, "Valid"
     
-    # Test with valid data
     valid_data = pd.DataFrame({
         'x': [1, 2, 3],
         'y': [4, 5, 6]
@@ -346,12 +320,10 @@ def test_chart_data_validation():
     assert is_valid == True
     assert message == "Valid"
     
-    # Test with missing columns
     is_valid, message = validate_chart_data(valid_data, ['x', 'y', 'z'])
     assert is_valid == False
     assert "Missing columns" in message
     
-    # Test with empty data
     empty_data = pd.DataFrame()
     is_valid, message = validate_chart_data(empty_data, ['x', 'y'])
     assert is_valid == False
