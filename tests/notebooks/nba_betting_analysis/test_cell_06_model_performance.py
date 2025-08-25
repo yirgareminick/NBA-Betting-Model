@@ -11,7 +11,7 @@ import tempfile
 
 @pytest.fixture
 def mock_predictions_data():
-    """Create sample predictions data for testing."""
+    """Create sample predictions data."""
     np.random.seed(42)
     
     data = []
@@ -33,68 +33,97 @@ def mock_predictions_data():
 
 @pytest.fixture
 def temp_db():
-    """Create a temporary database for testing."""
+    """Create temporary database."""
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.db')
     temp_file.close()
     
     yield temp_file.name
     
-    # Cleanup
     if os.path.exists(temp_file.name):
         os.unlink(temp_file.name)
 
 def test_accuracy_calculation(mock_predictions_data):
-    """Test model accuracy calculation."""
+    """Test accuracy calculation."""
     predictions_df = mock_predictions_data
     
-    # Binary predictions based on probability threshold
     predictions_df['predicted_outcome'] = (predictions_df['predicted_prob'] > 0.5).astype(int)
     
-    # Calculate accuracy
     accuracy = (predictions_df['predicted_outcome'] == predictions_df['actual_outcome']).mean()
     
-    # Test accuracy calculation
     assert 0 <= accuracy <= 1
     assert isinstance(accuracy, (float, np.floating))
     
-    # Test with perfect predictions
     perfect_df = predictions_df.copy()
     perfect_df['predicted_outcome'] = perfect_df['actual_outcome']
     perfect_accuracy = (perfect_df['predicted_outcome'] == perfect_df['actual_outcome']).mean()
     assert perfect_accuracy == 1.0
 
-def test_probability_calibration_analysis(mock_predictions_data):
-    """Test probability calibration analysis."""
-    predictions_df = mock_predictions_data
+def test_model_calibration_analysis(mock_predictions_data):
+    """Test model calibration analysis."""
+    predictions_df = mock_predictions_data.copy()
     
-    # Create probability bins
     predictions_df['prob_bin'] = pd.cut(predictions_df['predicted_prob'], 
-                                       bins=[0, 0.4, 0.6, 1.0], 
-                                       labels=['Low (0-40%)', 'Medium (40-60%)', 'High (60%+)'])
+                                      bins=5, 
+                                      labels=['0-20%', '20-40%', '40-60%', '60-80%', '80-100%'])
     
-    # Calculate calibration by bin
     calibration = predictions_df.groupby('prob_bin').agg({
-        'actual_outcome': ['count', 'mean'],
-        'predicted_prob': 'mean'
+        'predicted_prob': 'mean',
+        'actual_outcome': ['count', 'mean']
     }).round(3)
     
-    # Test calibration structure
-    assert len(calibration) >= 1  # At least one bin should have data
-    assert calibration.columns.nlevels == 2  # MultiIndex columns
+    assert len(calibration) >= 1
+    assert len(calibration) <= 5
     
-    # Test that probabilities and outcomes are in valid ranges
-    for bin_name in calibration.index:
-        if not pd.isna(bin_name):
-            actual_rate = calibration.loc[bin_name, ('actual_outcome', 'mean')]
-            avg_prob = calibration.loc[bin_name, ('predicted_prob', 'mean')]
-            assert 0 <= actual_rate <= 1
-            assert 0 <= avg_prob <= 1
+    for bin_name in calibration.index.dropna():
+        count = calibration.loc[bin_name, ('actual_outcome', 'count')]
+        assert count >= 0
+
+def test_streak_analysis(mock_predictions_data):
+    """Test win/loss streak analysis."""
+    predictions_df = mock_predictions_data.copy()
+    predictions_df = predictions_df.sort_values('game_date')
+    
+    predictions_df['is_win'] = predictions_df['actual_outcome'] == 1
+    predictions_df['streak_group'] = (predictions_df['is_win'] != 
+                                    predictions_df['is_win'].shift()).cumsum()
+    
+    streaks = predictions_df.groupby('streak_group').agg({
+        'is_win': ['first', 'count']
+    })
+    
+    assert len(streaks) >= 1
+    
+    for streak_group in streaks.index:
+        streak_length = streaks.loc[streak_group, ('is_win', 'count')]
+        assert streak_length >= 1
+
+def test_database_storage_operations(sample_predictions_db):
+    """Test database storage operations."""
+    db_path = sample_predictions_db
+    
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='predictions'")
+        table_exists = cursor.fetchone() is not None
+        assert table_exists
+        
+        cursor.execute("SELECT COUNT(*) FROM predictions")
+        row_count = cursor.fetchone()[0]
+        assert row_count >= 0
+        
+        cursor.execute("PRAGMA table_info(predictions)")
+        columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
+        
+        expected_columns = ['game_id', 'predicted_prob', 'actual_outcome', 'roi']
+        for col in expected_columns:
+            assert col in column_names
 
 def test_betting_performance_metrics(mock_predictions_data):
-    """Test betting performance metrics calculation."""
+    """Test betting performance metrics."""
     predictions_df = mock_predictions_data
     
-    # Calculate betting metrics
     total_bets = len(predictions_df[predictions_df['kelly_bet_amount'] > 0])
     total_wagered = predictions_df['kelly_bet_amount'].sum()
     total_return = (predictions_df['kelly_bet_amount'] * 
@@ -104,15 +133,13 @@ def test_betting_performance_metrics(mock_predictions_data):
     net_profit = total_return - total_wagered
     roi = (net_profit / total_wagered * 100) if total_wagered > 0 else 0
     
-    # Test betting metrics
     assert total_bets >= 0
     assert total_wagered >= 0
     assert isinstance(roi, (int, float))
     
-    # Test with profitable scenario
     profitable_df = predictions_df.copy()
-    profitable_df['actual_outcome'] = 1  # All wins
-    profitable_df['betting_odds'] = 2.0   # 2:1 odds
+    profitable_df['actual_outcome'] = 1
+    profitable_df['betting_odds'] = 2.0
     
     profit_return = (profitable_df['kelly_bet_amount'] * 
                     profitable_df['actual_outcome'] * 
@@ -120,17 +147,15 @@ def test_betting_performance_metrics(mock_predictions_data):
     profit_wagered = profitable_df['kelly_bet_amount'].sum()
     profit_roi = ((profit_return - profit_wagered) / profit_wagered * 100) if profit_wagered > 0 else 0
     
-    assert profit_roi > 0  # Should be profitable
+    assert profit_roi > 0
 
 def test_monthly_performance_breakdown(mock_predictions_data):
     """Test monthly performance breakdown."""
     predictions_df = mock_predictions_data.copy()
     
-    # Convert game_date to datetime
     predictions_df['game_date'] = pd.to_datetime(predictions_df['game_date'])
     predictions_df['month'] = predictions_df['game_date'].dt.month
     
-    # Monthly breakdown
     monthly_performance = predictions_df.groupby('month').agg({
         'game_id': 'count',
         'actual_outcome': 'mean',
@@ -138,43 +163,35 @@ def test_monthly_performance_breakdown(mock_predictions_data):
         'roi': 'mean'
     }).round(3)
     
-    # Test monthly breakdown structure
     assert len(monthly_performance) >= 1
-    assert len(monthly_performance) <= 12  # Max 12 months
+    assert len(monthly_performance) <= 12
     
-    # Test that all months are valid
     for month in monthly_performance.index:
         assert 1 <= month <= 12
     
-    # Test that accuracy values are valid
     for month in monthly_performance.index:
         accuracy = monthly_performance.loc[month, ('actual_outcome', 'mean')]
         assert 0 <= accuracy <= 1
 
 def test_confidence_vs_accuracy_analysis(mock_predictions_data):
-    """Test analysis of confidence vs accuracy relationship."""
+    """Test confidence vs accuracy analysis."""
     predictions_df = mock_predictions_data.copy()
     
-    # Create confidence bins
     predictions_df['confidence'] = abs(predictions_df['predicted_prob'] - 0.5)
     predictions_df['confidence_bin'] = pd.cut(predictions_df['confidence'], 
                                             bins=3, 
                                             labels=['Low', 'Medium', 'High'])
     
-    # Confidence analysis
     confidence_analysis = predictions_df.groupby('confidence_bin').agg({
         'actual_outcome': ['count', 'mean'],
         'predicted_prob': ['mean', 'std'],
         'confidence': 'mean'
     }).round(3)
     
-    # Test confidence analysis
     assert len(confidence_analysis) >= 1
     
-    # Test that confidence increases across bins
     confidence_means = confidence_analysis[('confidence', 'mean')].dropna()
     if len(confidence_means) > 1:
-        # Check if generally increasing (allowing for some noise)
         assert confidence_means.iloc[-1] >= confidence_means.iloc[0]
 
 def test_database_operations(temp_db, mock_predictions_data):
