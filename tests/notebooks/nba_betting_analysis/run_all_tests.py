@@ -20,7 +20,7 @@ def run_all_tests():
         'test_cell_07_visualizations.py'
     ]
     
-    print("Running NBA Betting Analysis Notebook Tests")
+    print("Running Analysis Notebook Tests")
     print("=" * 60)
     
     all_passed = True
