@@ -82,7 +82,7 @@ class CodebaseCleanup:
     
     def clean_temporary_files(self):
         """Remove temporary and backup files."""
-        print("📝 Cleaning temporary files...")
+        print("📝 Cleaning temp files...")
         
         patterns = ["*~", ".#*", "*.tmp", "*.temp", "*.bak", "*.swp", "*.swo"]
         for pattern in patterns:
@@ -105,7 +105,7 @@ class CodebaseCleanup:
     
     def clean_old_models(self, keep_latest: int = 3):
         """Keep only the latest N model files."""
-        print(f"🤖 Cleaning old models (keeping latest {keep_latest})...")
+        print(f"Cleaning old models (keeping latest {keep_latest})...")
         
         models_dir = self.project_root / "models"
         if not models_dir.exists():
