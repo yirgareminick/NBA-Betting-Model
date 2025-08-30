@@ -26,6 +26,12 @@ except ImportError:
     # Fallback if FeatureEngineer is not available
     FeatureEngineer = None
 
+try:
+    from ingest.live_data_fetcher import LiveNBADataFetcher
+except ImportError:
+    # Fallback if live data fetcher is not available
+    LiveNBADataFetcher = None
+
 
 class NBAPredictor:
     """NBA game outcome predictor using trained models."""
@@ -62,25 +68,46 @@ class NBAPredictor:
         print(f"  - Features: {len(self.feature_columns)}")
     
     def get_upcoming_games(self, target_date: date = None) -> pd.DataFrame:
-        """Get upcoming games for prediction."""
+        """Get upcoming games for prediction using real-time data."""
         if target_date is None:
             target_date = date.today()
         
-        # For now, return empty DataFrame - will be populated when we have live data
-        # In production, this would fetch from NBA API or sports data provider
         print(f"📅 Getting games for {target_date}")
         
-        # Placeholder implementation
+        # Try to use live data fetcher
+        if LiveNBADataFetcher is not None:
+            try:
+                fetcher = LiveNBADataFetcher()
+                games = fetcher.get_todays_games(target_date)
+                
+                if len(games) > 0:
+                    # Add current betting odds
+                    games = fetcher.add_current_odds(games)
+                    print(f"✅ Found {len(games)} real games using NBA API")
+                    return games
+                else:
+                    print(f"� No games scheduled for {target_date}")
+                    return pd.DataFrame()
+                    
+            except Exception as e:
+                print(f"⚠️  Live data fetch failed: {e}")
+                print("🔄 Falling back to sample data...")
+        
+        # Fallback to sample data for development/testing
+        print("🔄 Using sample games for development...")
         games = pd.DataFrame({
             'game_id': ['sample_game_1', 'sample_game_2'],
             'game_date': [target_date, target_date],
             'home_team': ['LAL', 'GSW'],
             'away_team': ['BOS', 'PHX'],
             'home_odds': [1.85, 2.10],
-            'away_odds': [1.95, 1.75]
+            'away_odds': [1.95, 1.75],
+            'game_time': ['20:00:00', '22:30:00'],
+            'game_status': ['Scheduled', 'Scheduled'],
+            'arena': ['Crypto.com Arena', 'Chase Center']
         })
         
-        print(f"✓ Found {len(games)} upcoming games")
+        print(f"✓ Found {len(games)} sample games")
         return games
     
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
@@ -114,7 +141,45 @@ class NBAPredictor:
     
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup."""
-        # This is a simplified implementation
+        
+        # Try to get real team stats if live data fetcher is available
+        if LiveNBADataFetcher is not None:
+            try:
+                fetcher = LiveNBADataFetcher()
+                team_stats = fetcher.get_recent_team_stats(team)
+                opp_stats = fetcher.get_recent_team_stats(opponent)
+                
+                features = {
+                    'is_home': int(is_home),
+                    'team_points_avg': team_stats['avg_pts'],
+                    'team_rebounds_avg': team_stats['avg_rebounds'],
+                    'team_assists_avg': team_stats['avg_assists'],
+                    'team_fg_pct_avg': team_stats['avg_fg_pct'],
+                    'team_3p_pct_avg': team_stats['avg_3p_pct'],
+                    'team_win_pct': team_stats['win_pct'],
+                    'opp_points_avg': opp_stats['avg_pts'],
+                    'opp_rebounds_avg': opp_stats['avg_rebounds'],
+                    'opp_assists_avg': opp_stats['avg_assists'],
+                    'rest_days': np.random.randint(1, 4),  # Would calculate from actual schedule
+                }
+                
+                print(f"✓ Using real stats for {team} vs {opponent}")
+                
+            except Exception as e:
+                print(f"⚠️  Real stats failed for {team}: {e}")
+                features = self._get_fallback_features(team, opponent, is_home)
+        else:
+            features = self._get_fallback_features(team, opponent, is_home)
+        
+        # Add additional features to match training set
+        for i in range(len(self.feature_columns) - len(features)):
+            features[f'feature_{i}'] = np.random.normal(0, 1)
+        
+        return features
+    
+    def _get_fallback_features(self, team: str, opponent: str, is_home: bool) -> Dict:
+        """Fallback features when real data unavailable."""
+        # This is a simplified implementation using historical averages
         # In production, this would calculate actual rolling statistics from recent games
         
         features = {
@@ -129,10 +194,6 @@ class NBAPredictor:
             'team_3p_pct_avg': 0.36 + np.random.normal(0, 0.03),
             'rest_days': np.random.randint(1, 4),
         }
-        
-        # Add additional features to match training set
-        for i in range(len(self.feature_columns) - len(features)):
-            features[f'feature_{i}'] = np.random.normal(0, 1)
         
         return features
     
