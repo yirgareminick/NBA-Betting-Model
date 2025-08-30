@@ -31,8 +31,8 @@ NBA-Betting-Model/
 │   └── performance/              # Performance analytics
 ├── scripts/                      # Automation scripts
 │   ├── daily_predictions.py      # Simple daily predictions
-│   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
-│   ├── daily_update.py           # Data refresh automation
+y   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
+y   ├── daily_update.py           # Data refresh automation
 │   ├── weekly_refresh.py         # Weekly maintenance
 │   └── scheduler.py              # Python-based task scheduler
 ├── src/                          # Source code
@@ -275,3 +275,4 @@ This software is for educational and research purposes only. Sports betting invo
 - Incorporate player-level data and injury reports  
 - Build dashboard for model evaluation and backtesting  
 - Explore alternative modeling techniques (LightGBM, ensemble methods)
+
