@@ -9,6 +9,56 @@ NBA Moneyline Betting Pipeline
 
 This project processes historical NBA games (2020-2025), team statistics, and real-time betting odds to model and recommend daily bets. The pipeline includes automated data ingestion, feature engineering, advanced model training with ensemble methods, comprehensive performance tracking, and production-ready scheduling capabilities.
 
+**Project Structure**
+------------------------------
+
+```
+NBA-Betting-Model/
+├── configs/                      # Configuration files
+│   ├── model.yml                 # Model training parameters
+│   ├── paths.yml                 # Data path configurations
+│   └── schedule.yml              # Automation scheduling
+├── data/                         # Data storage
+│   ├── predictions/              # Daily prediction outputs
+│   ├── processed/                # Feature-engineered datasets
+│   ├── raw/                      # Raw data (SQLite, CSV, odds)
+│   └── performance.db            # Performance tracking database
+├── docs/                         # Documentation
+├── logs/                         # Execution logs
+├── models/                       # Trained ML models
+├── notebooks/                    # Jupyter analysis notebooks
+├── reports/                      # Generated reports
+│   └── performance/              # Performance analytics
+├── scripts/                      # Automation scripts
+│   ├── daily_predictions.py      # Simple daily predictions
+│   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
+│   ├── daily_update.py           # Data refresh automation
+│   ├── weekly_refresh.py         # Weekly maintenance
+│   └── scheduler.py              # Python-based task scheduler
+├── src/                          # Source code
+│   ├── features/                 # Feature engineering
+│   │   └── build_features.py     # NBA feature pipeline
+│   ├── ingest/                   # Data ingestion
+│   │   ├── ingest_games_new.py   # Game data from Kaggle
+│   │   ├── ingest_odds.py        # Betting odds from APIs
+│   │   ├── ingest_team_stats.py  # Team statistics
+│   │   └── live_data_fetcher.py  # Real-time NBA data
+│   ├── models/                   # ML training and tracking
+│   │   ├── train_model.py        # Basic model training
+│   │   ├── advanced_trainer.py   # Ensemble methods
+│   │   └── performance_tracker.py # Model monitoring
+│   ├── predict/                  # Prediction system
+│   │   ├── predict_games.py      # Game prediction engine
+│   │   └── daily_report.py       # Report generation
+│   ├── stake/                    # Betting strategy
+│   │   └── kelly_criterion.py    # Optimal bet sizing
+│   └── pipeline.py               # Prefect workflow orchestration
+└── tests/                        # Test suite
+    ├── unit/                     # Unit tests
+    ├── integration/              # Integration tests
+    └── notebooks/                # Notebook validation tests
+```
+
 **Enhanced Features**
 ------------------------------
 
