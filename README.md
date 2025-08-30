@@ -9,47 +9,6 @@ NBA Moneyline Betting Pipeline
 
 This project processes historical NBA games (2020-2025), team statistics, and real-time betting odds to model and recommend daily bets. The pipeline includes automated data ingestion, feature engineering, advanced model training with ensemble methods, comprehensive performance tracking, and production-ready scheduling capabilities.
 
-**Project Structure**
-------------------------------
-
-nba-betting/
-├── data/                 # Data staging areas  
-│   ├── raw/              # Raw data (SQLite, CSV, odds)  
-│   ├── interim/          # Cleaned + aligned tables  
-│   ├── processed/        # Feature matrices for modeling  
-│   ├── predictions/      # Daily prediction outputs
-│   └── performance.db    # Performance tracking database
-├── src/  
-│   ├── ingest/           # Game, team stats, odds ingestors  
-│   ├── features/         # Feature engineering logic  
-│   ├── models/           # Training, prediction & performance tracking
-│   │   ├── train_model.py        # Basic model training
-│   │   ├── advanced_trainer.py   # Advanced ML with ensembles
-│   │   └── performance_tracker.py # Performance monitoring
-│   ├── predict/          # Prediction and reporting system
-│   │   ├── predict_games.py      # Game prediction engine
-│   │   └── daily_report.py       # Comprehensive reporting
-│   ├── stake/            # Kelly criterion & bet sizing
-│   └── pipeline.py       # Prefect flow for full pipeline  
-├── scripts/              # Automation scripts
-│   ├── daily_predictions.py      # Simple daily predictions
-│   ├── daily_betting_pipeline.py # Complete enhanced pipeline
-│   ├── daily_update.py           # Data updates
-│   ├── weekly_refresh.py         # Weekly maintenance
-│   └── scheduler.py              # Python-based scheduler
-├── configs/              # YAML configuration files  
-├── notebooks/            # EDA and prototyping  
-├── tests/                # Comprehensive test suite
-│   ├── unit/             # Unit tests
-│   ├── integration/      # Integration tests
-│   └── run_tests.py      # Test runner with coverage
-├── reports/              # Generated reports and analytics
-│   ├── daily_report_*.html       # Daily betting reports
-│   ├── performance/              # Performance analytics
-│   └── coverage/                 # Test coverage reports
-├── logs/                 # Execution logs
-└── models/               # Trained model artifacts
-
 **Enhanced Features**
 ------------------------------
 
