@@ -19,7 +19,7 @@ load_dotenv()
 
 API_KEY = os.getenv("ODDS_API_KEY")
 if not API_KEY:
-    raise ValueError("Set ODDS_API_KEY env var with your API key")
+    raise ValueError("Set ODDS_API_KEY in .env file. Get your free key at: https://the-odds-api.com/")
 
 SPORT = "basketball_nba"
 ENDPOINT = f"https://api.the-odds-api.com/v4/sports/{SPORT}/odds"
