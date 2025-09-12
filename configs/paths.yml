@@ -1,0 +1,23 @@
+# Data paths configuration for NBA Betting Model
+# Customize these paths for different environments
+
+data:
+  raw: "data/raw"
+  processed: "data/processed"
+  
+models:
+  output: "models"
+  
+logs:
+  directory: "logs"
+  retention_days: 30
+
+# Environment-specific overrides
+# development:
+#   data:
+#     raw: "dev_data/raw"
+#     processed: "dev_data/processed"
+
+# production:
+#   logs:
+#     retention_days: 90
