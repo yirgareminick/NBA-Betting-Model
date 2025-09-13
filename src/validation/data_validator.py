@@ -32,3 +32,19 @@ class DataValidator:
     
     def __init__(self):
         self.valid_teams = ['LAL', 'BOS', 'GSW', 'MIA', 'CHI']
+    
+    def validate_games_data(self, df: pd.DataFrame) -> List[ValidationResult]:
+        """Validate games data."""
+        results = []
+        required_cols = ['game_id', 'game_date', 'home_team', 'away_team']
+        
+        # Check required columns
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            results.append(ValidationResult(
+                is_valid=False,
+                level=ValidationLevel.ERROR,
+                message=f"Missing columns: {missing_cols}"
+            ))
+        
+        return results
