@@ -25,3 +25,10 @@ class ValidationResult:
     message: str
     field: Optional[str] = None
     count: Optional[int] = None
+
+
+class DataValidator:
+    """Data validation for NBA pipeline."""
+    
+    def __init__(self):
+        self.valid_teams = ['LAL', 'BOS', 'GSW', 'MIA', 'CHI']
