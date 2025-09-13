@@ -15,3 +15,13 @@ class ValidationLevel(Enum):
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
+
+
+@dataclass
+class ValidationResult:
+    """Result of a validation check."""
+    is_valid: bool
+    level: ValidationLevel
+    message: str
+    field: Optional[str] = None
+    count: Optional[int] = None
