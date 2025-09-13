@@ -8,3 +8,10 @@ from datetime import datetime, date
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 from enum import Enum
+
+
+class ValidationLevel(Enum):
+    """Validation severity levels."""
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
