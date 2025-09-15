@@ -58,4 +58,17 @@ class DataValidator:
                     count=duplicates
                 ))
         
+        # Validate team names
+        for team_col in ['home_team', 'away_team']:
+            if team_col in df.columns:
+                invalid_teams = ~df[team_col].isin(self.valid_teams)
+                invalid_count = invalid_teams.sum()
+                if invalid_count > 0:
+                    results.append(ValidationResult(
+                        is_valid=False,
+                        level=ValidationLevel.WARNING,
+                        message=f"Invalid {team_col} names found",
+                        count=invalid_count
+                    ))
+        
         return results
