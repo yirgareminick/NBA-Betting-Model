@@ -47,4 +47,15 @@ class DataValidator:
                 message=f"Missing columns: {missing_cols}"
             ))
         
+        # Check for duplicates
+        if 'game_id' in df.columns:
+            duplicates = df.duplicated(subset=['game_id']).sum()
+            if duplicates > 0:
+                results.append(ValidationResult(
+                    is_valid=False,
+                    level=ValidationLevel.ERROR,
+                    message=f"Found {duplicates} duplicate games",
+                    count=duplicates
+                ))
+        
         return results
