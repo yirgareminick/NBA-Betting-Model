@@ -91,3 +91,19 @@ class DataValidator:
                 ))
         
         return results
+
+    def validate_features_data(self, df: pd.DataFrame) -> List[ValidationResult]:
+        """Validate features data."""
+        results = []
+        required_cols = ['game_id', 'team_name', 'target_win']
+        
+        # Check required columns
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            results.append(ValidationResult(
+                is_valid=False,
+                level=ValidationLevel.ERROR,
+                message=f"Missing feature columns: {missing_cols}"
+            ))
+        
+        return results
