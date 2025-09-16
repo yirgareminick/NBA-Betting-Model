@@ -71,4 +71,23 @@ class DataValidator:
                         count=invalid_count
                     ))
         
+        # Check date validity
+        if 'game_date' in df.columns:
+            try:
+                dates = pd.to_datetime(df['game_date'])
+                invalid_dates = dates.isnull().sum()
+                if invalid_dates > 0:
+                    results.append(ValidationResult(
+                        is_valid=False,
+                        level=ValidationLevel.ERROR,
+                        message=f"Invalid dates found",
+                        count=invalid_dates
+                    ))
+            except Exception:
+                results.append(ValidationResult(
+                    is_valid=False,
+                    level=ValidationLevel.ERROR,
+                    message="Date parsing failed"
+                ))
+        
         return results
