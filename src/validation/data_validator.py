@@ -106,4 +106,16 @@ class DataValidator:
                 message=f"Missing feature columns: {missing_cols}"
             ))
         
+        # Check for infinite values
+        numeric_cols = df.select_dtypes(include=[np.number]).columns
+        for col in numeric_cols:
+            inf_count = np.isinf(df[col]).sum()
+            if inf_count > 0:
+                results.append(ValidationResult(
+                    is_valid=False,
+                    level=ValidationLevel.ERROR,
+                    message=f"Infinite values in {col}",
+                    count=inf_count
+                ))
+        
         return results
