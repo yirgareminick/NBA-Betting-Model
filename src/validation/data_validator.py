@@ -134,4 +134,16 @@ class DataValidator:
                 message=f"Missing odds columns: {missing_cols}"
             ))
         
+        # Check odds ranges
+        for odds_col in ['home_odds', 'away_odds']:
+            if odds_col in df.columns:
+                invalid_odds = ((df[odds_col] < 1.1) | (df[odds_col] > 10.0)).sum()
+                if invalid_odds > 0:
+                    results.append(ValidationResult(
+                        is_valid=False,
+                        level=ValidationLevel.WARNING,
+                        message=f"Invalid odds range in {odds_col}",
+                        count=invalid_odds
+                    ))
+        
         return results
