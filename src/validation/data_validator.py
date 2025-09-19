@@ -147,3 +147,18 @@ class DataValidator:
                     ))
         
         return results
+
+    def run_validation(self, data_dict: Dict[str, pd.DataFrame]) -> Dict[str, List[ValidationResult]]:
+        """Run validation on all data types."""
+        all_results = {}
+        
+        if 'games' in data_dict:
+            all_results['games'] = self.validate_games_data(data_dict['games'])
+        
+        if 'features' in data_dict:
+            all_results['features'] = self.validate_features_data(data_dict['features'])
+            
+        if 'odds' in data_dict:
+            all_results['odds'] = self.validate_odds_data(data_dict['odds'])
+        
+        return all_results
