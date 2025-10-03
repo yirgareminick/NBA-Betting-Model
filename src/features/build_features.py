@@ -267,7 +267,7 @@ class FeatureEngineer:
         # Select features for modeling
         feature_columns = [
             "game_id", "game_date", "team_name", "opponent", "venue", "is_home",
-            "target_win",  # target variable
+            "target_win",  
             
             # Rolling performance features
             f"avg_pts_last_{self.config.get('lookback_games', 10)}",
