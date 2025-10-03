@@ -92,4 +92,52 @@ class RealTimeOddsIntegrator:
             
         except Exception as e:
             print(f"❌ Error fetching odds: {e}")
-            return pd.DataFrame()ons to NBA abbreviations\n        name_mapping = {\n            'Los Angeles Lakers': 'LAL',\n            'Boston Celtics': 'BOS',\n            'Golden State Warriors': 'GSW',\n            'Phoenix Suns': 'PHX',\n            'Miami Heat': 'MIA',\n            'Chicago Bulls': 'CHI',\n            # Add more mappings as needed\n        }\n        \n        return name_mapping.get(team_name, team_name[:3].upper())\n    \n    def merge_games_with_odds(self, games_df: pd.DataFrame, odds_df: pd.DataFrame = None) -> pd.DataFrame:\n        """Merge game schedule with current odds."""\n        if odds_df is None or len(odds_df) == 0:\n            # Use simulated realistic odds\n            return self._add_simulated_odds(games_df)\n        \n        print("🔗 Merging games with current odds...")\n        \n        # Merge on date and team matchup\n        merged = games_df.merge(\n            odds_df,\n            on=['game_date', 'home_team', 'away_team'],\n            how='left'\n        )\n        \n        # Fill missing odds with simulated values\n        missing_odds = merged['home_odds'].isna()\n        if missing_odds.any():\n            print(f"⚠️  {missing_odds.sum()} games missing odds, using simulated values")\n            merged = self._add_simulated_odds(merged, missing_only=True)\n        \n        print(f"✓ Merged {len(merged)} games with odds")\n        return merged\n    \n    def _add_simulated_odds(self, games_df: pd.DataFrame, missing_only: bool = False) -> pd.DataFrame:\n        """Add simulated realistic odds for development/fallback."""\n        games_with_odds = games_df.copy()\n        \n        for idx, game in games_with_odds.iterrows():\n            # Skip if odds already exist and we're only filling missing\n            if missing_only and not pd.isna(game.get('home_odds')):\n                continue\n                \n            # Simulate realistic NBA odds\n            base_odds = np.random.uniform(1.7, 2.3)\n            home_advantage = 0.1  # Home teams typically favored\n            \n            games_with_odds.loc[idx, 'home_odds'] = base_odds - home_advantage\n            games_with_odds.loc[idx, 'away_odds'] = base_odds + home_advantage\n        \n        return games_with_odds\n    \n    def get_games_with_odds(self, target_date: date = None) -> pd.DataFrame:\n        """Get complete game data with current odds."""\n        from ingest.live_data_fetcher import LiveNBADataFetcher\n        \n        if target_date is None:\n            target_date = date.today()\n        \n        print(f"🏀 Getting complete game data for {target_date}...")\n        \n        # Get game schedule\n        fetcher = LiveNBADataFetcher()\n        games = fetcher.get_todays_games(target_date)\n        \n        if len(games) == 0:\n            print("📭 No games found for today")\n            return pd.DataFrame()\n        \n        # Get current odds\n        odds = self.get_current_nba_odds()\n        \n        # Merge games with odds\n        complete_data = self.merge_games_with_odds(games, odds)\n        \n        print(f"✅ Complete data ready for {len(complete_data)} games")\n        return complete_data\n\n\ndef test_real_time_integration():\n    """Test the real-time odds integration."""\n    print("🧪 Testing Real-Time Odds Integration")\n    print("=" * 50)\n    \n    integrator = RealTimeOddsIntegrator()\n    \n    # Test odds fetching (will use simulated since no API key in demo)\n    print("\\n1. Testing odds fetching:")\n    odds = integrator.get_current_nba_odds()\n    print(f"Found odds for {len(odds)} games")\n    \n    # Test complete integration\n    print("\\n2. Testing complete integration:")\n    try:\n        complete_data = integrator.get_games_with_odds()\n        print(f"Complete data for {len(complete_data)} games")\n        \n        if len(complete_data) > 0:\n            print("\\nSample game data:")\n            sample_cols = ['home_team', 'away_team', 'home_odds', 'away_odds']\n            available_cols = [col for col in sample_cols if col in complete_data.columns]\n            print(complete_data[available_cols].head())\n            \n    except Exception as e:\n        print(f"Integration test failed: {e}")\n    \n    print("\\n✅ Real-time integration test completed!")\n\n\nif __name__ == "__main__":\n    test_real_time_integration()
+            return pd.DataFrame()
+    
+    def _normalize_team_name(self, team_name: str) -> str:
+        """Convert full team names to NBA abbreviations."""
+        name_mapping = {
+            # Eastern Conference - Atlantic Division
+            'Boston Celtics': 'BOS',
+            'Brooklyn Nets': 'BKN',
+            'New York Knicks': 'NYK',
+            'Philadelphia 76ers': 'PHI',
+            'Toronto Raptors': 'TOR',
+            
+            # Eastern Conference - Central Division
+            'Chicago Bulls': 'CHI',
+            'Cleveland Cavaliers': 'CLE',
+            'Detroit Pistons': 'DET',
+            'Indiana Pacers': 'IND',
+            'Milwaukee Bucks': 'MIL',
+            
+            # Eastern Conference - Southeast Division
+            'Atlanta Hawks': 'ATL',
+            'Charlotte Hornets': 'CHA',
+            'Miami Heat': 'MIA',
+            'Orlando Magic': 'ORL',
+            'Washington Wizards': 'WAS',
+            
+            # Western Conference - Northwest Division
+            'Denver Nuggets': 'DEN',
+            'Minnesota Timberwolves': 'MIN',
+            'Oklahoma City Thunder': 'OKC',
+            'Portland Trail Blazers': 'POR',
+            'Utah Jazz': 'UTA',
+            
+            # Western Conference - Pacific Division
+            'Golden State Warriors': 'GSW',
+            'Los Angeles Clippers': 'LAC',
+            'Los Angeles Lakers': 'LAL',
+            'Phoenix Suns': 'PHX',
+            'Sacramento Kings': 'SAC',
+            
+            # Western Conference - Southwest Division
+            'Dallas Mavericks': 'DAL',
+            'Houston Rockets': 'HOU',
+            'Memphis Grizzlies': 'MEM',
+            'New Orleans Pelicans': 'NOP',
+            'San Antonio Spurs': 'SAS'
+        }
+        
+        return name_mapping.get(team_name, team_name[:3].upper())\n    \n    def merge_games_with_odds(self, games_df: pd.DataFrame, odds_df: pd.DataFrame = None) -> pd.DataFrame:\n        """Merge game schedule with current odds."""\n        if odds_df is None or len(odds_df) == 0:\n            # Use simulated realistic odds\n            return self._add_simulated_odds(games_df)\n        \n        print("🔗 Merging games with current odds...")\n        \n        # Merge on date and team matchup\n        merged = games_df.merge(\n            odds_df,\n            on=['game_date', 'home_team', 'away_team'],\n            how='left'\n        )\n        \n        # Fill missing odds with simulated values\n        missing_odds = merged['home_odds'].isna()\n        if missing_odds.any():\n            print(f"⚠️  {missing_odds.sum()} games missing odds, using simulated values")\n            merged = self._add_simulated_odds(merged, missing_only=True)\n        \n        print(f"✓ Merged {len(merged)} games with odds")\n        return merged\n    \n    def _add_simulated_odds(self, games_df: pd.DataFrame, missing_only: bool = False) -> pd.DataFrame:\n        """Add simulated realistic odds for development/fallback."""\n        games_with_odds = games_df.copy()\n        \n        for idx, game in games_with_odds.iterrows():\n            # Skip if odds already exist and we're only filling missing\n            if missing_only and not pd.isna(game.get('home_odds')):\n                continue\n                \n            # Simulate realistic NBA odds\n            base_odds = np.random.uniform(1.7, 2.3)\n            home_advantage = 0.1  # Home teams typically favored\n            \n            games_with_odds.loc[idx, 'home_odds'] = base_odds - home_advantage\n            games_with_odds.loc[idx, 'away_odds'] = base_odds + home_advantage\n        \n        return games_with_odds\n    \n    def get_games_with_odds(self, target_date: date = None) -> pd.DataFrame:\n        """Get complete game data with current odds."""\n        from ingest.live_data_fetcher import LiveNBADataFetcher\n        \n        if target_date is None:\n            target_date = date.today()\n        \n        print(f"🏀 Getting complete game data for {target_date}...")\n        \n        # Get game schedule\n        fetcher = LiveNBADataFetcher()\n        games = fetcher.get_todays_games(target_date)\n        \n        if len(games) == 0:\n            print("📭 No games found for today")\n            return pd.DataFrame()\n        \n        # Get current odds\n        odds = self.get_current_nba_odds()\n        \n        # Merge games with odds\n        complete_data = self.merge_games_with_odds(games, odds)\n        \n        print(f"✅ Complete data ready for {len(complete_data)} games")\n        return complete_data\n\n\ndef test_real_time_integration():\n    """Test the real-time odds integration."""\n    print("🧪 Testing Real-Time Odds Integration")\n    print("=" * 50)\n    \n    integrator = RealTimeOddsIntegrator()\n    \n    # Test odds fetching (will use simulated since no API key in demo)\n    print("\\n1. Testing odds fetching:")\n    odds = integrator.get_current_nba_odds()\n    print(f"Found odds for {len(odds)} games")\n    \n    # Test complete integration\n    print("\\n2. Testing complete integration:")\n    try:\n        complete_data = integrator.get_games_with_odds()\n        print(f"Complete data for {len(complete_data)} games")\n        \n        if len(complete_data) > 0:\n            print("\\nSample game data:")\n            sample_cols = ['home_team', 'away_team', 'home_odds', 'away_odds']\n            available_cols = [col for col in sample_cols if col in complete_data.columns]\n            print(complete_data[available_cols].head())\n            \n    except Exception as e:\n        print(f"Integration test failed: {e}")\n    \n    print("\\n✅ Real-time integration test completed!")\n\n\nif __name__ == "__main__":\n    test_real_time_integration()
