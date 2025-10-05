@@ -185,4 +185,27 @@ class RealTimeOddsIntegrator:
         return games_with_odds
     
     def get_games_with_odds(self, target_date: date = None) -> pd.DataFrame:
-        """Get complete game data with current odds."""\n        from ingest.live_data_fetcher import LiveNBADataFetcher\n        \n        if target_date is None:\n            target_date = date.today()\n        \n        print(f"🏀 Getting complete game data for {target_date}...")\n        \n        # Get game schedule\n        fetcher = LiveNBADataFetcher()\n        games = fetcher.get_todays_games(target_date)\n        \n        if len(games) == 0:\n            print("📭 No games found for today")\n            return pd.DataFrame()\n        \n        # Get current odds\n        odds = self.get_current_nba_odds()\n        \n        # Merge games with odds\n        complete_data = self.merge_games_with_odds(games, odds)\n        \n        print(f"✅ Complete data ready for {len(complete_data)} games")\n        return complete_data\n\n\ndef test_real_time_integration():\n    """Test the real-time odds integration."""\n    print("🧪 Testing Real-Time Odds Integration")\n    print("=" * 50)\n    \n    integrator = RealTimeOddsIntegrator()\n    \n    # Test odds fetching (will use simulated since no API key in demo)\n    print("\\n1. Testing odds fetching:")\n    odds = integrator.get_current_nba_odds()\n    print(f"Found odds for {len(odds)} games")\n    \n    # Test complete integration\n    print("\\n2. Testing complete integration:")\n    try:\n        complete_data = integrator.get_games_with_odds()\n        print(f"Complete data for {len(complete_data)} games")\n        \n        if len(complete_data) > 0:\n            print("\\nSample game data:")\n            sample_cols = ['home_team', 'away_team', 'home_odds', 'away_odds']\n            available_cols = [col for col in sample_cols if col in complete_data.columns]\n            print(complete_data[available_cols].head())\n            \n    except Exception as e:\n        print(f"Integration test failed: {e}")\n    \n    print("\\n✅ Real-time integration test completed!")\n\n\nif __name__ == "__main__":\n    test_real_time_integration()
+        """Get complete game data with current odds."""
+        from ingest.live_data_fetcher import LiveNBADataFetcher
+        
+        if target_date is None:
+            target_date = date.today()
+        
+        print(f"🏀 Getting complete game data for {target_date}...")
+        
+        # Get game schedule
+        fetcher = LiveNBADataFetcher()
+        games = fetcher.get_todays_games(target_date)
+        
+        if len(games) == 0:
+            print("📭 No games found for today")
+            return pd.DataFrame()
+        
+        # Get current odds
+        odds = self.get_current_nba_odds()
+        
+        # Merge games with odds
+        complete_data = self.merge_games_with_odds(games, odds)
+        
+        print(f"✅ Complete data ready for {len(complete_data)} games")
+        return complete_data\n\n\ndef test_real_time_integration():\n    """Test the real-time odds integration."""\n    print("🧪 Testing Real-Time Odds Integration")\n    print("=" * 50)\n    \n    integrator = RealTimeOddsIntegrator()\n    \n    # Test odds fetching (will use simulated since no API key in demo)\n    print("\\n1. Testing odds fetching:")\n    odds = integrator.get_current_nba_odds()\n    print(f"Found odds for {len(odds)} games")\n    \n    # Test complete integration\n    print("\\n2. Testing complete integration:")\n    try:\n        complete_data = integrator.get_games_with_odds()\n        print(f"Complete data for {len(complete_data)} games")\n        \n        if len(complete_data) > 0:\n            print("\\nSample game data:")\n            sample_cols = ['home_team', 'away_team', 'home_odds', 'away_odds']\n            available_cols = [col for col in sample_cols if col in complete_data.columns]\n            print(complete_data[available_cols].head())\n            \n    except Exception as e:\n        print(f"Integration test failed: {e}")\n    \n    print("\\n✅ Real-time integration test completed!")\n\n\nif __name__ == "__main__":\n    test_real_time_integration()
