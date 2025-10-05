@@ -238,4 +238,8 @@ def test_real_time_integration():
     except Exception as e:
         print(f"Integration test failed: {e}")
     
-    print("\n✅ Real-time integration test completed!")\n\n\nif __name__ == "__main__":\n    test_real_time_integration()
+    print("\n✅ Real-time integration test completed!")
+
+
+if __name__ == "__main__":
+    test_real_time_integration()
