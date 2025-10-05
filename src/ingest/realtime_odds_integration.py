@@ -209,37 +209,3 @@ class RealTimeOddsIntegrator:
         
         print(f"✅ Complete data ready for {len(complete_data)} games")
         return complete_data
-
-
-def test_real_time_integration():
-    """Test the real-time odds integration."""
-    print("🧪 Testing Real-Time Odds Integration")
-    print("=" * 50)
-    
-    integrator = RealTimeOddsIntegrator()
-    
-    # Test odds fetching (will use simulated since no API key in demo)
-    print("\n1. Testing odds fetching:")
-    odds = integrator.get_current_nba_odds()
-    print(f"Found odds for {len(odds)} games")
-    
-    # Test complete integration
-    print("\n2. Testing complete integration:")
-    try:
-        complete_data = integrator.get_games_with_odds()
-        print(f"Complete data for {len(complete_data)} games")
-        
-        if len(complete_data) > 0:
-            print("\nSample game data:")
-            sample_cols = ['home_team', 'away_team', 'home_odds', 'away_odds']
-            available_cols = [col for col in sample_cols if col in complete_data.columns]
-            print(complete_data[available_cols].head())
-            
-    except Exception as e:
-        print(f"Integration test failed: {e}")
-    
-    print("\n✅ Real-time integration test completed!")
-
-
-if __name__ == "__main__":
-    test_real_time_integration()
