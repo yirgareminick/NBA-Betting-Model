@@ -75,9 +75,7 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         if isinstance(col, tuple) else str(col).strip().replace(" ", "_").lower()
         for col in pd_df.columns
     ]
-    print("[debug] Flattened columns:", pd_df.columns.tolist())
     df = pl.from_pandas(pd_df)
-    print(f"[debug] Parsed dataframe shape: {df.shape}")
     return df
 
 def fetch_season(season: int) -> pl.DataFrame:

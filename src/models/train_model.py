@@ -83,14 +83,33 @@ class NBAModelTrainer:
         
         return X, y
         
-    def train_model(self, X: pd.DataFrame, y: pd.Series) -> dict:
-        """Train the model and return metrics."""
+    def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None, 
+                   use_temporal_split: bool = True) -> dict:
+        """Train the model and return metrics with proper temporal validation."""
         print("🤖 Training Random Forest model...")
         
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42, stratify=y
-        )
+        if use_temporal_split and df is not None and 'game_date' in df.columns:
+            # Temporal split to prevent data leakage
+            print("📅 Using temporal train/test split...")
+            df_sorted = df.sort_values('game_date').reset_index(drop=True)
+            split_idx = int(len(df_sorted) * 0.8)  # 80% for training
+            
+            train_mask = np.arange(len(df_sorted)) < split_idx
+            test_mask = np.arange(len(df_sorted)) >= split_idx
+            
+            X_train, X_test = X.iloc[train_mask], X.iloc[test_mask]
+            y_train, y_test = y.iloc[train_mask], y.iloc[test_mask]
+            
+            train_dates = df_sorted.iloc[train_mask]['game_date']
+            test_dates = df_sorted.iloc[test_mask]['game_date']
+            print(f"   Train: {len(X_train):,} games ({train_dates.min().date()} to {train_dates.max().date()})")
+            print(f"   Test:  {len(X_test):,} games ({test_dates.min().date()} to {test_dates.max().date()})")
+        else:
+            # Fallback to random split (with warning)
+            print("⚠️  Using random train/test split (may cause data leakage)")
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42, stratify=y
+            )
         
         # Train model
         self.model = RandomForestClassifier(
@@ -170,7 +189,7 @@ class NBAModelTrainer:
         
         return model_file, metadata_file
         
-    def train_and_save(self) -> dict:
+    def train_and_save(self, use_temporal_split: bool = True) -> dict:
         """Complete training pipeline."""
         print("=" * 80)
         print("🏀 NBA MODEL TRAINING PIPELINE")
@@ -182,8 +201,8 @@ class NBAModelTrainer:
         # Prepare data
         X, y = self.prepare_training_data(df)
         
-        # Train model
-        metrics = self.train_model(X, y)
+        # Train model with temporal validation
+        metrics = self.train_model(X, y, df, use_temporal_split)
         
         # Save model
         model_file, metadata_file = self.save_model(metrics)
