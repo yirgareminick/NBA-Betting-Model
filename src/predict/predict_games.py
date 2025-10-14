@@ -194,7 +194,6 @@ class NBAPredictor:
                 for key in ['win_pct_last_10', 'win_pct_last_5', 'season_win_pct']:
                     features[key] = max(0.0, min(1.0, features[key]))
                 
-                print(f"✓ Generated real features for {team} ({'home' if is_home else 'away'})")
                 return features
                 
         except Exception as e:
@@ -276,7 +275,6 @@ class NBAPredictor:
             'season_avg_pts_allowed': profile['pts_allowed'],
         }
         
-        print(f"✓ Used historical averages for {team} ({'home' if is_home else 'away'})")
         return features
     
     def _calculate_rest_days(self, team: str, game_date: date) -> int:
