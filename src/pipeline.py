@@ -76,7 +76,8 @@ def push_picks(report):
     recommended_bets = report.get('recommended_bets', 0)
     if recommended_bets > 0:
         print(f"Would push {recommended_bets} betting recommendations to external systems")
-        # Implementation: Add notification/API integrations as needed
+        # TODO: Implement actual notification/API calls
+        # Examples: Slack webhook, email, betting platform API
     else:
         print("No betting recommendations to push")
     return report

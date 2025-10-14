@@ -266,4 +266,34 @@ class LiveNBADataFetcher:
         return pd.DataFrame()
 
 
+def test_live_data_fetcher():
+    """Test function for the live data fetcher."""
+    print("🧪 Testing Live NBA Data Fetcher")
+    print("=" * 50)
+    
+    fetcher = LiveNBADataFetcher()
+    
+    # Test today's games
+    print("\n1. Testing today's games:")
+    todays_games = fetcher.get_todays_games()
+    print(f"Found {len(todays_games)} games today")
+    if len(todays_games) > 0:
+        print(todays_games[['home_team', 'away_team', 'game_status']].head())
+    
+    # Test team stats
+    print("\n2. Testing team stats:")
+    if len(todays_games) > 0:
+        team = todays_games.iloc[0]['home_team']
+        stats = fetcher.get_recent_team_stats(team)
+        print(f"{team} recent stats: {stats}")
+    
+    # Test upcoming schedule
+    print("\n3. Testing 3-day schedule:")
+    schedule = fetcher.get_season_schedule(days_ahead=3)
+    print(f"Found {len(schedule)} games in next 3 days")
+    
+    print("\n✅ Live data fetcher test completed!")
 
+
+if __name__ == "__main__":
+    test_live_data_fetcher()

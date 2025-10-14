@@ -228,15 +228,17 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,visualstudiocode
 .env
 
-# Large data files
-data/raw/nba.sqlite
-data/processed/games_2024_2025.csv
-data/processed/games_2025_2025.csv
-*.joblib
-models/*.joblib
-
-# Data directories
+# Data files and models
 data/
 models/
-*.png
+output.png
+*.joblib
+*.parquet
 *.db
+*.sqlite
+
+# Temporary analysis files
+*_analysis.md
+SOLUTION_SUMMARY.md
+fix_temporal_training.py
+clean_temporal_training.py
