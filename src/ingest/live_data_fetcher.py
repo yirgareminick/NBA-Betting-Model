@@ -264,6 +264,3 @@ class LiveNBADataFetcher:
             return schedule_df
         
         return pd.DataFrame()
-
-
-
