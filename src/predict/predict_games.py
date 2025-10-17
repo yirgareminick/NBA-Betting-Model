@@ -80,7 +80,7 @@ class NBAPredictor:
                 fetcher = LiveNBADataFetcher()
                 games = fetcher.get_todays_games(target_date)
                 
-                if len(games) > 0:
+                if not games.empty:
                     # Add current betting odds
                     games = fetcher.add_current_odds(games)
                     print(f"✅ Found {len(games)} real games using NBA API")
@@ -424,7 +424,7 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     # Get upcoming games
     games = predictor.get_upcoming_games(target_date)
     
-    if len(games) == 0:
+    if games.empty:
         print("📭 No games found for prediction")
         return pd.DataFrame()
     
