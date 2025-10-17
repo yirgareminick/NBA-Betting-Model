@@ -48,7 +48,7 @@ class DailyReportGenerator:
         # Get predictions
         predictions = predict_daily_games(target_date)
         
-        if len(predictions) == 0:
+        if predictions.empty:
             return self._generate_empty_report(target_date)
         
         # Calculate betting recommendations
