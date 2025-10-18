@@ -228,9 +228,11 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,visualstudiocode
 .env
 
-# Data files and models
+# Data files and model artifacts
 data/
-models/
+models/*.joblib
+models/*.pkl
+models/*_metadata.yml
 output.png
 *.joblib
 *.parquet
