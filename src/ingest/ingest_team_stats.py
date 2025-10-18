@@ -15,7 +15,7 @@ RAW_DIR.mkdir(parents=True, exist_ok=True)
 def fetch_bbref_table(season: int) -> pl.DataFrame:
     url = f"https://www.basketball-reference.com/leagues/NBA_{season}_ratings.html"
     print(f"[fetch] Requesting: {url}")
-    
+
     # Add headers to avoid 403 errors
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
@@ -34,11 +34,11 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         'Upgrade-Insecure-Requests': '1',
         'Connection': 'keep-alive'
     }
-    
+
     # Add a small delay to avoid rate limiting
     import time
     time.sleep(2)
-    
+
     try:
         resp = requests.get(url, timeout=15, headers=headers)
         resp.raise_for_status()
@@ -80,13 +80,13 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
 
 def fetch_season(season: int) -> pl.DataFrame:
     csv_path = RAW_DIR / f"team_stats_{season}.csv"
-    
+
     # Check if file already exists and is recent (within 7 days)
     if csv_path.exists():
         try:
             from datetime import datetime, timedelta
             file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
-            
+
             if file_age < timedelta(days=7):
                 print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
                 try:
@@ -112,7 +112,7 @@ def fetch_season(season: int) -> pl.DataFrame:
         return df
     except Exception as e:
         print(f"[error] Failed to fetch season {season}: {e}")
-        
+
         # Fallback to existing file if scraping fails
         if csv_path.exists():
             print(f"[fallback] Using existing {csv_path} as fallback")
@@ -123,10 +123,10 @@ def fetch_season(season: int) -> pl.DataFrame:
 
 def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
     print(f"[start] Pulling team stats for seasons: {seasons}")
-    
+
     all_data = []
     failed_seasons = []
-    
+
     for season in seasons:
         try:
             df = fetch_season(season)
@@ -135,13 +135,13 @@ def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
             print(f"[warning] Failed to fetch season {season}: {e}")
             failed_seasons.append(season)
             continue
-    
+
     if not all_data:
         raise ValueError(f"Failed to fetch data for all seasons: {failed_seasons}")
-    
+
     if failed_seasons:
         print(f"[warning] Some seasons failed: {failed_seasons}")
-        
+
     return pl.concat(all_data)
 
 if __name__ == "__main__":
