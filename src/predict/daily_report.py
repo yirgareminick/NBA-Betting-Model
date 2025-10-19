@@ -29,33 +29,33 @@ except ImportError as e:
 
 class DailyReportGenerator:
     """Generates daily betting reports with predictions and recommendations."""
-    
+
     def __init__(self, bankroll: float = 10000):
         self.bankroll = bankroll
         self.project_root = Path(__file__).parent.parent.parent
         self.reports_dir = self.project_root / "reports"
         self.reports_dir.mkdir(exist_ok=True)
-        
+
     def generate_daily_report(self, target_date: date = None) -> Dict:
         """Generate complete daily betting report."""
         if target_date is None:
             target_date = date.today()
-        
+
         print("=" * 80)
         print(f"📊 GENERATING DAILY REPORT - {target_date}")
         print("=" * 80)
-        
+
         # Get predictions
         predictions = predict_daily_games(target_date)
-        
+
         if predictions.empty:
             return self._generate_empty_report(target_date)
-        
+
         # Calculate betting recommendations
         betting_recommendations, simulation_results = calculate_daily_bets(
             predictions, self.bankroll
         )
-        
+
         # Generate report data
         report_data = {
             'date': target_date.isoformat(),
@@ -68,19 +68,19 @@ class DailyReportGenerator:
             'games': self._format_games_data(betting_recommendations),
             'summary': self._generate_summary(betting_recommendations, simulation_results)
         }
-        
+
         # Save reports
         self._save_json_report(report_data, target_date)
         self._save_html_report(report_data, target_date)
         self._save_csv_data(betting_recommendations, target_date)
-        
+
         print("=" * 80)
         print("✅ DAILY REPORT COMPLETED")
         print(f"📁 Reports saved to: {self.reports_dir}")
         print("=" * 80)
-        
+
         return report_data
-    
+
     def _generate_empty_report(self, target_date: date) -> Dict:
         """Generate report when no games are available."""
         return {
@@ -93,11 +93,11 @@ class DailyReportGenerator:
             'games': [],
             'summary': 'No games available for betting today.'
         }
-    
+
     def _format_games_data(self, betting_df: pd.DataFrame) -> list:
         """Format games data for report."""
         games_data = []
-        
+
         for _, row in betting_df.iterrows():
             game_data = {
                 'matchup': f"{row['away_team']} @ {row['home_team']}",
@@ -114,19 +114,19 @@ class DailyReportGenerator:
                 'expected_value': f"${row['expected_value']:.2f}"
             }
             games_data.append(game_data)
-        
+
         return games_data
-    
+
     def _generate_summary(self, betting_df: pd.DataFrame, simulation_results: Dict) -> str:
         """Generate text summary of daily recommendations."""
         total_games = len(betting_df)
         recommended_bets = betting_df['recommended_bet'].sum()
         total_stake = betting_df['stake_amount'].sum()
         expected_value = betting_df['expected_value'].sum()
-        
+
         if recommended_bets == 0:
             return "No betting opportunities identified today. All games lack sufficient edge."
-        
+
         summary_lines = [
             f"Daily Analysis Summary:",
             f"• {recommended_bets} of {total_games} games meet betting criteria",
@@ -135,39 +135,39 @@ class DailyReportGenerator:
             f"• Probability of profit: {simulation_results['prob_profit']:.1%}",
             f"• Expected return range: ${simulation_results['percentile_5']:,.2f} to ${simulation_results['percentile_95']:,.2f}"
         ]
-        
+
         return "\n".join(summary_lines)
-    
+
     def _save_json_report(self, report_data: Dict, target_date: date):
         """Save report as JSON file."""
         filename = f"daily_report_{target_date.strftime('%Y%m%d')}.json"
         filepath = self.reports_dir / filename
-        
+
         with open(filepath, 'w') as f:
             json.dump(report_data, f, indent=2, default=str)
-        
+
         print(f"💾 JSON report saved: {filepath}")
-    
+
     def _save_html_report(self, report_data: Dict, target_date: date):
         """Save report as HTML file."""
         html_content = self._generate_html_report(report_data)
-        
+
         filename = f"daily_report_{target_date.strftime('%Y%m%d')}.html"
         filepath = self.reports_dir / filename
-        
+
         with open(filepath, 'w') as f:
             f.write(html_content)
-        
+
         print(f"🌐 HTML report saved: {filepath}")
-    
+
     def _save_csv_data(self, betting_df: pd.DataFrame, target_date: date):
         """Save detailed betting data as CSV."""
         filename = f"betting_data_{target_date.strftime('%Y%m%d')}.csv"
         filepath = self.reports_dir / filename
-        
+
         betting_df.to_csv(filepath, index=False)
         print(f"📊 CSV data saved: {filepath}")
-    
+
     def _generate_html_report(self, report_data: Dict) -> str:
         """Generate HTML report content."""
         html_template = """
@@ -193,7 +193,7 @@ class DailyReportGenerator:
         <h2>Date: {date}</h2>
         <p><strong>Bankroll:</strong> ${bankroll:,.2f}</p>
     </div>
-    
+
     <div class="summary">
         <h3>Daily Summary</h3>
         <p><strong>Total Games:</strong> {total_games}</p>
@@ -201,12 +201,12 @@ class DailyReportGenerator:
         <p><strong>Total Stake:</strong> ${total_stake:,.2f}</p>
         <p><strong>Expected Value:</strong> ${expected_value:,.2f}</p>
     </div>
-    
+
     {simulation_section}
-    
+
     <h3>Game Analysis</h3>
     {games_table}
-    
+
     <div style="margin-top: 30px; font-size: 0.9em; color: #666;">
         <p>Generated on {timestamp}</p>
         <p>This report is for informational purposes only. Please gamble responsibly.</p>
@@ -214,7 +214,7 @@ class DailyReportGenerator:
 </body>
 </html>
         """
-        
+
         # Generate simulation section
         if 'simulation_results' in report_data:
             sim = report_data['simulation_results']
@@ -229,7 +229,7 @@ class DailyReportGenerator:
             """
         else:
             simulation_section = ""
-        
+
         # Generate games table
         if report_data['games']:
             table_rows = []
@@ -247,7 +247,7 @@ class DailyReportGenerator:
                 </tr>
                 """
                 table_rows.append(row)
-            
+
             games_table = f"""
             <table class="games-table">
                 <thead>
@@ -268,7 +268,7 @@ class DailyReportGenerator:
             """
         else:
             games_table = "<p>No games available today.</p>"
-        
+
         return html_template.format(
             date=report_data['date'],
             bankroll=report_data['bankroll'],
