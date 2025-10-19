@@ -29,18 +29,18 @@ def ingest_raw(run_date: date):
         return df
     else:
         raise Exception("Failed to ingest games data")
-        
+
 @task
-def build_features(df): 
+def build_features(df):
     """Build features from ingested data."""
     print("Building features from ingested data...")
     feature_engineer = FeatureEngineer()
     features = feature_engineer.build_features()
     print(f"Features built: {len(features)} records with {len(features.columns)} columns")
     return features
-    
+
 @task
-def train_model(feats): 
+def train_model(feats):
     """Train NBA prediction model."""
     print("Training NBA prediction model...")
     trainer = NBAModelTrainer()
@@ -71,7 +71,7 @@ def generate_report(run_date: date, bankroll: float = 10000):
     return report
 
 @task
-def push_picks(report): 
+def push_picks(report):
     """Push betting picks to external systems (placeholder)."""
     recommended_bets = report.get('recommended_bets', 0)
     if recommended_bets > 0:
@@ -106,7 +106,7 @@ def full_pipeline(run_date: date = date.today(), bankroll: float = 10000, retrai
         print("Running full pipeline with model retraining...")
         model_metrics = training_pipeline(run_date)
         print(f"Model retrained with accuracy: {model_metrics['test_accuracy']:.3f}")
-    
+
     # Always run daily predictions
     report = daily_prediction_pipeline(run_date, bankroll)
     return report
