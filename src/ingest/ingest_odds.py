@@ -103,6 +103,6 @@ if __name__ == "__main__":
     p.add_argument("--bookmakers", default=None, help="Specific bookmakers (csv keys)")
     p.add_argument("--out_csv", default=None, help="Optional output file path")
     args = p.parse_args()
-    
+
     df = pull_odds_to_csv(regions=args.regions, bookmakers=(args.bookmakers or "").split(","), out_csv=args.out_csv)
     print(df.head())
