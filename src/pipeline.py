@@ -13,6 +13,9 @@ from predict.daily_report import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
 
+# Constants
+DEFAULT_BANKROLL = 10000
+
 # ── Data ingestion and model training tasks ─────────────────────────
 @task
 def ingest_raw(run_date: date):
@@ -57,14 +60,14 @@ def generate_predictions(run_date: date):
     return predictions
 
 @task
-def calculate_bets(predictions, bankroll: float = 10000):
+def calculate_bets(predictions, bankroll: float = DEFAULT_BANKROLL):
     """Calculate optimal bet sizes using Kelly criterion."""
     print("Calculating optimal bet sizes...")
     betting_recommendations, simulation_results = calculate_daily_bets(predictions, bankroll)
     return betting_recommendations, simulation_results
 
 @task
-def generate_report(run_date: date, bankroll: float = 10000):
+def generate_report(run_date: date, bankroll: float = DEFAULT_BANKROLL):
     """Generate comprehensive daily betting report."""
     print("Generating daily betting report...")
     report = generate_daily_report(run_date, bankroll)
@@ -91,7 +94,7 @@ def training_pipeline(run_date: date = date.today()):
     return model_metrics
 
 @flow(name="nba-betting-daily")
-def daily_prediction_pipeline(run_date: date = date.today(), bankroll: float = 10000):
+def daily_prediction_pipeline(run_date: date = date.today(), bankroll: float = DEFAULT_BANKROLL):
     """Daily prediction and betting pipeline."""
     predictions = generate_predictions(run_date)
     betting_data, simulation = calculate_bets(predictions, bankroll)
@@ -100,7 +103,7 @@ def daily_prediction_pipeline(run_date: date = date.today(), bankroll: float = 1
     return report
 
 @flow(name="nba-betting-full")
-def full_pipeline(run_date: date = date.today(), bankroll: float = 10000, retrain: bool = False):
+def full_pipeline(run_date: date = date.today(), bankroll: float = DEFAULT_BANKROLL, retrain: bool = False):
     """Complete pipeline including optional model retraining."""
     if retrain:
         print("Running full pipeline with model retraining...")
