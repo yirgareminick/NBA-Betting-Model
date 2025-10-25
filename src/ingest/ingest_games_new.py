@@ -204,7 +204,7 @@ class NBADataIngestion:
             parsed = pd.to_datetime(series.iloc[:sample_size], errors='coerce')
             valid_dates = parsed.notna().sum()
             return valid_dates > 0  # At least one valid date
-        except:
+        except Exception:
             return False
 
     def _filter_by_year_column(self, df: pd.DataFrame, col: str, year_start: int, year_end: int) -> pd.DataFrame:
