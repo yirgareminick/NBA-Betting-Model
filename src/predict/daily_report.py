@@ -14,9 +14,14 @@ import yaml
 import json
 import sys
 
+"""
+
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root / "src"))
+
+# Constants
+DEFAULT_BANKROLL = 10000
 
 try:
     from predict.predict_games import predict_daily_games
@@ -30,7 +35,7 @@ except ImportError as e:
 class DailyReportGenerator:
     """Generates daily betting reports with predictions and recommendations."""
 
-    def __init__(self, bankroll: float = 10000):
+    def __init__(self, bankroll: float = DEFAULT_BANKROLL):
         self.bankroll = bankroll
         self.project_root = Path(__file__).parent.parent.parent
         self.reports_dir = self.project_root / "reports"
@@ -282,7 +287,7 @@ class DailyReportGenerator:
         )
 
 
-def generate_daily_report(target_date: date = None, bankroll: float = 10000) -> Dict:
+def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
     """Main function to generate daily betting report."""
     generator = DailyReportGenerator(bankroll)
     return generator.generate_daily_report(target_date)
