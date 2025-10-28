@@ -222,7 +222,7 @@ class DailyReportGenerator:
         # Generate simulation section
         if 'simulation_results' in report_data:
             sim = report_data['simulation_results']
-            simulation_section = '''
+            simulation_section_template = '''
             <div class="simulation">
                 <h3>Risk Analysis (1000 simulations)</h3>
                 <p><strong>Expected Return:</strong> ${mean_return:,.2f}</p>
@@ -230,7 +230,8 @@ class DailyReportGenerator:
                 <p><strong>5th Percentile:</strong> ${percentile_5:,.2f}</p>
                 <p><strong>95th Percentile:</strong> ${percentile_95:,.2f}</p>
             </div>
-            '''.format(
+            '''
+            simulation_section = simulation_section_template.format(
                 mean_return=sim['mean_return'],
                 prob_profit=sim['prob_profit'],
                 percentile_5=sim['percentile_5'],
@@ -244,7 +245,7 @@ class DailyReportGenerator:
             table_rows = []
             for game in report_data['games']:
                 row_class = "recommended" if game['recommended'] else "not-recommended"
-                row = '''
+                row_template = '''
                 <tr class="{row_class}">
                     <td>{matchup}</td>
                     <td>{predicted_winner}</td>
@@ -254,7 +255,8 @@ class DailyReportGenerator:
                     <td>{stake_amount}</td>
                     <td>{expected_value}</td>
                 </tr>
-                '''.format(
+                '''
+                row = row_template.format(
                     row_class=row_class,
                     matchup=game['matchup'],
                     predicted_winner=game['predicted_winner'],
@@ -287,6 +289,7 @@ class DailyReportGenerator:
             games_table = "<p>No games available today.</p>"
 
         return html_template.format(
+            css_styles=css_styles,
             date=report_data['date'],
             bankroll=report_data['bankroll'],
             total_games=report_data['total_games'],
