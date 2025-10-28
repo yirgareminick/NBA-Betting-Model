@@ -217,18 +217,25 @@ class DailyReportGenerator:
         <p>This report is for informational purposes only. Please gamble responsibly.</p>
     </div>
 </body>
-</html>'''        # Generate simulation section
+</html>'''
+
+        # Generate simulation section
         if 'simulation_results' in report_data:
             sim = report_data['simulation_results']
-            simulation_section = f"""
+            simulation_section = '''
             <div class="simulation">
                 <h3>Risk Analysis (1000 simulations)</h3>
-                <p><strong>Expected Return:</strong> ${sim['mean_return']:,.2f}</p>
-                <p><strong>Probability of Profit:</strong> {sim['prob_profit']:.1%}</p>
-                <p><strong>5th Percentile:</strong> ${sim['percentile_5']:,.2f}</p>
-                <p><strong>95th Percentile:</strong> ${sim['percentile_95']:,.2f}</p>
+                <p><strong>Expected Return:</strong> ${mean_return:,.2f}</p>
+                <p><strong>Probability of Profit:</strong> {prob_profit:.1%}</p>
+                <p><strong>5th Percentile:</strong> ${percentile_5:,.2f}</p>
+                <p><strong>95th Percentile:</strong> ${percentile_95:,.2f}</p>
             </div>
-            """
+            '''.format(
+                mean_return=sim['mean_return'],
+                prob_profit=sim['prob_profit'],
+                percentile_5=sim['percentile_5'],
+                percentile_95=sim['percentile_95']
+            )
         else:
             simulation_section = ""
 
@@ -237,21 +244,29 @@ class DailyReportGenerator:
             table_rows = []
             for game in report_data['games']:
                 row_class = "recommended" if game['recommended'] else "not-recommended"
-                row = f"""
+                row = '''
                 <tr class="{row_class}">
-                    <td>{game['matchup']}</td>
-                    <td>{game['predicted_winner']}</td>
-                    <td>{game['confidence']}</td>
-                    <td>{game['best_bet_team']}</td>
-                    <td>{game['best_bet_edge']}</td>
-                    <td>{game['stake_amount']}</td>
-                    <td>{game['expected_value']}</td>
+                    <td>{matchup}</td>
+                    <td>{predicted_winner}</td>
+                    <td>{confidence}</td>
+                    <td>{best_bet_team}</td>
+                    <td>{best_bet_edge}</td>
+                    <td>{stake_amount}</td>
+                    <td>{expected_value}</td>
                 </tr>
-                """
+                '''.format(
+                    row_class=row_class,
+                    matchup=game['matchup'],
+                    predicted_winner=game['predicted_winner'],
+                    confidence=game['confidence'],
+                    best_bet_team=game['best_bet_team'],
+                    best_bet_edge=game['best_bet_edge'],
+                    stake_amount=game['stake_amount'],
+                    expected_value=game['expected_value']
+                )
                 table_rows.append(row)
 
-            games_table = f"""
-            <table class="games-table">
+            games_table_template = '''<table class="games-table">
                 <thead>
                     <tr>
                         <th>Matchup</th>
@@ -264,10 +279,10 @@ class DailyReportGenerator:
                     </tr>
                 </thead>
                 <tbody>
-                    {''.join(table_rows)}
+                    {table_rows_content}
                 </tbody>
-            </table>
-            """
+            </table>'''
+            games_table = games_table_template.format(table_rows_content=''.join(table_rows))
         else:
             games_table = "<p>No games available today.</p>"
 
@@ -280,7 +295,7 @@ class DailyReportGenerator:
             expected_value=report_data['expected_value'],
             simulation_section=simulation_section,
             games_table=games_table,
-            timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            timestamp=report_data['timestamp']
         )
 
 
