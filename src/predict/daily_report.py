@@ -175,131 +175,42 @@ class DailyReportGenerator:
 
     def _generate_html_report(self, report_data: Dict) -> str:
         """Generate HTML report content."""
-        # Using separate CSS and HTML to avoid brace conflicts
-        css_styles = "body { font-family: Arial, sans-serif; margin: 20px; } " + \
-                    ".header { background-color: #f0f0f0; padding: 20px; border-radius: 5px; } " + \
-                    ".summary { margin: 20px 0; padding: 15px; background-color: #e8f4fd; border-radius: 5px; } " + \
-                    ".games-table { width: 100%; border-collapse: collapse; margin: 20px 0; } " + \
-                    ".games-table th, .games-table td { border: 1px solid #ddd; padding: 8px; text-align: center; } " + \
-                    ".games-table th { background-color: #f2f2f2; } " + \
-                    ".recommended { background-color: #d4edda; } " + \
-                    ".not-recommended { background-color: #f8d7da; } " + \
-                    ".simulation { margin: 20px 0; padding: 15px; background-color: #fff3cd; border-radius: 5px; }"
+        # Build HTML content programmatically to avoid syntax issues
+        html_lines = [
+            "<html>",
+            f"<head><title>NBA Betting Report - {report_data['date']}</title></head>",
+            "<body>",
+            "<h1>NBA Betting Report</h1>",
+            f"<h2>Date: {report_data['date']}</h2>",
+            f"<p><strong>Bankroll:</strong> ${report_data['bankroll']:,.2f}</p>",
+            "<h3>Summary</h3>",
+            f"<p>Total Games: {report_data['total_games']}</p>",
+            f"<p>Recommended Bets: {report_data['recommended_bets']}</p>",
+            f"<p>Total Stake: ${report_data['total_stake']:,.2f}</p>",
+            f"<p>Expected Value: ${report_data['expected_value']:,.2f}</p>",
+            "<h3>Games</h3>",
+            '<table border="1">',
+            "<tr><th>Matchup</th><th>Predicted Winner</th><th>Confidence</th><th>Recommended</th></tr>",
+        ]
         
-        html_template = '''<!DOCTYPE html>
-<html>
-<head>
-    <title>NBA Betting Report - {date}</title>
-    <style>{css_styles}</style>
-</head>
-<body>
-    <div class="header">
-        <h1>NBA Betting Report</h1>
-        <h2>Date: {date}</h2>
-        <p><strong>Bankroll:</strong> ${bankroll:,.2f}</p>
-    </div>
-
-    <div class="summary">
-        <h3>Daily Summary</h3>
-        <p><strong>Total Games:</strong> {total_games}</p>
-        <p><strong>Recommended Bets:</strong> {recommended_bets}</p>
-        <p><strong>Total Stake:</strong> ${total_stake:,.2f}</p>
-        <p><strong>Expected Value:</strong> ${expected_value:,.2f}</p>
-    </div>
-
-    {simulation_section}
-
-    <h3>Game Analysis</h3>
-    {games_table}
-
-    <div style="margin-top: 30px; font-size: 0.9em; color: #666;">
-        <p>Generated on {timestamp}</p>
-        <p>This report is for informational purposes only. Please gamble responsibly.</p>
-    </div>
-</body>
-</html>'''
-
-        # Generate simulation section
-        if 'simulation_results' in report_data:
-            sim = report_data['simulation_results']
-            simulation_section_template = '''
-            <div class="simulation">
-                <h3>Risk Analysis (1000 simulations)</h3>
-                <p><strong>Expected Return:</strong> ${mean_return:,.2f}</p>
-                <p><strong>Probability of Profit:</strong> {prob_profit:.1%}</p>
-                <p><strong>5th Percentile:</strong> ${percentile_5:,.2f}</p>
-                <p><strong>95th Percentile:</strong> ${percentile_95:,.2f}</p>
-            </div>
-            '''
-            simulation_section = simulation_section_template.format(
-                mean_return=sim['mean_return'],
-                prob_profit=sim['prob_profit'],
-                percentile_5=sim['percentile_5'],
-                percentile_95=sim['percentile_95']
+        for game in report_data.get('games', []):
+            html_lines.append(
+                f"<tr>"
+                f"<td>{game.get('matchup', 'N/A')}</td>"
+                f"<td>{game.get('predicted_winner', 'N/A')}</td>"
+                f"<td>{game.get('confidence', 'N/A')}</td>"
+                f"<td>{game.get('recommended', False)}</td>"
+                f"</tr>"
             )
-        else:
-            simulation_section = ""
-
-        # Generate games table
-        if report_data['games']:
-            table_rows = []
-            for game in report_data['games']:
-                row_class = "recommended" if game['recommended'] else "not-recommended"
-                row_template = '''
-                <tr class="{row_class}">
-                    <td>{matchup}</td>
-                    <td>{predicted_winner}</td>
-                    <td>{confidence}</td>
-                    <td>{best_bet_team}</td>
-                    <td>{best_bet_edge}</td>
-                    <td>{stake_amount}</td>
-                    <td>{expected_value}</td>
-                </tr>
-                '''
-                row = row_template.format(
-                    row_class=row_class,
-                    matchup=game['matchup'],
-                    predicted_winner=game['predicted_winner'],
-                    confidence=game['confidence'],
-                    best_bet_team=game['best_bet_team'],
-                    best_bet_edge=game['best_bet_edge'],
-                    stake_amount=game['stake_amount'],
-                    expected_value=game['expected_value']
-                )
-                table_rows.append(row)
-
-            games_table_template = '''<table class="games-table">
-                <thead>
-                    <tr>
-                        <th>Matchup</th>
-                        <th>Predicted Winner</th>
-                        <th>Confidence</th>
-                        <th>Best Bet</th>
-                        <th>Edge</th>
-                        <th>Stake</th>
-                        <th>Expected Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {table_rows_content}
-                </tbody>
-            </table>'''
-            games_table = games_table_template.format(table_rows_content=''.join(table_rows))
-        else:
-            games_table = "<p>No games available today.</p>"
-
-        return html_template.format(
-            css_styles=css_styles,
-            date=report_data['date'],
-            bankroll=report_data['bankroll'],
-            total_games=report_data['total_games'],
-            recommended_bets=report_data['recommended_bets'],
-            total_stake=report_data['total_stake'],
-            expected_value=report_data['expected_value'],
-            simulation_section=simulation_section,
-            games_table=games_table,
-            timestamp=report_data['timestamp']
-        )
+        
+        html_lines.extend([
+            "</table>",
+            f"<p>Generated on {report_data['timestamp']}</p>",
+            "</body>",
+            "</html>"
+        ])
+        
+        return "\n".join(html_lines)
 
 
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
