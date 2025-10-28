@@ -175,22 +175,22 @@ class DailyReportGenerator:
 
     def _generate_html_report(self, report_data: Dict) -> str:
         """Generate HTML report content."""
-        html_template = """
-<!DOCTYPE html>
+        # Using separate CSS and HTML to avoid brace conflicts
+        css_styles = "body { font-family: Arial, sans-serif; margin: 20px; } " + \
+                    ".header { background-color: #f0f0f0; padding: 20px; border-radius: 5px; } " + \
+                    ".summary { margin: 20px 0; padding: 15px; background-color: #e8f4fd; border-radius: 5px; } " + \
+                    ".games-table { width: 100%; border-collapse: collapse; margin: 20px 0; } " + \
+                    ".games-table th, .games-table td { border: 1px solid #ddd; padding: 8px; text-align: center; } " + \
+                    ".games-table th { background-color: #f2f2f2; } " + \
+                    ".recommended { background-color: #d4edda; } " + \
+                    ".not-recommended { background-color: #f8d7da; } " + \
+                    ".simulation { margin: 20px 0; padding: 15px; background-color: #fff3cd; border-radius: 5px; }"
+        
+        html_template = '''<!DOCTYPE html>
 <html>
 <head>
     <title>NBA Betting Report - {date}</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        .header {{ background-color: #f0f0f0; padding: 20px; border-radius: 5px; }}
-        .summary {{ margin: 20px 0; padding: 15px; background-color: #e8f4fd; border-radius: 5px; }}
-        .games-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-        .games-table th, .games-table td {{ border: 1px solid #ddd; padding: 8px; text-align: center; }}
-        .games-table th {{ background-color: #f2f2f2; }}
-        .recommended {{ background-color: #d4edda; }}
-        .not-recommended {{ background-color: #f8d7da; }}
-        .simulation {{ margin: 20px 0; padding: 15px; background-color: #fff3cd; border-radius: 5px; }}
-    </style>
+    <style>{css_styles}</style>
 </head>
 <body>
     <div class="header">
@@ -217,10 +217,7 @@ class DailyReportGenerator:
         <p>This report is for informational purposes only. Please gamble responsibly.</p>
     </div>
 </body>
-</html>
-        """
-
-        # Generate simulation section
+</html>'''        # Generate simulation section
         if 'simulation_results' in report_data:
             sim = report_data['simulation_results']
             simulation_section = f"""
