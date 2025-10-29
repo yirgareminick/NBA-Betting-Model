@@ -89,9 +89,16 @@ class FeatureEngineer:
         print(f"✓ Loaded {len(df):,} games from {df['game_date'].min()} to {df['game_date'].max()}")
         return df
 
-    def create_team_game_features(self, games_df: pl.DataFrame) -> pl.DataFrame:
+    def create_team_game_features(self, games_df) -> pl.DataFrame:
         """Create features by exploding games into team-level records"""
         print("🔧 Creating team-game features...")
+        
+        # Convert pandas DataFrame to polars if needed
+        if hasattr(games_df, 'columns') and not hasattr(games_df, 'select'):
+            # This is a pandas DataFrame, convert to polars
+            import pandas as pd
+            if isinstance(games_df, pd.DataFrame):
+                games_df = pl.from_pandas(games_df)
 
         # Create home team records
         home_games = games_df.select([

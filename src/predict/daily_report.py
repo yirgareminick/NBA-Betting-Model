@@ -214,7 +214,7 @@ class DailyReportGenerator:
 
 
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
-    """Main function to generate daily betting report."""
+    ""Main function to generate daily betting report.""
     generator = DailyReportGenerator(bankroll)
     return generator.generate_daily_report(target_date)
 
