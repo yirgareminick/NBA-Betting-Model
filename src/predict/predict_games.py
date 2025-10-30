@@ -120,7 +120,13 @@ class NBAPredictor:
                 return self._create_basic_features(games_df)
 
             feature_engineer = FeatureEngineer()
-            features = feature_engineer.create_team_game_features(games_df)
+            # Use the upcoming games method for prediction data (no historical results)
+            features = feature_engineer.create_upcoming_game_features(games_df)
+            
+            # Convert back to pandas for compatibility with the rest of the pipeline
+            if hasattr(features, 'to_pandas'):
+                features = features.to_pandas()
+            
             return features
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
