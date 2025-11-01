@@ -27,7 +27,7 @@ import json
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from predict.daily_report import generate_daily_report
+from predict.daily_report_simple import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
 from models.performance_tracker import PerformanceTracker, track_daily_performance
