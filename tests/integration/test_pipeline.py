@@ -17,7 +17,7 @@ import shutil
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
 
-from predict.daily_report_simple import generate_daily_report
+from predict.daily_report import generate_daily_report
 from models.performance_tracker import PerformanceTracker
 from stake.kelly_criterion import calculate_daily_bets
 
@@ -76,7 +76,7 @@ class TestIntegrationPipeline(unittest.TestCase):
         for key in required_sim_keys:
             self.assertIn(key, simulation_results)
     
-    @patch('predict.daily_report_simple.predict_daily_games')
+    @patch('predict.daily_report.predict_daily_games')
     @patch('stake.kelly_criterion.calculate_daily_bets')
     def test_daily_report_generation(self, mock_calculate_bets, mock_predict_games):
         """Test daily report generation."""
