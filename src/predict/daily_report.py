@@ -35,21 +35,25 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
 
 
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
-    """Generate a simple daily betting report."""
+    """Generate a daily betting report."""
     if target_date is None:
         target_date = date.today()
     
     print(f"📊 Generating daily report for {target_date}")
     
+    # Get daily games predictions
+    predictions = predict_daily_games(target_date)
+    total_games = len(predictions)
+    
     # Simple report structure
     report = {
         'date': target_date.strftime('%Y-%m-%d'),
         'bankroll': bankroll,
-        'total_games': 0,
+        'total_games': total_games,
         'recommended_bets': 0,
         'total_stake': 0.0,
         'expected_value': 0.0,
-        'games': [],
+        'games': predictions.to_dict('records') if not predictions.empty else [],
         'timestamp': date.today().strftime('%Y-%m-%d %H:%M:%S'),
         'summary': f"Daily report generated for {target_date}"
     }
