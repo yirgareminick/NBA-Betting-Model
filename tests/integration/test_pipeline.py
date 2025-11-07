@@ -97,8 +97,7 @@ class TestIntegrationPipeline(unittest.TestCase):
         mock_calculate_bets.return_value = (mock_betting_recommendations, mock_simulation)
         
         # Generate report
-        with patch('predict.daily_report.DailyReportGenerator.reports_dir', self.test_dir):
-            report = generate_daily_report(date.today(), self.bankroll)
+        report = generate_daily_report(date.today(), self.bankroll)
         
         # Verify report structure
         self.assertIsInstance(report, dict)
