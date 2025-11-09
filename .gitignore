@@ -244,3 +244,9 @@ output.png
 SOLUTION_SUMMARY.md
 fix_temporal_training.py
 clean_temporal_training.py
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Additional patterns for cleanup
+*.pkl
