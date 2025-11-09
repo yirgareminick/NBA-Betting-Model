@@ -36,6 +36,8 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
 
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
     """Generate a daily betting report."""
+    from stake.kelly_criterion import calculate_daily_bets
+    
     if target_date is None:
         target_date = date.today()
     
@@ -45,14 +47,30 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
     predictions = predict_daily_games(target_date)
     total_games = len(predictions)
     
+    # Initialize default values
+    recommended_bets = 0
+    total_stake = 0.0
+    expected_value = 0.0
+    
+    # Calculate betting recommendations if we have predictions
+    if not predictions.empty:
+        try:
+            betting_recommendations, simulation_results = calculate_daily_bets(predictions, bankroll)
+            recommended_bets = betting_recommendations['recommended_bet'].sum()
+            total_stake = betting_recommendations['stake_amount'].sum()
+            expected_value = betting_recommendations['expected_value'].sum()
+        except Exception:
+            # If calculation fails, keep defaults
+            pass
+    
     # Simple report structure
     report = {
         'date': target_date.strftime('%Y-%m-%d'),
         'bankroll': bankroll,
         'total_games': total_games,
-        'recommended_bets': 0,
-        'total_stake': 0.0,
-        'expected_value': 0.0,
+        'recommended_bets': recommended_bets,
+        'total_stake': total_stake,
+        'expected_value': expected_value,
         'games': predictions.to_dict('records') if not predictions.empty else [],
         'timestamp': date.today().strftime('%Y-%m-%d %H:%M:%S'),
         'summary': f"Daily report generated for {target_date}"
