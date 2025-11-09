@@ -3,7 +3,6 @@ Daily betting report generator.
 """
 from datetime import date
 from typing import Dict
-from pathlib import Path
 import pandas as pd
 
 # Default bankroll constant
