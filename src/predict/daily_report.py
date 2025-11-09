@@ -4,33 +4,10 @@ Daily betting report generator.
 from datetime import date
 from typing import Dict
 import pandas as pd
+from .predict_games import predict_daily_games
 
 # Default bankroll constant
 DEFAULT_BANKROLL = 10000
-
-
-def predict_daily_games(target_date: date = None) -> pd.DataFrame:
-    """Simple function to get daily games for testing."""
-    if target_date is None:
-        target_date = date.today()
-    
-    # Return empty DataFrame for testing
-    return pd.DataFrame({
-        'game_id': [],
-        'game_date': [],
-        'home_team': [],
-        'away_team': [],
-        'home_prob': [],
-        'away_prob': [],
-        'predicted_winner': [],
-        'confidence': [],
-        'home_odds': [],
-        'away_odds': [],
-        'best_bet_team': [],
-        'best_bet_edge': [],
-        'best_bet_prob': [],
-        'best_bet_odds': []
-    })
 
 
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
