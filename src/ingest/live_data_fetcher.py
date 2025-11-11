@@ -67,11 +67,32 @@ class LiveNBADataFetcher:
             board = scoreboard.ScoreBoard()
             games_data = board.get_dict()
 
+            # Debug: Print total games available
+            total_games = len(games_data['scoreboard']['games'])
+            print(f"🔍 Total games in NBA API response: {total_games}")
+            
+            if total_games > 0:
+                # Debug: Show raw timestamps and timezone-corrected dates
+                for i, game in enumerate(games_data['scoreboard']['games'][:5]):  # Show first 5
+                    raw_time = game['gameTimeUTC']
+                    utc_time = datetime.strptime(game['gameTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
+                    eastern_offset = timedelta(hours=5)
+                    local_time = utc_time - eastern_offset
+                    local_date = local_time.date()
+                    game_status = game.get('gameStatus', 'Unknown')
+                    print(f"   Game {i+1}: UTC: {raw_time}, Local date: {local_date}, Status: {game_status}")
+
             games = []
             for game in games_data['scoreboard']['games']:
-                game_date = datetime.strptime(
-                    game['gameTimeUTC'][:10], '%Y-%m-%d'
-                ).date()
+                # Parse full UTC timestamp
+                utc_time = datetime.strptime(game['gameTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
+                
+                # Convert to US Eastern time (typical NBA scheduling timezone)
+                # For simplicity, assume Eastern time (UTC-5 or UTC-4 depending on DST)
+                # Most NBA games are scheduled for evening in Eastern time
+                eastern_offset = timedelta(hours=5)  # Approximate for Eastern Standard Time
+                local_time = utc_time - eastern_offset
+                game_date = local_time.date()
 
                 if game_date == target_date:
                     home_team = game['homeTeam']['teamTricode']
@@ -112,6 +133,10 @@ class LiveNBADataFetcher:
 
             data = response.json()
             games = []
+
+            # Debug: Show ESPN response info
+            total_events = len(data.get('events', []))
+            print(f"🔍 ESPN API returned {total_events} events")
 
             for event in data.get('events', []):
                 competitions = event.get('competitions', [{}])
@@ -264,3 +289,28 @@ class LiveNBADataFetcher:
             return schedule_df
 
         return pd.DataFrame()
+
+
+# CLI entry point for direct testing
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Fetch NBA games for a given date")
+    parser.add_argument('--date', type=str, help='Date in YYYY-MM-DD format', default=None)
+    args = parser.parse_args()
+
+    if args.date:
+        try:
+            target_date = datetime.strptime(args.date, "%Y-%m-%d").date()
+        except Exception as e:
+            print(f"Invalid date format: {e}")
+            target_date = date.today()
+    else:
+        target_date = date.today()
+
+    fetcher = LiveNBADataFetcher()
+    games_df = fetcher.get_todays_games(target_date)
+    if not games_df.empty:
+        print(f"\nNBA Games for {target_date}:")
+        print(games_df)
+    else:
+        print(f"No NBA games found for {target_date}.")
