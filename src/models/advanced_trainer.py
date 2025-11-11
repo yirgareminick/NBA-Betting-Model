@@ -56,7 +56,27 @@ class AdvancedNBAModelTrainer:
         self.model_dir.mkdir(exist_ok=True)
 
     def _load_default_config(self) -> Dict:
-        """Load default model configuration."""
+        """Load default model configuration from YAML file."""
+        config_file = self.project_root / "configs" / "model.yml"
+        
+        if config_file.exists():
+            try:
+                with open(config_file, 'r') as f:
+                    config = yaml.safe_load(f)
+                
+                # Extract model-specific config and add defaults for advanced training
+                model_config = config.get('model', {})
+                model_config.update({
+                    'algorithms': ['random_forest', 'xgboost', 'lightgbm'],
+                    'ensemble': True,
+                    'hyperparameter_tuning': True,
+                })
+                
+                return model_config
+            except Exception as e:
+                print(f"Warning: Failed to load config from {config_file}: {e}")
+        
+        # Fallback to hardcoded defaults
         return {
             'algorithms': ['random_forest', 'xgboost', 'lightgbm'],
             'ensemble': True,
