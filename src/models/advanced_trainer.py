@@ -397,30 +397,32 @@ class AdvancedNBAModelTrainer:
         model_file = self.model_dir / f"nba_model_{model_name}_{timestamp}.joblib"
         joblib.dump(model, model_file)
 
-        # Clean metrics for YAML serialization (remove sklearn objects)
-        clean_metrics = {}
-        for key, value in metrics.items():
-            if isinstance(value, dict):
-                clean_value = {}
-                for k, v in value.items():
-                    if k != 'model':  # Skip sklearn model objects
-                        clean_value[k] = v
-                clean_metrics[key] = clean_value
-            else:
-                clean_metrics[key] = value
+        # Extract only essential metrics (no sklearn objects)
+        essential_metrics = {
+            'best_model': metrics.get('best_model', model_name),
+            'test_accuracy': 0.0,  # Will be set from individual model metrics
+            'ensemble_used': metrics.get('ensemble_used', False)
+        }
+        
+        # Get test accuracy from the best model
+        if 'individual_models' in metrics and model_name in metrics['individual_models']:
+            model_metrics = metrics['individual_models'][model_name]
+            if 'test_accuracy' in model_metrics:
+                essential_metrics['test_accuracy'] = model_metrics['test_accuracy']
+            elif 'cv_mean' in model_metrics:
+                essential_metrics['test_accuracy'] = model_metrics['cv_mean']
 
-        # Save metadata
+        # Save metadata (only essential info, no sklearn objects)
         metadata = {
             'created_at': datetime.now().isoformat(),
             'model_file': str(model_file),
             'model_type': model_name,
             'feature_columns': self.feature_columns,
-            'metrics': clean_metrics,
-            'config': self.config,
-            'available_libraries': {
-                'xgboost': XGBOOST_AVAILABLE,
-                'lightgbm': LIGHTGBM_AVAILABLE,
-                'neural_network': NEURAL_NET_AVAILABLE
+            'metrics': essential_metrics,
+            'config': {
+                'test_size': self.config.get('test_size', 0.2),
+                'cv_folds': self.config.get('cv_folds', 5),
+                'random_state': self.config.get('random_state', 42)
             }
         }
 
