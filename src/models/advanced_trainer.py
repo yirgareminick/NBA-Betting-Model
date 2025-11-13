@@ -397,13 +397,25 @@ class AdvancedNBAModelTrainer:
         model_file = self.model_dir / f"nba_model_{model_name}_{timestamp}.joblib"
         joblib.dump(model, model_file)
 
+        # Clean metrics for YAML serialization (remove sklearn objects)
+        clean_metrics = {}
+        for key, value in metrics.items():
+            if isinstance(value, dict):
+                clean_value = {}
+                for k, v in value.items():
+                    if k != 'model':  # Skip sklearn model objects
+                        clean_value[k] = v
+                clean_metrics[key] = clean_value
+            else:
+                clean_metrics[key] = value
+
         # Save metadata
         metadata = {
             'created_at': datetime.now().isoformat(),
             'model_file': str(model_file),
             'model_type': model_name,
             'feature_columns': self.feature_columns,
-            'metrics': metrics,
+            'metrics': clean_metrics,
             'config': self.config,
             'available_libraries': {
                 'xgboost': XGBOOST_AVAILABLE,
