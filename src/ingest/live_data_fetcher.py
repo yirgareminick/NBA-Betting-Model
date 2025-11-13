@@ -104,6 +104,20 @@ class LiveNBADataFetcher:
 
         return games_with_odds
 
+    def get_recent_team_stats(self, team_abbreviation: str, games_count: int = 10) -> dict:
+        """Return default team stats (removed detailed implementation for simplicity)."""
+        return {
+            'games_played': games_count,
+            'avg_pts': 115.0,
+            'avg_pts_allowed': 112.0,
+            'avg_rebounds': 44.0,
+            'avg_assists': 26.0,
+            'avg_fg_pct': 0.460,
+            'avg_3p_pct': 0.360,
+            'win_pct': 0.500,
+            'last_game_date': None
+        }
+
 
 # CLI entry point for direct testing
 if __name__ == "__main__":

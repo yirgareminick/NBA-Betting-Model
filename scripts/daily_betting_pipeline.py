@@ -105,7 +105,10 @@ class DailyBettingPipeline:
                 training_config = {
                     'algorithms': ['random_forest', 'xgboost', 'lightgbm'],
                     'ensemble': True,
-                    'hyperparameter_tuning': False  # Skip for daily runs
+                    'hyperparameter_tuning': False,  # Skip for daily runs
+                    'test_size': 0.2,
+                    'cv_folds': 5,
+                    'random_state': 42
                 }
                 
                 metrics = train_advanced_model(training_config)
