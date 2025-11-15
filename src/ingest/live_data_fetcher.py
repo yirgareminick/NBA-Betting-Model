@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Live NBA Data Fetcher
-
-Fetches NBA game schedules from NBA API with ESPN fallback.
-"""
-
 import pandas as pd
 import numpy as np
 import requests
