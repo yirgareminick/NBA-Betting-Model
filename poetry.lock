@@ -1577,14 +1577,14 @@ files = [
 
 [[package]]
 name = "nba-api"
-version = "1.10.2"
+version = "1.11.3"
 description = "An API Client package to access the APIs for NBA.com"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "nba_api-1.10.2-py3-none-any.whl", hash = "sha256:9aecc454aa54e273ce28f861b3f3d81ee557b3967adf4d97894dc49dbbe331b8"},
-    {file = "nba_api-1.10.2.tar.gz", hash = "sha256:68ca205459e0e09ad633ef15c9417c14049d8ca196097a716317d82f71eb3815"},
+    {file = "nba_api-1.11.3-py3-none-any.whl", hash = "sha256:3a77ec8474446a4289b449c147dd64f9150c07890b8200a25b7da057d738f184"},
+    {file = "nba_api-1.11.3.tar.gz", hash = "sha256:24e98a91561a6a2b6380ae811b3962bdb9574eb91f52c3873c38709160551c09"},
 ]
 
 [package.dependencies]
@@ -3936,4 +3936,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "390a27d0538d36191e21361b2037fa820d215c780644b0bdae3429dd8474659d"
+content-hash = "22ab8460cd1aeff0af55b5a193f230eea4f248a2a65d511e9593a6ec01f7e7f4"
