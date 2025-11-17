@@ -11,8 +11,6 @@ import numpy as np
 import requests
 import os
 from datetime import datetime, date
-from typing import Dict, List, Optional
-from pathlib import Path
 
 
 class RealTimeOddsIntegrator:

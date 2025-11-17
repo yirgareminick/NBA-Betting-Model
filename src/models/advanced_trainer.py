@@ -10,14 +10,13 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, Tuple, Optional, Any
 import joblib
 import yaml
 import warnings
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
-from sklearn.metrics import classification_report, accuracy_score, log_loss
+from sklearn.metrics import log_loss
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-import sys
 
 # Optional advanced ML libraries
 try:

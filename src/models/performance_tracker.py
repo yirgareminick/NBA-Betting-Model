@@ -6,12 +6,10 @@ over time. It provides analytics and triggers for model retraining.
 """
 
 import pandas as pd
-import numpy as np
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import json
-import yaml
 from dataclasses import dataclass, asdict
 import sqlite3
 

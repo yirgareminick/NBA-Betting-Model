@@ -7,8 +7,7 @@ to determine optimal bet sizes based on edge and bankroll management.
 
 import pandas as pd
 import numpy as np
-from typing import Dict, List, Tuple, Optional
-from datetime import date
+from typing import Dict, Tuple, Optional
 import yaml
 from pathlib import Path
 
