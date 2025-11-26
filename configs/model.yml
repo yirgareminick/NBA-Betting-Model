@@ -1,5 +1,12 @@
 # Model configuration for NBA Betting Model
 
+# Data paths
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "models"
+  logs: "logs"
+
 # Feature engineering settings
 features:
   lookback_games: 10           # Number of games for rolling averages
