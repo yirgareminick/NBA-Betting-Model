@@ -45,3 +45,15 @@ betting:
 thresholds:
   min_accuracy: 0.55          # Minimum model accuracy to use predictions
   retrain_threshold: 0.05     # Accuracy drop that triggers retraining
+
+# Scheduler configuration (optional - most users can use cron instead)
+scheduler:
+  daily_update:
+    script: "scripts/daily_update.py"
+    time: "02:00"
+    enabled: true
+  weekly_refresh:
+    script: "scripts/weekly_refresh.py"  
+    time: "01:00"
+    day: "monday"
+    enabled: false  # Disabled by default, use cron instead
