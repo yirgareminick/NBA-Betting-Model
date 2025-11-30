@@ -25,7 +25,7 @@ class LiveNBADataFetcher:
 
             games = []
             for game in games_data['scoreboard']['games']:
-                # Convert UTC time to Eastern time for date matching
+                #Convert UTC time to Eastern time for date matching
                 utc_time = datetime.strptime(game['gameTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
                 eastern_time = utc_time - timedelta(hours=5)  # EST approximation
                 game_date = eastern_time.date()
@@ -112,7 +112,7 @@ class LiveNBADataFetcher:
         }
 
 
-# CLI entry point for direct testing
+#CLI entry point for direct testing
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Fetch NBA games for a given date")
