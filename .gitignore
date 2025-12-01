@@ -250,8 +250,3 @@ clean_temporal_training.py
 
 # Additional patterns for cleanup
 *.pkl
-*.png
-*.jpg
-output.*
-temp_*
-test_*_output.*

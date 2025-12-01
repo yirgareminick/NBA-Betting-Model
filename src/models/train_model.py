@@ -58,7 +58,9 @@ class NBAModelTrainer:
 
         self.feature_columns = numeric_features
 
-        # Note: 'is_home' is already included in numeric_features if it exists
+        # Handle the boolean 'is_home' column separately if it exists
+        if 'is_home' in df.columns:
+            self.feature_columns.append('is_home')
 
         # Prepare features and target
         X = df[self.feature_columns].copy()
