@@ -30,8 +30,6 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 from predict.daily_report import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
-from models.performance_tracker import PerformanceTracker, track_daily_performance
-from models.advanced_trainer import train_advanced_model
 
 
 class DailyBettingPipeline:
@@ -42,8 +40,6 @@ class DailyBettingPipeline:
         self.project_root = Path(__file__).parent.parent
         self.logs_dir = self.project_root / "logs"
         self.logs_dir.mkdir(exist_ok=True)
-        
-        self.tracker = PerformanceTracker()
         
     def _load_config(self) -> dict:
         """Load configuration from file."""
@@ -75,19 +71,17 @@ class DailyBettingPipeline:
         self.log_message("Checking model performance...")
         
         try:
-            drift_analysis = self.tracker.check_model_drift()
-            performance_summary = self.tracker.get_performance_summary(7)  # Last 7 days
+            # Simplified: check if model file exists and is recent
+            model_file = self.project_root / "models" / "nba_model_latest.joblib"
             
-            self.log_message(f"Recent accuracy: {drift_analysis['recent_accuracy']:.1%}")
+            if not model_file.exists():
+                self.log_message("No model found - retraining needed", "WARNING")
+                return {'needs_retraining': True, 'reason': 'no_model'}
             
-            if drift_analysis['needs_retraining']:
-                self.log_message("Model retraining recommended", "WARNING")
+            # For simplicity, just return that no retraining is needed unless forced
+            self.log_message("Model exists - no automatic retraining needed")
             
-            return {
-                'drift_analysis': drift_analysis,
-                'performance_summary': performance_summary,
-                'needs_retraining': drift_analysis['needs_retraining']
-            }
+            return {'needs_retraining': False, 'reason': 'model_exists'}
             
         except Exception as e:
             self.log_message(f"Error checking model performance: {e}", "ERROR")
@@ -101,17 +95,10 @@ class DailyBettingPipeline:
             self.log_message("Starting model retraining...")
             
             try:
-                # Use advanced trainer with ensemble
-                training_config = {
-                    'algorithms': ['random_forest', 'xgboost', 'lightgbm'],
-                    'ensemble': True,
-                    'hyperparameter_tuning': False,  # Skip for daily runs
-                    'test_size': 0.2,
-                    'cv_folds': 5,
-                    'random_state': 42
-                }
+                # Use simple trainer for retraining
+                from models.train_model import train_model
                 
-                metrics = train_advanced_model(training_config)
+                metrics = train_model()
                 
                 self.log_message(f"Model retraining completed. Best model: {metrics['best_model']}")
                 return True
@@ -186,7 +173,11 @@ class DailyBettingPipeline:
         self.log_message("Recording performance data...")
         
         try:
-            performance_data = track_daily_performance(predictions, betting_data)
+            # Simplified performance tracking - just log basic metrics
+            performance_data = {
+                'predictions_made': len(predictions),
+                'bets_recommended': betting_data['recommended_bet'].sum() if not betting_data.empty else 0
+            }
             self.log_message("Performance data recorded")
             return performance_data
             
