@@ -115,13 +115,12 @@ class NBAPredictor:
         print("🔧 Preparing prediction features...")
 
         try:
-            # Use simplified basic features approach for reliability
-            print("🔧 Using basic features approach for predictions")
-            return self._create_basic_features(games_df)
+            # Use minimal features directly for model compatibility
+            print("🔧 Using minimal features for model compatibility")
+            return self._create_minimal_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
-            # Fallback to minimal features
-            return self._create_minimal_features(games_df)
+            raise e
 
     def _create_basic_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Create basic features when FeatureEngineer is not available."""
