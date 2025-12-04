@@ -197,7 +197,7 @@ class NBAPredictor:
             print(f"⚠️  Failed to get real stats for {team}: {e}")
 
         # Fallback to historical averages (not random!)
-        return self._get_historical_averages(team, is_home)
+        return self._get_historical_averages(team, opponent, is_home)
 
     def _get_real_team_stats(self, team: str, game_date: date) -> Optional[Dict]:
         """Get real team statistics from live data fetcher."""
@@ -228,7 +228,7 @@ class NBAPredictor:
 
         return None
 
-    def _get_historical_averages(self, team: str, is_home: bool) -> Dict:
+    def _get_historical_averages(self, team: str, opponent: str, is_home: bool) -> Dict:
         """Get historical averages for a team (realistic fallback, not random)."""
 
         # NBA team historical averages (based on actual 2020-2023 data patterns)
@@ -257,20 +257,23 @@ class NBAPredictor:
         # Apply home court advantage
         home_boost = 2.5 if is_home else -2.5
 
+        # Get opponent profile for opponent features
+        opponent_profile = team_profiles.get(opponent, {'pts': 112.0, 'pts_allowed': 112.0, 'win_pct': 0.500})
+        
         features = {
+            'is_home': int(is_home),
             'avg_pts_last_10': profile['pts'] + home_boost,
             'avg_pts_allowed_last_10': profile['pts_allowed'] - (home_boost * 0.5),
             'avg_point_diff_last_10': (profile['pts'] - profile['pts_allowed']) + home_boost,
+            'avg_rebounds_last_10': 44.0,  # League average rebounds
+            'avg_assists_last_10': 27.0,   # League average assists
+            'avg_fg_pct_last_10': 0.460,   # League average FG%
+            'avg_3p_pct_last_10': 0.360,   # League average 3P%
             'win_pct_last_10': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
-            'avg_point_diff_last_5': (profile['pts'] - profile['pts_allowed']) + home_boost,
-            'win_pct_last_5': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
             'rest_days': 2,  # Average rest
-            'game_number_in_season': 41,  # Mid-season average
-            'season_win_pct': profile['win_pct'],
-            'season_avg_pts': profile['pts'],
-            'season_avg_pts_allowed': profile['pts_allowed'],
-            'is_home': int(is_home),
-            'target_win': 0,  # Placeholder for prediction
+            'opponent_avg_pts_last_10': opponent_profile['pts'],
+            'opponent_avg_pts_allowed_last_10': opponent_profile['pts_allowed'],
+            'opponent_win_pct_last_10': opponent_profile['win_pct'],
         }
 
         return features
