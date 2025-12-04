@@ -115,16 +115,13 @@ class NBAPredictor:
         print("🔧 Preparing prediction features...")
 
         try:
-            if FeatureEngineer is None:
-                print("⚠️  FeatureEngineer not available, using basic features")
-                return self._create_basic_features(games_df)
-
-            feature_engineer = FeatureEngineer()
-            features = feature_engineer.create_team_game_features(games_df)
-            return features
+            # Use simplified basic features approach for reliability
+            print("🔧 Using basic features approach for predictions")
+            return self._create_basic_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
-            return self._create_basic_features(games_df)
+            # Fallback to minimal features
+            return self._create_minimal_features(games_df)
 
     def _create_basic_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Create basic features when FeatureEngineer is not available."""
@@ -261,21 +258,67 @@ class NBAPredictor:
         home_boost = 2.5 if is_home else -2.5
 
         features = {
-            'is_home': int(is_home),
             'avg_pts_last_10': profile['pts'] + home_boost,
             'avg_pts_allowed_last_10': profile['pts_allowed'] - (home_boost * 0.5),
             'avg_point_diff_last_10': (profile['pts'] - profile['pts_allowed']) + home_boost,
             'win_pct_last_10': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
-            'win_pct_last_5': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
             'avg_point_diff_last_5': (profile['pts'] - profile['pts_allowed']) + home_boost,
+            'win_pct_last_5': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
             'rest_days': 2,  # Average rest
             'game_number_in_season': 41,  # Mid-season average
             'season_win_pct': profile['win_pct'],
             'season_avg_pts': profile['pts'],
             'season_avg_pts_allowed': profile['pts_allowed'],
+            'is_home': int(is_home),
+            'target_win': 0,  # Placeholder for prediction
         }
 
         return features
+
+    def _create_minimal_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
+        """Create minimal features as absolute fallback."""
+        print("🔧 Creating minimal fallback features...")
+        
+        features_list = []
+        
+        for _, game in games_df.iterrows():
+            # Minimal features for home team
+            home_features = {
+                'avg_pts_last_10': 112.0,
+                'avg_pts_allowed_last_10': 110.0,
+                'avg_point_diff_last_10': 2.0,
+                'win_pct_last_10': 0.5,
+                'avg_point_diff_last_5': 2.0,
+                'win_pct_last_5': 0.5,
+                'rest_days': 2,
+                'game_number_in_season': 41,
+                'season_win_pct': 0.5,
+                'season_avg_pts': 112.0,
+                'season_avg_pts_allowed': 110.0,
+                'is_home': 1,
+                'target_win': 0,
+            }
+            features_list.append(home_features)
+            
+            # Minimal features for away team  
+            away_features = {
+                'avg_pts_last_10': 110.0,
+                'avg_pts_allowed_last_10': 112.0,
+                'avg_point_diff_last_10': -2.0,
+                'win_pct_last_10': 0.5,
+                'avg_point_diff_last_5': -2.0,
+                'win_pct_last_5': 0.5,
+                'rest_days': 2,
+                'game_number_in_season': 41,
+                'season_win_pct': 0.5,
+                'season_avg_pts': 110.0,
+                'season_avg_pts_allowed': 112.0,
+                'is_home': 0,
+                'target_win': 0,
+            }
+            features_list.append(away_features)
+            
+        return pd.DataFrame(features_list)
 
     def _calculate_rest_days(self, team: str, game_date: date) -> int:
         """Calculate rest days since last game (simplified)."""
