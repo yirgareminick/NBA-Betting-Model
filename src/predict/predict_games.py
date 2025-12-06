@@ -284,7 +284,7 @@ class NBAPredictor:
         features_list = []
         
         for _, game in games_df.iterrows():
-            # Minimal features for home team (matching actual model expectations)
+            # Minimal features for home team (matching actual model with duplicate is_home)
             home_features = {
                 'is_home': 1,
                 'avg_pts_last_10': 112.0,
@@ -301,7 +301,7 @@ class NBAPredictor:
             }
             features_list.append(home_features)
             
-            # Minimal features for away team (matching actual model expectations)
+            # Minimal features for away team (matching actual model with duplicate is_home)
             away_features = {
                 'is_home': 0,
                 'avg_pts_last_10': 110.0,
@@ -321,12 +321,12 @@ class NBAPredictor:
         # Create DataFrame with exact feature order expected by model
         features_df = pd.DataFrame(features_list)
         
-        # Ensure columns are in the exact order the model expects
+        # Ensure columns are in the exact order the model expects (including duplicate is_home)
         expected_order = [
             'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10', 
             'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
             'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
-            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed', 'is_home'
         ]
         
         # Reorder columns to match model expectations
