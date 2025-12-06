@@ -122,47 +122,7 @@ class NBAPredictor:
             print(f"❌ Error preparing features: {e}")
             raise e
 
-    def _create_basic_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Create basic features when FeatureEngineer is not available."""
-        print("🔧 Creating team-level features for each game...")
 
-        features_list = []
-
-        for _, game in games_df.iterrows():
-            # Create home team features
-            home_features = self._build_team_features(
-                game['home_team'],
-                game['away_team'],
-                is_home=True,
-                game_date=game['game_date']
-            )
-            features_list.append(home_features)
-
-            # Create away team features
-            away_features = self._build_team_features(
-                game['away_team'],
-                game['home_team'],
-                is_home=False,
-                game_date=game['game_date']
-            )
-            features_list.append(away_features)
-
-        # Convert to DataFrame with proper column order
-        features_df = pd.DataFrame(features_list)
-
-        # Ensure we have exactly the columns the model expects
-        expected_columns = self.feature_columns
-        for col in expected_columns:
-            if col not in features_df.columns:
-                print(f"⚠️  Missing feature: {col}, setting to default")
-                features_df[col] = 0.0
-
-        # Select only the columns the model expects, in the right order
-        features_df = features_df[expected_columns]
-
-        print(f"✓ Created features: {features_df.shape[0]} rows x {features_df.shape[1]} columns")
-
-        return features_df
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup using real data."""
@@ -336,28 +296,20 @@ class NBAPredictor:
 
     def _calculate_rest_days(self, team: str, game_date: date) -> int:
         """Calculate rest days since last game (simplified)."""
-        # In production, this would query the actual schedule
-        # For now, return typical NBA rest pattern
-        import random
-        return random.choice([0, 1, 1, 2, 2, 2, 3])  # Weighted toward 1-2 days
+        # Return typical NBA rest pattern (1-2 days most common)
+        return 2  # Standard NBA rest days
 
     def _estimate_game_number(self, game_date: date) -> int:
         """Estimate game number in season based on date."""
-        # NBA season typically starts in October, ~82 games over 6 months
         season_start = date(2024, 10, 15)  # Approximate season start
-
+        
         if game_date >= season_start:
             days_into_season = (game_date - season_start).days
             # Approximate: 82 games over ~170 days (Oct-Apr)
             game_estimate = min(82, max(1, int(days_into_season * 82 / 170)))
             return game_estimate
-
+        
         return 41  # Mid-season default
-
-    def _get_fallback_features(self, team: str, opponent: str, is_home: bool) -> Dict:
-        """Fallback features using historical team averages (no random values)."""
-        # Use the same historical averages system
-        return self._get_historical_averages(team, is_home)
 
     def predict_games(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Make predictions for upcoming games."""
