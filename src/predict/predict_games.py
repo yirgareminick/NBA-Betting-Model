@@ -318,7 +318,21 @@ class NBAPredictor:
             }
             features_list.append(away_features)
             
-        return pd.DataFrame(features_list)
+        # Create DataFrame with exact feature order expected by model
+        features_df = pd.DataFrame(features_list)
+        
+        # Ensure columns are in the exact order the model expects
+        expected_order = [
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10', 
+            'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
+            'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
+            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+        ]
+        
+        # Reorder columns to match model expectations
+        features_df = features_df[expected_order]
+        
+        return features_df
 
     def _calculate_rest_days(self, team: str, game_date: date) -> int:
         """Calculate rest days since last game (simplified)."""
