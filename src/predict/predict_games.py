@@ -284,39 +284,37 @@ class NBAPredictor:
         features_list = []
         
         for _, game in games_df.iterrows():
-            # Minimal features for home team (matching model's 13 expected features)
+            # Minimal features for home team (matching actual model expectations)
             home_features = {
                 'is_home': 1,
                 'avg_pts_last_10': 112.0,
                 'avg_pts_allowed_last_10': 110.0,
                 'avg_point_diff_last_10': 2.0,
-                'avg_rebounds_last_10': 44.0,
-                'avg_assists_last_10': 27.0,
-                'avg_fg_pct_last_10': 0.460,
-                'avg_3p_pct_last_10': 0.360,
-                'win_pct_last_10': 0.5,
+                'win_pct_last_10': 0.55,
+                'win_pct_last_5': 0.55,
+                'avg_point_diff_last_5': 2.0,
                 'rest_days': 2,
-                'opponent_avg_pts_last_10': 110.0,
-                'opponent_avg_pts_allowed_last_10': 112.0,
-                'opponent_win_pct_last_10': 0.5,
+                'game_number_in_season': 41,
+                'season_win_pct': 0.55,
+                'season_avg_pts': 112.0,
+                'season_avg_pts_allowed': 110.0,
             }
             features_list.append(home_features)
             
-            # Minimal features for away team (matching model's 13 expected features)
+            # Minimal features for away team (matching actual model expectations)
             away_features = {
                 'is_home': 0,
                 'avg_pts_last_10': 110.0,
                 'avg_pts_allowed_last_10': 112.0,
                 'avg_point_diff_last_10': -2.0,
-                'avg_rebounds_last_10': 44.0,
-                'avg_assists_last_10': 27.0,
-                'avg_fg_pct_last_10': 0.460,
-                'avg_3p_pct_last_10': 0.360,
-                'win_pct_last_10': 0.5,
+                'win_pct_last_10': 0.45,
+                'win_pct_last_5': 0.45,
+                'avg_point_diff_last_5': -2.0,
                 'rest_days': 2,
-                'opponent_avg_pts_last_10': 112.0,
-                'opponent_avg_pts_allowed_last_10': 110.0,
-                'opponent_win_pct_last_10': 0.5,
+                'game_number_in_season': 41,
+                'season_win_pct': 0.45,
+                'season_avg_pts': 110.0,
+                'season_avg_pts_allowed': 112.0,
             }
             features_list.append(away_features)
             
