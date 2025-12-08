@@ -66,23 +66,17 @@ class DailyBettingPipeline:
     
     def check_model_performance(self) -> dict:
         """Check current model performance and determine if retraining is needed."""
-        self.log_message("Checking model performance...")
-        
         try:
-            # Simplified: check if model file exists and is recent
             model_file = self.project_root / "models" / "nba_model_latest.joblib"
             
             if not model_file.exists():
-                self.log_message("No model found - retraining needed", "WARNING")
+                self.log_message("No model found", "WARNING")
                 return {'needs_retraining': True, 'reason': 'no_model'}
-            
-            # For simplicity, just return that no retraining is needed unless forced
-            self.log_message("Model exists - no automatic retraining needed")
             
             return {'needs_retraining': False, 'reason': 'model_exists'}
             
         except Exception as e:
-            self.log_message(f"Error checking model performance: {e}", "ERROR")
+            self.log_message(f"Model check failed: {e}", "ERROR")
             return {'needs_retraining': False, 'error': str(e)}
     
     def retrain_model_if_needed(self, force_retrain: bool = False) -> bool:
@@ -90,23 +84,15 @@ class DailyBettingPipeline:
         performance_check = self.check_model_performance()
         
         if force_retrain or performance_check.get('needs_retraining', False):
-            self.log_message("Starting model retraining...")
-            
             try:
-                # Use simple trainer for retraining
                 from models.train_model import train_model
-                
                 metrics = train_model()
-                
-                self.log_message(f"Model retraining completed. Best model: {metrics['best_model']}")
+                self.log_message(f"Model retrained: {metrics['best_model']}")
                 return True
-                
             except Exception as e:
-                self.log_message(f"Model retraining failed: {e}", "ERROR")
+                self.log_message(f"Retrain failed: {e}", "ERROR")
                 return False
-        else:
-            self.log_message("Model performance acceptable, skipping retraining")
-            return False
+        return False
     
     def generate_predictions(self, target_date: date) -> dict:
         """Generate daily predictions."""
