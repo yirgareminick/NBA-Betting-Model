@@ -18,11 +18,9 @@ Usage:
 
 import argparse
 import sys
-import os
 from datetime import date, datetime
 from pathlib import Path
 import yaml
-import json
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
