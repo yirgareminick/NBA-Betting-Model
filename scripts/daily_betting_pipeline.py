@@ -183,37 +183,11 @@ class DailyBettingPipeline:
             self.log_message(f"Performance tracking failed: {e}", "ERROR")
             return {'error': str(e)}
     
-    def send_notifications(self, report_data: dict, notify_config: dict = None):
-        """Send notifications with daily results."""
-        if not notify_config:
-            self.log_message("No notification configuration provided")
-            return
-        
-        try:
-            # Format notification message
-            recommended_bets = report_data.get('recommended_bets', 0)
-            expected_value = report_data.get('expected_value', 0)
-            total_games = report_data.get('total_games', 0)
-            
-            message = f"""
-🏀 NBA Daily Betting Report - {report_data.get('date', 'Today')}
-📊 Games Analyzed: {total_games}
-💰 Recommended Bets: {recommended_bets}
-📈 Expected Value: ${expected_value:.2f}
-            """.strip()
-            
-            # Here you would implement actual notification sending
-            # Examples: Slack webhook, email, SMS, etc.
-            self.log_message(f"Notification prepared: {recommended_bets} bets recommended")
-            
-            # Placeholder for actual notification implementation
-            # if notify_config.get('slack_webhook'):
-            #     self._send_slack_notification(message, notify_config['slack_webhook'])
-            # if notify_config.get('email'):
-            #     self._send_email_notification(message, notify_config['email'])
-            
-        except Exception as e:
-            self.log_message(f"Notification sending failed: {e}", "ERROR")
+    def send_notifications(self, report_data: dict):
+        """Log notification summary (placeholder for future notification system)."""
+        recommended_bets = report_data.get('recommended_bets', 0)
+        expected_value = report_data.get('expected_value', 0)
+        self.log_message(f"Daily summary: {recommended_bets} bets, ${expected_value:.2f} EV")
     
     def run_daily_pipeline(self, target_date: date = None, bankroll: float = 10000, 
                           retrain: bool = False, dry_run: bool = False, 
