@@ -147,19 +147,13 @@ class DailyBettingPipeline:
     
     def track_performance(self, predictions, betting_data) -> dict:
         """Track daily performance."""
-        self.log_message("Recording performance data...")
-        
         try:
-            # Simplified performance tracking - just log basic metrics
-            performance_data = {
+            return {
                 'predictions_made': len(predictions),
                 'bets_recommended': betting_data['recommended_bet'].sum() if not betting_data.empty else 0
             }
-            self.log_message("Performance data recorded")
-            return performance_data
-            
         except Exception as e:
-            self.log_message(f"Performance tracking failed: {e}", "ERROR")
+            self.log_message(f"Tracking failed: {e}", "ERROR")
             return {'error': str(e)}
     
     def send_notifications(self, report_data: dict):
@@ -175,12 +169,7 @@ class DailyBettingPipeline:
         if target_date is None:
             target_date = date.today()
         
-        self.log_message("=" * 80)
-        self.log_message("🏀 STARTING DAILY NBA BETTING PIPELINE")
-        self.log_message(f"Date: {target_date}, Bankroll: ${bankroll:,.2f}")
-        if dry_run:
-            self.log_message("*** DRY RUN MODE - NO ACTUAL BETS WILL BE PLACED ***")
-        self.log_message("=" * 80)
+        self.log_message(f"🏀 Pipeline: {target_date}, ${bankroll:,.2f}{' (DRY RUN)' if dry_run else ''}")
         
         pipeline_results = {
             'date': target_date.isoformat(),
