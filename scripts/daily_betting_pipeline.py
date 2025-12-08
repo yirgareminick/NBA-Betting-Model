@@ -96,26 +96,22 @@ class DailyBettingPipeline:
     
     def generate_predictions(self, target_date: date) -> dict:
         """Generate daily predictions."""
-        self.log_message(f"Generating predictions for {target_date}...")
-        
         try:
             predictions = predict_daily_games(target_date)
             
             if len(predictions) == 0:
-                self.log_message("No games available for prediction")
+                self.log_message("No games found")
                 return {'predictions': predictions, 'games_found': 0}
             
-            self.log_message(f"Generated predictions for {len(predictions)} games")
+            self.log_message(f"Predictions: {len(predictions)} games")
             return {'predictions': predictions, 'games_found': len(predictions)}
             
         except Exception as e:
-            self.log_message(f"Prediction generation failed: {e}", "ERROR")
+            self.log_message(f"Prediction failed: {e}", "ERROR")
             return {'predictions': None, 'games_found': 0, 'error': str(e)}
     
     def calculate_betting_strategy(self, predictions, bankroll: float) -> dict:
         """Calculate betting recommendations."""
-        self.log_message(f"Calculating betting strategy for ${bankroll:,.2f} bankroll...")
-        
         try:
             betting_recommendations, simulation_results = calculate_daily_bets(
                 predictions, bankroll, self.config.get('betting', {})
@@ -125,7 +121,7 @@ class DailyBettingPipeline:
             total_stake = betting_recommendations['stake_amount'].sum()
             expected_value = betting_recommendations['expected_value'].sum()
             
-            self.log_message(f"Strategy: {recommended_bets} bets, ${total_stake:.2f} stake, ${expected_value:.2f} EV")
+            self.log_message(f"Bets: {recommended_bets}, Stake: ${total_stake:.2f}, EV: ${expected_value:.2f}")
             
             return {
                 'betting_recommendations': betting_recommendations,
@@ -136,20 +132,17 @@ class DailyBettingPipeline:
             }
             
         except Exception as e:
-            self.log_message(f"Betting strategy calculation failed: {e}", "ERROR")
+            self.log_message(f"Betting failed: {e}", "ERROR")
             return {'betting_recommendations': None, 'error': str(e)}
     
     def generate_comprehensive_report(self, target_date: date, bankroll: float) -> dict:
         """Generate comprehensive daily report."""
-        self.log_message("Generating comprehensive daily report...")
-        
         try:
             report = generate_daily_report(target_date, bankroll)
-            self.log_message("Daily report generated successfully")
+            self.log_message("Report generated")
             return report
-            
         except Exception as e:
-            self.log_message(f"Report generation failed: {e}", "ERROR")
+            self.log_message(f"Report failed: {e}", "ERROR")
             return {'error': str(e)}
     
     def track_performance(self, predictions, betting_data) -> dict:
