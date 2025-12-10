@@ -189,7 +189,7 @@ class DailyBettingPipeline:
             pipeline_results.update(prediction_results)
             
             if prediction_results['games_found'] == 0:
-                self.log_message("No games to analyze today")
+                self.log_message("No games today")
                 pipeline_results['status'] = 'completed_no_games'
                 return pipeline_results
             
@@ -220,11 +220,7 @@ class DailyBettingPipeline:
             pipeline_results['status'] = 'completed_successfully'
             pipeline_results['completed_at'] = datetime.now().isoformat()
             
-            self.log_message("=" * 80)
-            self.log_message("✅ DAILY PIPELINE COMPLETED SUCCESSFULLY")
-            self.log_message(f"Recommended bets: {pipeline_results.get('recommended_bets', 0)}")
-            self.log_message(f"Expected value: ${pipeline_results.get('expected_value', 0):.2f}")
-            self.log_message("=" * 80)
+            self.log_message(f"✅ Completed: {pipeline_results.get('recommended_bets', 0)} bets, ${pipeline_results.get('expected_value', 0):.2f} EV")
             
         except Exception as e:
             self.log_message(f"Pipeline failed: {e}", "ERROR")
