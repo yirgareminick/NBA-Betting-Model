@@ -220,7 +220,7 @@ class DailyBettingPipeline:
             pipeline_results['status'] = 'completed_successfully'
             pipeline_results['completed_at'] = datetime.now().isoformat()
             
-            self.log_message(f"✅ Completed: {pipeline_results.get('recommended_bets', 0)} bets, ${pipeline_results.get('expected_value', 0):.2f} EV")
+            self.log_message(f"✅ Done: {pipeline_results.get('recommended_bets', 0)} bets, ${pipeline_results.get('expected_value', 0):.2f} EV")
             
         except Exception as e:
             self.log_message(f"Pipeline failed: {e}", "ERROR")
