@@ -75,87 +75,56 @@ class ManualUpdater(AutomationBase):
             
     def update_odds(self):
         """Update betting odds data."""
-        self.logger.info("Updating betting odds...")
-        
         bookmakers_str = ",".join(self.bookmakers)
         self.run_python_script(
             "src/ingest/ingest_odds.py",
             ["--regions", "us", "--bookmakers", bookmakers_str],
-            f"Updating betting odds (bookmakers: {bookmakers_str})"
+            f"Odds: {bookmakers_str}"
         )
         
     def update_games(self):
         """Update games data for specified year range."""
-        self.logger.info(f"Updating games data ({self.start_year}-{self.end_year})...")
-        
         self.run_python_script(
             "src/ingest/ingest_games_new.py",
             [str(self.start_year), str(self.end_year)],
-            f"Updating games data ({self.start_year}-{self.end_year})"
+            f"Games: {self.start_year}-{self.end_year}"
         )
         
     def update_team_stats(self):
         """Update team statistics for specified years."""
-        self.logger.info(f"Updating team statistics ({self.start_year}-{self.end_year})...")
-        
-        # Build seasons list
-        seasons = []
-        for year in range(self.start_year, self.end_year + 1):
-            seasons.append(str(year))
-            
+        seasons = [str(year) for year in range(self.start_year, self.end_year + 1)]
         self.run_python_script(
             "src/ingest/ingest_team_stats.py",
             ["--seasons"] + seasons,
-            f"Updating team statistics ({'-'.join(seasons)})"
+            f"Team stats: {'-'.join(seasons)}"
         )
         
     def rebuild_features(self):
         """Rebuild feature engineering."""
-        self.logger.info(f"Rebuilding features (lookback: {self.lookback_days} days)...")
-        
         self.run_python_script(
             "src/features/build_features.py",
             ["--lookback", str(self.lookback_days)],
-            f"Rebuilding features (lookback: {self.lookback_days} days)"
+            f"Features: {self.lookback_days}d lookback"
         )
         
     def run_full_update(self):
         """Run a complete update of all data sources."""
-        self.logger.info("Running complete update of all data sources...")
-        
-        # Update in optimal order
         try:
-            # 1. Games data (foundation)
             self.update_games()
-            
-            # 2. Team statistics
             self.update_team_stats()
-            
-            # 3. Betting odds
             self.update_odds()
-            
-            # 4. Features (depends on all above)
             self.rebuild_features()
-            
         except Exception as e:
-            self.logger.error(f"Full update failed at step: {str(e)}")
+            self.logger.error(f"Update failed: {str(e)}")
             raise
             
     def run(self, send_notification: bool = False, dry_run: bool = False):
         """Execute the manual update process."""
         try:
-            self.logger.info("Starting NBA Betting Model Manual Update")
-            self.logger.info(f"Project root: {self.project_root}")
-            self.logger.info(f"Log file: {self.log_file}")
+            self.logger.info(f"Manual update: {self.start_year}-{self.end_year}{' (DRY RUN)' if dry_run else ''}")
             
             if dry_run:
-                self.logger.info("DRY RUN MODE - No actual updates will be performed")
                 return True
-                
-            # Log configuration
-            self.logger.info(f"Year range: {self.start_year}-{self.end_year}")
-            self.logger.info(f"Bookmakers: {', '.join(self.bookmakers)}")
-            self.logger.info(f"Lookback days: {self.lookback_days}")
             
             # Execute based on flags
             if self.odds_only:
@@ -171,26 +140,20 @@ class ManualUpdater(AutomationBase):
                 self.run_full_update()
                 
             # Generate report
-            self.logger.info("Generating update report...")
             quality_report = self.check_data_quality()
             
-            # Log key metrics
-            if quality_report.get('feature_records') not in ["missing", "error"]:
-                self.logger.info(f"Feature records: {quality_report['feature_records']:,}")
-            if quality_report.get('latest_date') not in ["missing", "error"]:
-                self.logger.info(f"Latest game date: {quality_report['latest_date']}")
-                
-            # Check for specific issues
+            # Check for issues and log summary
             issues = []
             if quality_report.get('feature_records') == "missing":
-                issues.append("No feature data found")
+                issues.append("No features")
             if quality_report.get('games_records') == "missing":
-                issues.append("No games data found")
+                issues.append("No games")
                 
             if issues:
-                self.logger.warning(f"Issues detected: {', '.join(issues)}")
+                self.logger.warning(f"Issues: {', '.join(issues)}")
             else:
-                self.logger.info("Update completed successfully")
+                records = quality_report.get('feature_records', 'N/A')
+                self.logger.info(f"Update complete: {records} records")
                 
             # Finalize
             self.finalize(success=True, send_notification=send_notification)
