@@ -56,8 +56,6 @@ class FeatureEngineer:
 
     def load_games_data(self) -> pl.DataFrame:
         """Load and clean games data from CSV"""
-        print("📊 Loading games data...")
-
         if not self.data_paths['games'].exists():
             raise FileNotFoundError(f"Games data not found at {self.data_paths['games']}")
 
@@ -84,12 +82,12 @@ class FeatureEngineer:
             (pl.col("pts_home") - pl.col("pts_away")).alias("point_diff")
         ])
 
-        print(f"✓ Loaded {len(df):,} games from {df['game_date'].min()} to {df['game_date'].max()}")
+        print(f"✓ Games: {len(df):,} records")
         return df
 
     def create_team_game_features(self, games_df) -> pl.DataFrame:
         """Create features by exploding games into team-level records"""
-        print("🔧 Creating team-game features...")
+
         
         # Convert pandas DataFrame to polars if needed
         if hasattr(games_df, 'columns') and not hasattr(games_df, 'select'):
@@ -168,13 +166,13 @@ class FeatureEngineer:
             (pl.col("venue") == "home").alias("is_home")
         ])
 
-        print(f"✓ Created {len(team_games):,} team-game records")
+        print(f"✓ Team records: {len(team_games):,}")
         return team_games
 
     def create_rolling_features(self, team_games: pl.DataFrame,
                               lookback: int = None) -> pl.DataFrame:
         """Create rolling statistics for each team"""
-        print("🔧 Creating rolling features...")
+
 
         if lookback is None:
             lookback = self.config.get('lookback_games', 10)
@@ -219,12 +217,12 @@ class FeatureEngineer:
             pl.col("game_id").shift(1).count().over("team_name").alias("games_played")
         ])
 
-        print(f"✓ Added rolling features with {lookback}-game lookback")
+        print(f"✓ Rolling features: {lookback}g lookback")
         return rolling_features
 
     def add_rest_days(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Calculate rest days between games for each team"""
-        print("🔧 Adding rest days...")
+
 
         team_games = team_games.with_columns([
             # Calculate days since last game
@@ -240,7 +238,7 @@ class FeatureEngineer:
 
     def add_season_trends(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Add season-long trend features"""
-        print("🔧 Adding season trends...")
+
 
         team_games = team_games.with_columns([
             # Season win percentage (excluding current game)
@@ -258,7 +256,7 @@ class FeatureEngineer:
 
     def prepare_final_features(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Prepare final feature matrix for modeling"""
-        print("🔧 Preparing final features...")
+
 
         # Filter out games without sufficient history
         min_games = self.config.get('min_games_for_rolling', 3)
@@ -298,14 +296,12 @@ class FeatureEngineer:
         available_columns = [col for col in feature_columns if col in filtered.columns]
         features = filtered.select(available_columns)
 
-        print(f"✓ Prepared {len(features):,} feature records with {len(available_columns)} features")
+        print(f"✓ Features: {len(features):,} records, {len(available_columns)} cols")
         return features
 
     def build_features(self, output_file: str = None) -> pl.DataFrame:
         """Main feature engineering pipeline"""
-        print("=" * 80)
-        print("🏀 NBA FEATURE ENGINEERING PIPELINE")
-        print("=" * 80)
+        print("🏀 Feature Engineering Pipeline")
 
         # Load data
         games_df = self.load_games_data()
