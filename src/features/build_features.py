@@ -341,13 +341,7 @@ class FeatureEngineer:
         with open(metadata_file, 'w') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
-        print("=" * 80)
-        print("✅ FEATURE ENGINEERING COMPLETED")
-        print(f"📊 Records: {len(features):,}")
-        print(f"🔧 Features: {len(features.columns)}")
-        print(f"📁 Output: {output_file}")
-        print(f"📄 Metadata: {metadata_file}")
-        print("=" * 80)
+        print(f"✅ Features complete: {len(features):,} records, {len(features.columns)} cols")
 
         return features
 
