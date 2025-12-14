@@ -20,15 +20,13 @@ DEFAULT_BANKROLL = 10000
 @task
 def ingest_raw(run_date: date):
     """Ingest NBA games data for recent years."""
-    # Use recent years available in dataset (2020-2023)
     year_start = 2020
     year_end = 2023
-    print(f"Ingesting NBA games data for {year_start}-{year_end}")
     ingestion = NBADataIngestion()
     result = ingestion.ingest_games_data(year_start, year_end)
     if result:
         df, output_file = result
-        print(f"Successfully ingested {len(df)} games for {year_start}-{year_end}")
+        print(f"✓ Ingested: {len(df)} games")
         return df
     else:
         raise Exception("Failed to ingest games data")
@@ -36,19 +34,17 @@ def ingest_raw(run_date: date):
 @task
 def build_features(df):
     """Build features from ingested data."""
-    print("Building features from ingested data...")
     feature_engineer = FeatureEngineer()
     features = feature_engineer.build_features()
-    print(f"Features built: {len(features)} records with {len(features.columns)} columns")
+    print(f"✓ Features: {len(features)} records")
     return features
 
 @task
 def train_model(feats):
     """Train NBA prediction model."""
-    print("Training NBA prediction model...")
     trainer = NBAModelTrainer()
     metrics = trainer.train_and_save()
-    print(f"Model trained with accuracy: {metrics['test_accuracy']:.3f}")
+    print(f"✓ Model: {metrics['test_accuracy']:.3f} accuracy")
     return metrics
 
 # ── Prediction and betting tasks ───────────────────────────────────
