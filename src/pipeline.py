@@ -51,33 +51,30 @@ def train_model(feats):
 @task
 def generate_predictions(run_date: date):
     """Generate predictions for upcoming games."""
-    print(f"Generating predictions for {run_date}")
     predictions = predict_daily_games(run_date)
+    print(f"✓ Predictions: {len(predictions)} games")
     return predictions
 
 @task
 def calculate_bets(predictions, bankroll: float = DEFAULT_BANKROLL):
     """Calculate optimal bet sizes using Kelly criterion."""
-    print("Calculating optimal bet sizes...")
     betting_recommendations, simulation_results = calculate_daily_bets(predictions, bankroll)
+    bets = betting_recommendations['recommended_bet'].sum()
+    print(f"✓ Bets: {bets} recommended")
     return betting_recommendations, simulation_results
 
 @task
 def generate_report(run_date: date, bankroll: float = DEFAULT_BANKROLL):
     """Generate comprehensive daily betting report."""
-    print("Generating daily betting report...")
     report = generate_daily_report(run_date, bankroll)
+    print("✓ Report generated")
     return report
 
 @task
 def push_picks(report):
     """Push betting picks to external systems (placeholder)."""
     recommended_bets = report.get('recommended_bets', 0)
-    if recommended_bets > 0:
-        print(f"Would push {recommended_bets} betting recommendations to external systems")
-        # Future: Implement notification/API calls (Slack, email, betting platforms)
-    else:
-        print("No betting recommendations to push")
+    print(f"✓ Push: {recommended_bets} bets" if recommended_bets > 0 else "✓ No bets to push")
     return report
 
 # ── Master flows ──────────────────────────────────────────────────────
