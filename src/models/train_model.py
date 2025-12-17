@@ -37,14 +37,13 @@ class NBAModelTrainer:
         if not features_file.exists():
             raise FileNotFoundError(f"Features file not found: {features_file}")
 
-        print(f"📊 Loading features from {features_file}")
         df = pl.read_parquet(features_file).to_pandas()
-        print(f"✓ Loaded {len(df):,} records with {len(df.columns)} columns")
+        print(f"✓ Features: {len(df):,} records")
         return df
 
     def prepare_training_data(self, df: pd.DataFrame) -> tuple:
         """Prepare features and target for model training."""
-        print("🔧 Preparing training data...")
+
 
         # Select feature columns (exclude metadata and target)
         exclude_cols = ['game_id', 'game_date', 'team_name', 'opponent', 'target_win', 'venue']
@@ -77,16 +76,14 @@ class NBAModelTrainer:
         X = X.replace([np.inf, -np.inf], np.nan)
         X = X.fillna(X.mean(numeric_only=True))
 
-        print(f"✓ Features prepared: {len(self.feature_columns)} features, {len(X)} samples")
-        print(f"✓ Target distribution: {y.value_counts().to_dict()}")
-        print(f"✓ Selected features: {self.feature_columns[:10]}{'...' if len(self.feature_columns) > 10 else ''}")
+        print(f"✓ Prepared: {len(self.feature_columns)} features, {len(X)} samples")
 
         return X, y
 
     def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None,
                    use_temporal_split: bool = True) -> dict:
         """Train the model and return metrics with proper temporal validation."""
-        print("🤖 Training Random Forest model...")
+
 
         if use_temporal_split and df is not None and 'game_date' in df.columns:
             # Temporal split to prevent data leakage
@@ -148,10 +145,7 @@ class NBAModelTrainer:
             ))
         }
 
-        print(f"✓ Model trained successfully")
-        print(f"  - Train accuracy: {train_score:.3f}")
-        print(f"  - Test accuracy: {test_score:.3f}")
-        print(f"  - CV accuracy: {cv_scores.mean():.3f} ± {cv_scores.std():.3f}")
+        print(f"✓ Model trained: {test_score:.3f} accuracy")
 
         return metrics
 
