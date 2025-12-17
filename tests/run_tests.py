@@ -43,9 +43,7 @@ def discover_tests(test_dir: Path, pattern: str = "test_*.py"):
 
 def run_unit_tests():
     """Run unit tests."""
-    print("=" * 60)
-    print("RUNNING UNIT TESTS")
-    print("=" * 60)
+    print("🧪 Running unit tests...")
     
     unit_dir = Path(__file__).parent / "unit"
     suite = discover_tests(unit_dir)
@@ -58,9 +56,7 @@ def run_unit_tests():
 
 def run_integration_tests():
     """Run integration tests."""
-    print("=" * 60)
-    print("RUNNING INTEGRATION TESTS")
-    print("=" * 60)
+    print("🔗 Running integration tests...")
     
     integration_dir = Path(__file__).parent / "integration"
     suite = discover_tests(integration_dir)
@@ -73,21 +69,15 @@ def run_integration_tests():
 
 def run_all_tests():
     """Run all tests."""
-    print("🏀 NBA BETTING MODEL - TEST SUITE")
-    print("=" * 80)
+    print("🏀 NBA test suite")
     
     unit_success = run_unit_tests()
     print()
     integration_success = run_integration_tests()
     
-    print("=" * 80)
-    print("TEST RESULTS SUMMARY")
-    print("=" * 80)
-    print(f"Unit Tests: {'✅ PASSED' if unit_success else '❌ FAILED'}")
-    print(f"Integration Tests: {'✅ PASSED' if integration_success else '❌ FAILED'}")
+    print(f"✅ Unit: {'PASSED' if unit_success else 'FAILED'}, Integration: {'PASSED' if integration_success else 'FAILED'}")
     
     overall_success = unit_success and integration_success
-    print(f"Overall: {'✅ ALL TESTS PASSED' if overall_success else '❌ SOME TESTS FAILED'}")
     
     return overall_success
 
@@ -100,7 +90,7 @@ def run_with_coverage():
         print("❌ Coverage package not installed. Install with: pip install coverage")
         return False
     
-    print("📊 Running tests with coverage analysis...")
+    print("📊 Running with coverage...")
     
     # Start coverage
     cov = coverage.Coverage(source=['src'])
@@ -114,9 +104,7 @@ def run_with_coverage():
         cov.stop()
         cov.save()
         
-        print("\n" + "=" * 60)
-        print("COVERAGE REPORT")
-        print("=" * 60)
+        print("\n📊 Coverage Report:")
         cov.report()
         
         # Generate HTML report
