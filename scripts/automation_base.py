@@ -85,12 +85,10 @@ class AutomationBase:
             result = subprocess.run(['poetry', '--version'], 
                                   capture_output=True, text=True, cwd=self.project_root)
             if result.returncode == 0:
-                self.logger.info("Using Poetry environment")
                 return ['poetry', 'run', 'python']
         except FileNotFoundError:
             pass
             
-        self.logger.info("Using system Python")
         return ['python']
         
     def run_command(self, description: str, command: List[str], 
@@ -100,7 +98,6 @@ class AutomationBase:
         if cwd is None:
             cwd = self.project_root
             
-        self.logger.info(f"Starting: {description}")
         self.logger.debug(f"Command: {' '.join(command)}")
         
         try:
@@ -112,7 +109,7 @@ class AutomationBase:
                 check=check
             )
             
-            # Log stdout if present
+            self.logger.info(f"✓ {description}")
             if result.stdout.strip():
                 self.logger.debug(f"Output: {result.stdout.strip()}")
                 
