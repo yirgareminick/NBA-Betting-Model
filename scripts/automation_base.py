@@ -112,8 +112,6 @@ class AutomationBase:
             self.logger.info(f"✓ {description}")
             if result.stdout.strip():
                 self.logger.debug(f"Output: {result.stdout.strip()}")
-                
-            self.logger.info(f"Completed: {description}")
             return result
             
         except subprocess.CalledProcessError as e:
@@ -243,7 +241,7 @@ class AutomationBase:
                     self.logger.warning(f"Could not delete old log file {log_file}: {e}")
                     
         if cleaned_count > 0:
-            self.logger.info(f"🧹 Cleaned up {cleaned_count} old log files")
+            self.logger.info(f"Cleaned {cleaned_count} old logs")
             
     def send_notification(self, message: str, webhook_url: Optional[str] = None):
         """Send notification via webhook (Slack, Discord, etc.)."""
@@ -255,15 +253,14 @@ class AutomationBase:
             payload = {"text": f"NBA Model: {message}"}
             response = requests.post(webhook_url, json=payload, timeout=10)
             response.raise_for_status()
-            self.logger.info("Notification sent successfully")
+            self.logger.info("Notification sent")
         except Exception as e:
             self.logger.warning(f"Failed to send notification: {e}")
             
     def finalize(self, success: bool = True, send_notification: bool = False):
         """Finalize the script execution with cleanup and reporting."""
-        status = "completed successfully" if success else "failed"
-        self.logger.info(f"{self.script_name.title()} {status}")
-        self.logger.info(f"Log saved to: {self.log_file}")
+        status = "completed" if success else "failed"
+        self.logger.info(f"{self.script_name}: {status}")
         
         # Cleanup old logs
         self.cleanup_old_logs()
