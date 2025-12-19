@@ -55,17 +55,12 @@ class NBAPredictor:
         if not self.metadata_path.exists():
             raise FileNotFoundError(f"Metadata file not found: {self.metadata_path}")
 
-        print(f"Loading model from: {self.model_path}")
         self.model = joblib.load(self.model_path)
 
         with open(self.metadata_path, 'r') as f:
             self.metadata = yaml.safe_load(f)
 
         self.feature_columns = self.metadata['feature_columns']
-        print(f"✓ Model loaded successfully")
-        print(f"  - Created: {self.metadata['created_at']}")
-        print(f"  - Test accuracy: {self.metadata['metrics']['test_accuracy']:.3f}")
-        print(f"  - Features: {len(self.feature_columns)}")
 
     def get_upcoming_games(self, target_date: date = None) -> pd.DataFrame:
         """Get upcoming games for prediction using real-time data."""
@@ -83,18 +78,14 @@ class NBAPredictor:
                 if not games.empty:
                     # Add current betting odds
                     games = fetcher.add_current_odds(games)
-                    print(f"✅ Found {len(games)} real games using NBA API")
                     return games
                 else:
-                    print(f"� No games scheduled for {target_date}")
                     return pd.DataFrame()
 
             except Exception as e:
-                print(f"⚠️  Live data fetch failed: {e}")
-                print("🔄 Falling back to sample data...")
+                pass  # Fall back to sample data
 
         # Fallback to sample data for development/testing
-        print("🔄 Using sample games for development...")
         games = pd.DataFrame({
             'game_id': ['sample_game_1', 'sample_game_2'],
             'game_date': [target_date, target_date],
