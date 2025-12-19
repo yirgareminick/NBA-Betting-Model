@@ -67,7 +67,7 @@ class NBAPredictor:
         if target_date is None:
             target_date = date.today()
 
-        print(f"📅 Getting games for {target_date}")
+
 
         # Try to use live data fetcher
         if LiveNBADataFetcher is not None:
@@ -98,16 +98,14 @@ class NBAPredictor:
             'arena': ['Crypto.com Arena', 'Chase Center']
         })
 
-        print(f"✓ Found {len(games)} sample games")
         return games
 
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Prepare features for prediction from games data."""
-        print("🔧 Preparing prediction features...")
+
 
         try:
             # Use minimal features directly for model compatibility
-            print("🔧 Using minimal features for model compatibility")
             return self._create_minimal_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
@@ -200,7 +198,7 @@ class NBAPredictor:
 
     def _create_minimal_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Create minimal features as absolute fallback."""
-        print("🔧 Creating minimal fallback features...")
+
         
         features_list = []
         
@@ -274,7 +272,7 @@ class NBAPredictor:
 
     def predict_games(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Make predictions for upcoming games."""
-        print("🔮 Making game predictions...")
+
 
         # Prepare features
         features = self.prepare_prediction_features(games_df)
@@ -313,13 +311,12 @@ class NBAPredictor:
             results.append(result)
 
         predictions_df = pd.DataFrame(results)
-        print(f"✓ Generated predictions for {len(predictions_df)} games")
 
         return predictions_df
 
     def calculate_betting_edges(self, predictions_df: pd.DataFrame) -> pd.DataFrame:
         """Calculate betting edges based on model probabilities vs market odds."""
-        print("💰 Calculating betting edges...")
+        # Calculate edges
 
         predictions_with_edges = predictions_df.copy()
 
@@ -359,7 +356,6 @@ class NBAPredictor:
             predictions_with_edges['away_odds']
         )
 
-        print(f"✓ Calculated edges for {len(predictions_with_edges)} games")
         return predictions_with_edges
 
     def save_predictions(self, predictions_df: pd.DataFrame, target_date: date = None) -> Path:
@@ -374,7 +370,6 @@ class NBAPredictor:
         filepath = predictions_dir / filename
 
         predictions_df.to_csv(filepath, index=False)
-        print(f"💾 Predictions saved to: {filepath}")
 
         return filepath
 
