@@ -26,7 +26,7 @@ class RealTimeOddsIntegrator:
             print("⚠️  No odds API key found, using simulated odds")
             return pd.DataFrame()
 
-        print("💰 Fetching current NBA odds...")
+        # Fetch odds
 
         try:
             url = f"{self.base_url}/sports/basketball_nba/odds"
@@ -85,7 +85,6 @@ class RealTimeOddsIntegrator:
                     })
 
             odds_df = pd.DataFrame(odds_data)
-            print(f"✓ Fetched odds for {len(odds_df)} games")
             return odds_df
 
         except Exception as e:
@@ -146,7 +145,7 @@ class RealTimeOddsIntegrator:
             # Use simulated realistic odds
             return self._add_simulated_odds(games_df)
 
-        print("🔗 Merging games with current odds...")
+        # Merge data
 
         # Merge on date and team matchup
         merged = games_df.merge(
@@ -161,7 +160,6 @@ class RealTimeOddsIntegrator:
             print(f"⚠️  {missing_odds.sum()} games missing odds, using simulated values")
             merged = self._add_simulated_odds(merged, missing_only=True)
 
-        print(f"✓ Merged {len(merged)} games with odds")
         return merged
 
     def _add_simulated_odds(self, games_df: pd.DataFrame, missing_only: bool = False) -> pd.DataFrame:
@@ -189,21 +187,19 @@ class RealTimeOddsIntegrator:
         if target_date is None:
             target_date = date.today()
 
-        print(f"🏀 Getting complete game data for {target_date}...")
+        # Get games for target date
 
         # Get game schedule
         fetcher = LiveNBADataFetcher()
         games = fetcher.get_todays_games(target_date)
 
         if len(games) == 0:
-            print("📭 No games found for today")
             return pd.DataFrame()
-
+        
         # Get current odds
         odds = self.get_current_nba_odds()
 
         # Merge games with odds
         complete_data = self.merge_games_with_odds(games, odds)
 
-        print(f"✅ Complete data ready for {len(complete_data)} games")
         return complete_data
