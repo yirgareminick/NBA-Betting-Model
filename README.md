@@ -30,9 +30,8 @@ NBA-Betting-Model/
 ├── reports/                      # Generated reports
 │   └── performance/              # Performance analytics
 ├── scripts/                      # Automation scripts
-│   ├── daily_predictions.py      # Simple daily predictions
-y   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
-y   ├── daily_update.py           # Data refresh automation
+│   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
+│   ├── daily_update.py           # Data refresh automation
 │   ├── weekly_refresh.py         # Weekly maintenance
 │   └── scheduler.py              # Python-based task scheduler
 ├── src/                          # Source code
@@ -103,8 +102,8 @@ y   ├── daily_update.py           # Data refresh automation
 
 ### 1. **Environment Setup**
 ```bash
-git clone https://github.com/yourname/nba-betting.git  
-cd nba-betting
+git clone https://github.com/yirgareminick/NBA-Betting-Model.git  
+cd NBA-Betting-Model
 poetry install
 
 # Install optional advanced ML libraries
@@ -133,25 +132,27 @@ python src/models/advanced_trainer.py
 
 ### 4. **Daily Operations**
 
-#### Simple Predictions (Recommended for beginners)
-```bash
-# Generate predictions only
-python scripts/daily_predictions.py --predictions-only
+#### Daily Operations
 
-# Full betting analysis
-python scripts/daily_predictions.py --bankroll 10000
+#### Complete Daily Pipeline (Recommended)
+```bash
+# Generate predictions and betting analysis
+python scripts/daily_betting_pipeline.py --bankroll 10000
+
+# Full betting analysis with specific date
+python scripts/daily_betting_pipeline.py --bankroll 15000 --date 2025-12-23
 ```
 
-#### Enhanced Pipeline (Recommended for production)
+#### Advanced Pipeline Options
 ```bash
-# Complete daily pipeline with monitoring
-python scripts/daily_betting_pipeline.py --bankroll 15000
-
 # Force model retraining
-python scripts/daily_betting_pipeline.py --retrain
+python scripts/daily_betting_pipeline.py --retrain --bankroll 15000
 
 # Dry run (no actual betting recommendations saved)
-python scripts/daily_betting_pipeline.py --dry-run --notify
+python scripts/daily_betting_pipeline.py --dry-run --notify --bankroll 10000
+
+# Quiet mode with custom config
+python scripts/daily_betting_pipeline.py --quiet --config configs/custom.yml
 ```
 
 ### 5. **Testing**
