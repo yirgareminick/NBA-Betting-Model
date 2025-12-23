@@ -257,7 +257,6 @@ def main():
         try:
             target_date = datetime.strptime(args.date, '%Y-%m-%d').date()
         except ValueError:
-            print("❌ Invalid date format. Use YYYY-MM-DD")
             sys.exit(1)
     else:
         target_date = date.today()
@@ -270,7 +269,6 @@ def main():
             with open(config_path, 'r') as f:
                 config = yaml.safe_load(f)
         else:
-            print(f"❌ Config file not found: {config_path}")
             sys.exit(1)
     
     try:
@@ -287,21 +285,19 @@ def main():
         
         # Print summary if not quiet
         if not args.quiet:
-            print("\n📊 PIPELINE SUMMARY")
-            print("=" * 50)
+            print("Pipeline summary:")
             print(f"Status: {results['status']}")
             print(f"Games analyzed: {results.get('games_found', 0)}")
             print(f"Recommended bets: {results.get('recommended_bets', 0)}")
             print(f"Expected value: ${results.get('expected_value', 0):.2f}")
             
             if results.get('model_retrained'):
-                print("🔄 Model was retrained")
+                print("Model was retrained")
         
         # Exit with appropriate code
         sys.exit(0 if results['status'] in ['completed_successfully', 'completed_no_games'] else 1)
         
     except Exception as e:
-        print(f"❌ Pipeline execution failed: {e}")
         sys.exit(1)
 
 
