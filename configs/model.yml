@@ -1,5 +1,11 @@
 # Model configuration for NBA Betting Model
 
+# Data paths (reference paths.yml for directory structure)
+data_config:
+  features_file: "nba_features.parquet"
+  games_file: "games_*.csv"
+  odds_file: "odds_basketball_nba_us.csv"
+
 # Feature engineering settings
 features:
   lookback_games: 10           # Number of games for rolling averages
@@ -38,3 +44,16 @@ betting:
 thresholds:
   min_accuracy: 0.55          # Minimum model accuracy to use predictions
   retrain_threshold: 0.05     # Accuracy drop that triggers retraining
+  max_days_since_training: 7  # Days before forced retraining
+
+# Logging and monitoring
+logging:
+  level: "INFO"
+  console: true
+  file: true
+  
+# API settings
+api:
+  kaggle_rate_limit: 100      # Requests per hour
+  odds_api_rate_limit: 500    # Requests per month
+  basketball_ref_delay: 1     # Seconds between requests
