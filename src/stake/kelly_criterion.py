@@ -67,6 +67,7 @@ class KellyCriterion:
 
     def calculate_bet_sizes(self, predictions_df: pd.DataFrame, bankroll: float) -> pd.DataFrame:
         """Calculate bet sizes for multiple games."""
+        print(f"💰 Calculating bet sizes for bankroll: ${bankroll:,.2f}")
 
         betting_df = predictions_df.copy()
 
@@ -79,6 +80,7 @@ class KellyCriterion:
         betting_df['kelly_fraction'] = 0.0
 
         if not valid_bets.any():
+            print("⚠️  No bets meet minimum edge requirement")
             return betting_df
 
         # Calculate stakes for valid bets
@@ -104,9 +106,14 @@ class KellyCriterion:
         # Sort by expected value (highest first)
         betting_df = betting_df.sort_values('expected_value', ascending=False)
 
-        total_stake = betting_df['bet_size'].sum()
+        total_stake = betting_df['stake_amount'].sum()
         total_ev = betting_df['expected_value'].sum()
         num_bets = betting_df['recommended_bet'].sum()
+
+        print(f"✓ Recommended {num_bets} bets")
+        print(f"  - Total stake: ${total_stake:,.2f} ({total_stake/bankroll:.1%} of bankroll)")
+        print(f"  - Total expected value: ${total_ev:,.2f}")
+        print(f"  - Average edge: {betting_df[betting_df['recommended_bet']]['best_bet_edge'].mean():.1%}")
 
         return betting_df
 
@@ -154,6 +161,9 @@ class KellyCriterion:
 def calculate_daily_bets(predictions_df: pd.DataFrame, bankroll: float,
                         config: Dict = None) -> Tuple[pd.DataFrame, Dict]:
     """Main function to calculate daily betting recommendations."""
+    print("=" * 80)
+    print("💰 DAILY BETTING ANALYSIS")
+    print("=" * 80)
 
     kelly = KellyCriterion(config)
 
@@ -163,7 +173,7 @@ def calculate_daily_bets(predictions_df: pd.DataFrame, bankroll: float,
     # Simulate outcomes
     simulation_results = kelly.simulate_betting_outcomes(betting_recommendations)
 
-    print("Simulation results:")
+    print("\n📊 SIMULATION RESULTS:")
     print(f"  - Expected return: ${simulation_results['mean_return']:,.2f}")
     print(f"  - Standard deviation: ${simulation_results['std_return']:,.2f}")
     print(f"  - Probability of profit: {simulation_results['prob_profit']:.1%}")

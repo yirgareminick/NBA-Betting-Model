@@ -17,11 +17,20 @@ class RealTimeOddsIntegrator:
     """Integrates real-time odds with live game schedule."""
 
     def __init__(self, odds_api_key: str = None):
+        """Initialize the real-time odds integration client.
+        
+        Args:
+            odds_api_key: The Odds API key for fetching real-time odds
+        """
         self.odds_api_key = odds_api_key or os.getenv('ODDS_API_KEY')
         self.base_url = "https://api.the-odds-api.com/v4"
 
     def get_current_nba_odds(self) -> pd.DataFrame:
-        """Get current NBA odds from The Odds API."""
+        """Get current NBA odds from The Odds API.
+        
+        Returns:
+            DataFrame containing current NBA moneyline odds from various bookmakers
+        """
         if not self.odds_api_key:
             print("⚠️  No odds API key found, using simulated odds")
             return pd.DataFrame()

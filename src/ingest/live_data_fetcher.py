@@ -46,6 +46,7 @@ class LiveNBADataFetcher:
             return pd.DataFrame(games)
 
         except Exception as e:
+            print(f"Error fetching NBA games: {e}")
             return self._get_fallback_games(target_date)
 
     def _get_fallback_games(self, target_date: date) -> pd.DataFrame:
@@ -122,6 +123,7 @@ if __name__ == "__main__":
         try:
             target_date = datetime.strptime(args.date, "%Y-%m-%d").date()
         except Exception as e:
+            print(f"Invalid date format: {e}")
             target_date = date.today()
     else:
         target_date = date.today()

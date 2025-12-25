@@ -34,9 +34,18 @@ except ImportError:
 
 
 class NBAPredictor:
-    """NBA game outcome predictor using trained models."""
+    """NBA game outcome predictor using trained models.
+    
+    This class loads trained NBA models and generates predictions for upcoming games,
+    handling feature preparation and model inference for moneyline betting decisions.
+    """
 
     def __init__(self, model_path: Optional[Path] = None):
+        """Initialize the NBA predictor with model loading.
+        
+        Args:
+            model_path: Optional path to trained model file. If None, uses latest model.
+        """
         self.project_root = Path(__file__).parent.parent.parent
         self.model_path = model_path or self.project_root / "models" / "nba_model_latest.joblib"
         self.metadata_path = self.project_root / "models" / "nba_model_latest_metadata.yml"
@@ -48,6 +57,7 @@ class NBAPredictor:
         self._load_model()
 
     def _load_model(self):
+        """Load the trained model and its metadata from disk."""
         """Load the trained model and its metadata."""
         if not self.model_path.exists():
             raise FileNotFoundError(f"Model file not found: {self.model_path}")

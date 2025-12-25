@@ -173,10 +173,7 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
    python scripts/manual_update.py
    
    # Enhanced daily pipeline (recommended)
-   python scripts/daily_betting_pipeline.py --bankroll 10000
-   
-   # Daily pipeline with specific options
-   python scripts/daily_betting_pipeline.py --retrain --notify --bankroll 15000
+   python scripts/daily_betting_pipeline.py
    ```
 
 4. **Monitor and optimize**:
@@ -195,5 +192,5 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
 
 ---
 
-*Last updated: December 2025*
+*Last updated: July 2025*
 *Next review: Quarterly or when NBA schedule changes*
