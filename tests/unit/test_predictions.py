@@ -70,7 +70,11 @@ class TestNBAPredictor(unittest.TestCase):
     def test_build_team_features(self):
         """Test team feature building."""
         predictor = NBAPredictor.__new__(NBAPredictor)
-        predictor.feature_columns = ['is_home', 'team_points_avg', 'team_rebounds_avg']
+        # Use realistic feature columns that match actual implementation
+        predictor.feature_columns = [
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
+            'rest_days', 'season_win_pct'
+        ]
         
         features = predictor._build_team_features('LAL', 'BOS', True, date.today())
         
@@ -90,7 +94,13 @@ class TestNBAPredictor(unittest.TestCase):
         mock_load_model.return_value = None
         
         predictor = NBAPredictor()
-        predictor.feature_columns = ['is_home', 'team_points_avg']
+        # Use feature columns that match the actual feature generation
+        predictor.feature_columns = [
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
+            'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
+            'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
+            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+        ]
         
         # Sample games data
         games_df = pd.DataFrame({
