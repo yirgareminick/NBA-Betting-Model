@@ -119,31 +119,28 @@ class KellyCriterion:
 
     def simulate_betting_outcomes(self, betting_df: pd.DataFrame,
                                  num_simulations: int = 1000) -> Dict:
-        """Simulate betting outcomes to assess risk."""
+        """Simulate betting outcomes to assess risk with optimized performance."""
         recommended_bets = betting_df[betting_df['recommended_bet']].copy()
 
         if len(recommended_bets) == 0:
             return {'mean_return': 0, 'std_return': 0, 'prob_profit': 0}
 
-        simulations = []
-
-        for _ in range(num_simulations):
-            total_return = 0
-
-            for _, bet in recommended_bets.iterrows():
-                stake = bet['stake_amount']
-                p_win = bet['best_bet_prob']
-                odds = bet['best_bet_odds']
-
-                # Simulate outcome
-                if np.random.random() < p_win:
-                    # Win: get back stake + profit
-                    total_return += stake * (odds - 1)
-                else:
-                    # Loss: lose stake
-                    total_return -= stake
-
-            simulations.append(total_return)
+        # Extract bet data for vectorized operations
+        stakes = recommended_bets['stake_amount'].values
+        p_wins = recommended_bets['best_bet_prob'].values
+        odds = recommended_bets['best_bet_odds'].values
+        
+        # Pre-calculate profit/loss amounts
+        win_returns = stakes * (odds - 1)  # Profit on win
+        loss_returns = -stakes              # Loss on loss
+        
+        # Vectorized simulation using numpy
+        random_outcomes = np.random.random((num_simulations, len(stakes)))
+        wins = random_outcomes < p_wins[np.newaxis, :]
+        
+        # Calculate returns for each simulation
+        returns = np.where(wins, win_returns, loss_returns)
+        simulations = returns.sum(axis=1)
 
         simulations = np.array(simulations)
 

@@ -55,12 +55,20 @@ class FeatureEngineer:
         }
 
     def load_games_data(self) -> pl.DataFrame:
-        """Load and clean games data from CSV"""
+        """Load and clean games data from CSV with optimized performance."""
         if not self.data_paths['games'].exists():
             raise FileNotFoundError(f"Games data not found at {self.data_paths['games']}")
 
-        # Load with polars for better performance
-        df = pl.read_csv(self.data_paths['games'])
+        # Load with polars and optimize data types for memory efficiency
+        df = pl.read_csv(
+            self.data_paths['games'],
+            dtypes={
+                'game_id': pl.Utf8,
+                'pts_home': pl.Int16,
+                'pts_away': pl.Int16,
+                'season': pl.Int16
+            }
+        )
 
         # Clean and standardize
         df = df.with_columns([
@@ -171,45 +179,51 @@ class FeatureEngineer:
 
     def create_rolling_features(self, team_games: pl.DataFrame,
                               lookback: int = None) -> pl.DataFrame:
-        """Create rolling statistics for each team"""
-
+        """Create rolling statistics for each team with optimized window operations."""
 
         if lookback is None:
             lookback = self.config.get('lookback_games', 10)
 
-        # Sort by team and date
+        # Sort by team and date for optimal window operations
         team_games = team_games.sort(["team_name", "game_date"])
 
-        # Create rolling features using window functions
-        rolling_features = team_games.with_columns([
-            # Rolling averages (excluding current game)
+        # Create rolling features using vectorized window functions
+        # Group operations by categories to reduce multiple passes through data
+        basic_stats = [
             pl.col("pts_for").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_pts_last_{lookback}"),
             pl.col("pts_against").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_pts_allowed_last_{lookback}"),
             pl.col("point_diff").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_point_diff_last_{lookback}"),
             pl.col("win_numeric").shift(1).rolling_mean(lookback).over("team_name").alias(f"win_pct_last_{lookback}"),
-
-            # Rolling shooting percentages
+        ]
+        
+        shooting_stats = [
             pl.col("fg_pct").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_fg_pct_last_{lookback}"),
             pl.col("fg3_pct").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_fg3_pct_last_{lookback}"),
             pl.col("ft_pct").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_ft_pct_last_{lookback}"),
-
-            # Rolling advanced stats
+        ]
+        
+        advanced_stats = [
             pl.col("rebounds").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_rebounds_last_{lookback}"),
             pl.col("assists").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_assists_last_{lookback}"),
             pl.col("turnovers").shift(1).rolling_mean(lookback).over("team_name").alias(f"avg_turnovers_last_{lookback}"),
-
-            # Recent form (last 5 games)
+        ]
+        
+        recent_form = [
             pl.col("win_numeric").shift(1).rolling_mean(5).over("team_name").alias("win_pct_last_5"),
             pl.col("point_diff").shift(1).rolling_mean(5).over("team_name").alias("avg_point_diff_last_5"),
+        ]
 
-            # Home/Away splits
-            pl.when(pl.col("venue") == "home")
-              .then(pl.col("win_numeric").shift(1))
-              .otherwise(None)
-              .rolling_mean(lookback).over("team_name").alias(f"home_win_pct_last_{lookback}"),
+        # Apply all rolling calculations in single operation for better performance
+        rolling_features = team_games.with_columns(
+            basic_stats + shooting_stats + advanced_stats + recent_form + [
+                # Home/Away splits - optimized conditional logic
+                pl.when(pl.col("venue") == "home")
+                  .then(pl.col("win_numeric").shift(1))
+                  .otherwise(None)
+                  .rolling_mean(lookback).over("team_name").alias(f"home_win_pct_last_{lookback}"),
 
-            pl.when(pl.col("venue") == "away")
-              .then(pl.col("win_numeric").shift(1))
+                pl.when(pl.col("venue") == "away")
+                  .then(pl.col("win_numeric").shift(1))
               .otherwise(None)
               .rolling_mean(lookback).over("team_name").alias(f"away_win_pct_last_{lookback}"),
 
