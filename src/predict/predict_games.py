@@ -50,6 +50,11 @@ class NBAPredictor:
         self.model_path = model_path or self.project_root / "models" / "nba_model_latest.joblib"
         self.metadata_path = self.project_root / "models" / "nba_model_latest_metadata.yml"
 
+        # Add simple cache for model and features
+        self._model_cache = {}
+        self._feature_cache = {}
+        self.metadata_path = self.project_root / "models" / "nba_model_latest_metadata.yml"
+
         self.model = None
         self.feature_columns = None
         self.metadata = None
@@ -58,7 +63,15 @@ class NBAPredictor:
 
     def _load_model(self):
         """Load the trained model and its metadata from disk."""
-        """Load the trained model and its metadata."""
+        # Check cache first
+        cache_key = str(self.model_path)
+        if cache_key in self._model_cache:
+            cached_data = self._model_cache[cache_key]
+            self.model = cached_data['model']
+            self.feature_columns = cached_data['feature_columns'] 
+            self.metadata = cached_data['metadata']
+            return
+            
         if not self.model_path.exists():
             raise FileNotFoundError(f"Model file not found: {self.model_path}")
 

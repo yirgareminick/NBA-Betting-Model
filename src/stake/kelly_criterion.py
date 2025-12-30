@@ -70,7 +70,7 @@ class KellyCriterion:
 
     def calculate_bet_sizes(self, predictions_df: pd.DataFrame, bankroll: float) -> pd.DataFrame:
         """Calculate bet sizes for multiple games."""
-        print(f"💰 Calculating bet sizes for bankroll: ${bankroll:,.2f}")
+        logger.info(f"Calculating bet sizes for bankroll: ${bankroll:,.2f}")
 
         betting_df = predictions_df.copy()
 
