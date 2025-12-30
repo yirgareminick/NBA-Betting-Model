@@ -10,6 +10,9 @@ import numpy as np
 from typing import Dict, Tuple, Optional
 import yaml
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class KellyCriterion:
