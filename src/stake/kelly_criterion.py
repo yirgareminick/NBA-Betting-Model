@@ -83,7 +83,7 @@ class KellyCriterion:
         betting_df['kelly_fraction'] = 0.0
 
         if not valid_bets.any():
-            print("⚠️  No bets meet minimum edge requirement")
+            logger.warning("No bets meet minimum edge requirement")
             return betting_df
 
         # Calculate stakes for valid bets
