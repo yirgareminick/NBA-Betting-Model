@@ -109,14 +109,11 @@ class KellyCriterion:
         # Sort by expected value (highest first)
         betting_df = betting_df.sort_values('expected_value', ascending=False)
 
-        total_stake = betting_df['stake_amount'].sum()
+        total_stake = betting_df['bet_size'].sum()
         total_ev = betting_df['expected_value'].sum()
         num_bets = betting_df['recommended_bet'].sum()
 
-        print(f"✓ Recommended {num_bets} bets")
-        print(f"  - Total stake: ${total_stake:,.2f} ({total_stake/bankroll:.1%} of bankroll)")
-        print(f"  - Total expected value: ${total_ev:,.2f}")
-        print(f"  - Average edge: {betting_df[betting_df['recommended_bet']]['best_bet_edge'].mean():.1%}")
+        logger.info(f"Recommended {num_bets} bets, ${total_stake:,.2f} total stake, ${total_ev:,.2f} EV")
 
         return betting_df
 
