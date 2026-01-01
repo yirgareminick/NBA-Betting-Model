@@ -158,9 +158,7 @@ class KellyCriterion:
 def calculate_daily_bets(predictions_df: pd.DataFrame, bankroll: float,
                         config: Dict = None) -> Tuple[pd.DataFrame, Dict]:
     """Main function to calculate daily betting recommendations."""
-    print("=" * 80)
-    print("💰 DAILY BETTING ANALYSIS")
-    print("=" * 80)
+    logger.info("Starting daily betting analysis")
 
     kelly = KellyCriterion(config)
 
