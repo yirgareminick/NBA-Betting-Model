@@ -168,12 +168,8 @@ def calculate_daily_bets(predictions_df: pd.DataFrame, bankroll: float,
     # Simulate outcomes
     simulation_results = kelly.simulate_betting_outcomes(betting_recommendations)
 
-    print("\n📊 SIMULATION RESULTS:")
-    print(f"  - Expected return: ${simulation_results['mean_return']:,.2f}")
-    print(f"  - Standard deviation: ${simulation_results['std_return']:,.2f}")
-    print(f"  - Probability of profit: {simulation_results['prob_profit']:.1%}")
-    print(f"  - 5th percentile: ${simulation_results['percentile_5']:,.2f}")
-    print(f"  - 95th percentile: ${simulation_results['percentile_95']:,.2f}")
+    logger.info(f"Simulation: Expected ${simulation_results['mean_return']:,.2f}, "
+               f"Profit prob: {simulation_results['prob_profit']:.1%}")
 
     return betting_recommendations, simulation_results
 
