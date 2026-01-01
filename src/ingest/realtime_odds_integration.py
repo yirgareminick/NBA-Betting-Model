@@ -11,6 +11,9 @@ import numpy as np
 import requests
 import os
 from datetime import datetime, date
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class RealTimeOddsIntegrator:
