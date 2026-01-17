@@ -35,7 +35,7 @@ class RealTimeOddsIntegrator:
             DataFrame containing current NBA moneyline odds from various bookmakers
         """
         if not self.odds_api_key:
-            print("⚠️  No odds API key found, using simulated odds")
+            logger.warning("No odds API key found, using simulated odds")
             return pd.DataFrame()
 
         # Fetch odds
