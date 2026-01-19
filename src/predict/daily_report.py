@@ -1,9 +1,11 @@
 """
-Daily betting report generator.
+Daily betting report generator with multiple output formats.
 """
-from datetime import date
-from typing import Dict
+from datetime import date, datetime
+from typing import Dict, Optional
+from pathlib import Path
 import pandas as pd
+import json
 from .predict_games import predict_daily_games
 
 # Default bankroll constant
