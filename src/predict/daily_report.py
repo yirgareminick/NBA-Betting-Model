@@ -12,6 +12,23 @@ from .predict_games import predict_daily_games
 DEFAULT_BANKROLL = 10000
 
 
+class ReportFormatter:
+    """Formats betting reports in various output formats."""
+    
+    def __init__(self):
+        self.project_root = Path(__file__).parent.parent.parent
+        self.reports_dir = self.project_root / "reports"
+        self.reports_dir.mkdir(exist_ok=True)
+    
+    def format_currency(self, amount: float) -> str:
+        """Format currency values."""
+        return f"${amount:,.2f}"
+    
+    def format_percentage(self, value: float) -> str:
+        """Format percentage values."""
+        return f"{value * 100:.2f}%"
+
+
 def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BANKROLL) -> Dict:
     """Generate a daily betting report."""
     from stake.kelly_criterion import calculate_daily_bets
