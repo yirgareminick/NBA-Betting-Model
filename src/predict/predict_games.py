@@ -53,7 +53,6 @@ class NBAPredictor:
         # Add simple cache for model and features
         self._model_cache = {}
         self._feature_cache = {}
-        self.metadata_path = self.project_root / "models" / "nba_model_latest_metadata.yml"
 
         self.model = None
         self.feature_columns = None

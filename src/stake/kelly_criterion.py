@@ -109,7 +109,7 @@ class KellyCriterion:
         # Sort by expected value (highest first)
         betting_df = betting_df.sort_values('expected_value', ascending=False)
 
-        total_stake = betting_df['bet_size'].sum()
+        total_stake = betting_df['stake_amount'].sum()
         total_ev = betting_df['expected_value'].sum()
         num_bets = betting_df['recommended_bet'].sum()
 
