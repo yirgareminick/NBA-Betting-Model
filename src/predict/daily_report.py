@@ -67,7 +67,7 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
         'total_stake': total_stake,
         'expected_value': expected_value,
         'games': predictions.to_dict('records') if not predictions.empty else [],
-        'timestamp': date.today().strftime('%Y-%m-%d %H:%M:%S'),
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'summary': f"Daily report generated for {target_date}"
     }
     
