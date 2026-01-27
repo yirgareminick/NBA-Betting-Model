@@ -25,7 +25,7 @@ class LiveNBADataFetcher:
 
             games = []
             for game in games_data['scoreboard']['games']:
-                #Convert UTC time to Eastern time for date matching
+                # Convert UTC time to Eastern time for date matching
                 utc_time = datetime.strptime(game['gameTimeUTC'], '%Y-%m-%dT%H:%M:%SZ')
                 eastern_time = utc_time - timedelta(hours=5)  # EST approximation
                 game_date = eastern_time.date()
@@ -130,5 +130,9 @@ if __name__ == "__main__":
 
     fetcher = LiveNBADataFetcher()
     games_df = fetcher.get_todays_games(target_date)
+    
     if not games_df.empty:
-        pass
+        print(f"\n✅ Found {len(games_df)} game(s) for {target_date}")
+        print(games_df[['home_team', 'away_team', 'game_status']].to_string(index=False))
+    else:
+        print(f"\n📭 No games found for {target_date}")
