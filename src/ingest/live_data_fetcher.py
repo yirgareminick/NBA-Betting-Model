@@ -83,7 +83,8 @@ class LiveNBADataFetcher:
 
             return pd.DataFrame(games)
 
-        except Exception:
+        except Exception as e:
+            print(f"⚠️  ESPN API fallback failed: {e}")
             return pd.DataFrame()
 
     def add_current_odds(self, games_df: pd.DataFrame) -> pd.DataFrame:

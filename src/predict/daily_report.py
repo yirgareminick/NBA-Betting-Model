@@ -54,9 +54,9 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
             recommended_bets = betting_recommendations['recommended_bet'].sum()
             total_stake = betting_recommendations['stake_amount'].sum()
             expected_value = betting_recommendations['expected_value'].sum()
-        except Exception:
+        except Exception as e:
             # If calculation fails, keep defaults
-            pass
+            print(f"⚠️  Betting calculation failed: {e}")
     
     # Simple report structure
     report = {

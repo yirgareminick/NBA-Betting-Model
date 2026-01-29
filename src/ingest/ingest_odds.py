@@ -63,7 +63,8 @@ def parse_odds(json_data):
                     return None
                 try:
                     odds_val = float(odds_val)
-                except Exception:
+                except (ValueError, TypeError):
+                    # Invalid odds format, return None
                     return None
                 if odds_val > 0:
                     return 100 / (odds_val + 100)
