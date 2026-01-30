@@ -123,15 +123,20 @@ class NBAPredictor:
         return games
 
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Prepare features for prediction from games data."""
-
-
+        """Prepare features for prediction from games data.
+        
+        Args:
+            games_df: DataFrame containing game information
+            
+        Returns:
+            DataFrame with engineered features ready for model prediction
+        """
         try:
             # Use minimal features directly for model compatibility
             return self._create_minimal_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
-            raise e
+            raise
 
 
 

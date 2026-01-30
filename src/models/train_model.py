@@ -149,8 +149,12 @@ class NBAModelTrainer:
 
         return metrics
 
-    def save_model(self, metrics: dict) -> tuple:
-        """Save the trained model and metadata."""
+    def save_model(self, metrics: dict) -> tuple[Path, Path]:
+        """Save the trained model and metadata.
+        
+        Returns:
+            tuple: (model_file_path, metadata_file_path)
+        """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Save model
