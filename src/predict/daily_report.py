@@ -1,4 +1,4 @@
-"""
+"""  
 Daily betting report generator with multiple output formats.
 """
 from datetime import date, datetime
@@ -7,9 +7,7 @@ from pathlib import Path
 import pandas as pd
 import json
 from .predict_games import predict_daily_games
-
-# Default bankroll constant
-DEFAULT_BANKROLL = 10000
+from ..constants import DEFAULT_BANKROLL
 
 
 class ReportFormatter:

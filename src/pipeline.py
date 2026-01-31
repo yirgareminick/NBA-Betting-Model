@@ -12,9 +12,7 @@ from models.train_model import NBAModelTrainer
 from predict.daily_report import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
-
-# Constants
-DEFAULT_BANKROLL = 10000
+from constants import DEFAULT_BANKROLL
 
 # ── Data ingestion and model training tasks ─────────────────────────
 @task
