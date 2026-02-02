@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
+from typing import Tuple
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import classification_report, accuracy_score
@@ -41,8 +42,12 @@ class NBAModelTrainer:
         print(f"✓ Features: {len(df):,} records")
         return df
 
-    def prepare_training_data(self, df: pd.DataFrame) -> tuple:
-        """Prepare features and target for model training."""
+    def prepare_training_data(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+        """Prepare features and target for model training.
+        
+        Returns:
+            Tuple[pd.DataFrame, pd.Series]: (features, target)
+        """
 
 
         # Select feature columns (exclude metadata and target)
@@ -149,11 +154,11 @@ class NBAModelTrainer:
 
         return metrics
 
-    def save_model(self, metrics: dict) -> tuple[Path, Path]:
+    def save_model(self, metrics: dict) -> Tuple[Path, Path]:
         """Save the trained model and metadata.
         
         Returns:
-            tuple: (model_file_path, metadata_file_path)
+            Tuple[Path, Path]: (model_file_path, metadata_file_path)
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 

@@ -1,17 +1,15 @@
-#!/usr/bin/env python3
-"""
-Real-Time Odds Integration for NBA Predictions
-
-This script integrates current betting odds with live game data for real-time predictions.
-It combines free NBA schedule data with your existing paid odds API.
-"""
-
 import pandas as pd
 import numpy as np
 import requests
 import os
 from datetime import datetime, date
 import logging
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+from constants import ODDS_API_SPORT, ODDS_API_ENDPOINT
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +24,7 @@ class RealTimeOddsIntegrator:
             odds_api_key: The Odds API key for fetching real-time odds
         """
         self.odds_api_key = odds_api_key or os.getenv('ODDS_API_KEY')
-        self.base_url = "https://api.the-odds-api.com/v4"
+        self.base_url = ODDS_API_ENDPOINT
 
     def get_current_nba_odds(self) -> pd.DataFrame:
         """Get current NBA odds from The Odds API.
