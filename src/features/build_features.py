@@ -224,8 +224,8 @@ class FeatureEngineer:
 
                 pl.when(pl.col("venue") == "away")
                   .then(pl.col("win_numeric").shift(1))
-              .otherwise(None)
-              .rolling_mean(lookback).over("team_name").alias(f"away_win_pct_last_{lookback}"),
+                  .otherwise(None)
+                  .rolling_mean(lookback).over("team_name").alias(f"away_win_pct_last_{lookback}"),
 
             # Games count for validation
             pl.col("game_id").shift(1).count().over("team_name").alias("games_played")

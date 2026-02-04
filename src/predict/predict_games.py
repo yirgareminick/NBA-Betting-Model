@@ -105,7 +105,7 @@ class NBAPredictor:
                     return pd.DataFrame()
 
             except Exception as e:
-                pass  # Fall back to sample data
+                print(f"⚠️  Live data fetch failed: {e}, using fallback")
 
         # Fallback to sample data for development/testing
         games = pd.DataFrame({
