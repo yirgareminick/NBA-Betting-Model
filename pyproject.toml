@@ -3,7 +3,7 @@ name = "nba-betting-model"
 version = "0.1.0"
 description = "A comprehensive machine learning pipeline for NBA moneyline betting predictions using advanced analytics and Kelly criterion bet sizing"
 authors = [
-    {name = "yirga reminick", email = "yirgareminick@gmail.com"}
+    {name = "Yirga Reminick", email = "yirgareminick@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
