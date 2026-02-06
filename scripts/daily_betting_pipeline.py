@@ -99,7 +99,7 @@ class DailyBettingPipeline:
         try:
             predictions = predict_daily_games(target_date)
             
-            if len(predictions) == 0:
+            if predictions.empty:
                 self.log_message("No games found")
                 return {'predictions': predictions, 'games_found': 0}
             

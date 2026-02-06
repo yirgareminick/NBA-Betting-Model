@@ -121,7 +121,7 @@ class KellyCriterion:
         """Simulate betting outcomes to assess risk with optimized performance."""
         recommended_bets = betting_df[betting_df['recommended_bet']].copy()
 
-        if len(recommended_bets) == 0:
+        if recommended_bets.empty:
             return {'mean_return': 0, 'std_return': 0, 'prob_profit': 0}
 
         # Extract bet data for vectorized operations
