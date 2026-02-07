@@ -72,7 +72,7 @@ class AutomationBase:
         
         for config_file in config_files:
             if config_file.exists():
-                with open(config_file, 'r') as f:
+                with open(config_file, 'r', encoding='utf-8') as f:
                     file_config = yaml.safe_load(f)
                     if file_config:
                         config.update(file_config)
