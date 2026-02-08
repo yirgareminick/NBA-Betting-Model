@@ -50,8 +50,6 @@ class NBAModelTrainer:
         Returns:
             Tuple[pd.DataFrame, pd.Series]: (features, target)
         """
-
-
         # Select feature columns (exclude metadata and target)
         exclude_cols = ['game_id', 'game_date', 'team_name', 'opponent', 'target_win', 'venue']
         candidate_features = [col for col in df.columns if col not in exclude_cols]
