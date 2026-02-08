@@ -236,8 +236,6 @@ class FeatureEngineer:
 
     def add_rest_days(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Calculate rest days between games for each team"""
-
-
         team_games = team_games.with_columns([
             # Calculate days since last game
             (pl.col("game_date") - pl.col("game_date").shift(1).over("team_name")).dt.total_days().alias("rest_days")
@@ -252,8 +250,6 @@ class FeatureEngineer:
 
     def add_season_trends(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Add season-long trend features"""
-
-
         team_games = team_games.with_columns([
             # Season win percentage (excluding current game)
             pl.col("win_numeric").shift(1).mean().over(["team_name", "season_id"]).alias("season_win_pct"),
