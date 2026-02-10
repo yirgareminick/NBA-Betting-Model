@@ -88,8 +88,6 @@ class NBAModelTrainer:
     def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None,
                    use_temporal_split: bool = True) -> dict:
         """Train the model and return metrics with proper temporal validation."""
-
-
         if use_temporal_split and df is not None and 'game_date' in df.columns:
             # Temporal split to prevent data leakage
             print("📅 Using temporal train/test split...")
