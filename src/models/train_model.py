@@ -11,12 +11,18 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 from typing import Tuple
+import sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import classification_report, accuracy_score
 import joblib
 import yaml
 import warnings
+
+# Add parent directory to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+from constants import MODEL_RANDOM_STATE, MODEL_TEST_SIZE
+
 # Suppress specific warnings for cleaner output
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -92,7 +98,7 @@ class NBAModelTrainer:
             # Temporal split to prevent data leakage
             print("📅 Using temporal train/test split...")
             df_sorted = df.sort_values('game_date').reset_index(drop=True)
-            split_idx = int(len(df_sorted) * 0.8)  # 80% for training
+            split_idx = int(len(df_sorted) * (1 - MODEL_TEST_SIZE))  # Use constant
 
             train_mask = np.arange(len(df_sorted)) < split_idx
             test_mask = np.arange(len(df_sorted)) >= split_idx
@@ -108,7 +114,7 @@ class NBAModelTrainer:
             # Fallback to random split (with warning)
             print("⚠️  Using random train/test split (may cause data leakage)")
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=0.2, random_state=42, stratify=y
+                X, y, test_size=MODEL_TEST_SIZE, random_state=MODEL_RANDOM_STATE, stratify=y
             )
 
         # Train model
@@ -117,7 +123,7 @@ class NBAModelTrainer:
             max_depth=10,
             min_samples_split=10,
             min_samples_leaf=5,
-            random_state=42,
+            random_state=MODEL_RANDOM_STATE,
             n_jobs=-1
         )
 
