@@ -265,7 +265,8 @@ class NBAPredictor:
         # Create DataFrame with exact feature order expected by model
         features_df = pd.DataFrame(features_list)
         
-        # Ensure columns are in the exact order the model expects (including duplicate is_home)
+        # Ensure columns are in the exact order the model expects
+        # Note: 'is_home' appears twice - this is intentional to match trained model structure
         expected_order = [
             'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10', 
             'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
