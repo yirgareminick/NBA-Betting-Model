@@ -21,7 +21,10 @@ import warnings
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
-from constants import MODEL_RANDOM_STATE, MODEL_TEST_SIZE
+from constants import (
+    MODEL_RANDOM_STATE, MODEL_TEST_SIZE, MODEL_N_ESTIMATORS,
+    MODEL_MAX_DEPTH, MODEL_MIN_SAMPLES_SPLIT, MODEL_MIN_SAMPLES_LEAF
+)
 
 # Suppress specific warnings for cleaner output
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -119,10 +122,10 @@ class NBAModelTrainer:
 
         # Train model
         self.model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            min_samples_split=10,
-            min_samples_leaf=5,
+            n_estimators=MODEL_N_ESTIMATORS,
+            max_depth=MODEL_MAX_DEPTH,
+            min_samples_split=MODEL_MIN_SAMPLES_SPLIT,
+            min_samples_leaf=MODEL_MIN_SAMPLES_LEAF,
             random_state=MODEL_RANDOM_STATE,
             n_jobs=-1
         )
