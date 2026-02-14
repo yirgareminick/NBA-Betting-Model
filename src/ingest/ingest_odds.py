@@ -13,11 +13,6 @@ from pathlib import Path
 import polars as pl
 import argparse
 from dotenv import load_dotenv
-import sys
-
-# Add parent directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
-from constants import ODDS_API_SPORT, ODDS_API_ENDPOINT
 
 
 load_dotenv()
@@ -26,7 +21,8 @@ API_KEY = os.getenv("ODDS_API_KEY")
 if not API_KEY:
     raise ValueError("Set ODDS_API_KEY in .env file. Get your free key at: https://the-odds-api.com/")
 
-ENDPOINT = f"{ODDS_API_ENDPOINT}/sports/{ODDS_API_SPORT}/odds"
+SPORT = "basketball_nba"
+ENDPOINT = f"https://api.the-odds-api.com/v4/sports/{SPORT}/odds"
 RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -67,8 +63,7 @@ def parse_odds(json_data):
                     return None
                 try:
                     odds_val = float(odds_val)
-                except (ValueError, TypeError):
-                    # Invalid odds format, return None
+                except Exception:
                     return None
                 if odds_val > 0:
                     return 100 / (odds_val + 100)

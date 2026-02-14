@@ -27,7 +27,7 @@ class FeatureEngineer:
     def _load_config(self, config_path: Optional[Path]) -> Dict:
         """Load configuration from YAML files"""
         if config_path and config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
+            with open(config_path, 'r') as f:
                 return yaml.safe_load(f)
 
         # Default configuration
@@ -224,8 +224,8 @@ class FeatureEngineer:
 
                 pl.when(pl.col("venue") == "away")
                   .then(pl.col("win_numeric").shift(1))
-                  .otherwise(None)
-                  .rolling_mean(lookback).over("team_name").alias(f"away_win_pct_last_{lookback}"),
+              .otherwise(None)
+              .rolling_mean(lookback).over("team_name").alias(f"away_win_pct_last_{lookback}"),
 
             # Games count for validation
             pl.col("game_id").shift(1).count().over("team_name").alias("games_played")
@@ -236,6 +236,8 @@ class FeatureEngineer:
 
     def add_rest_days(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Calculate rest days between games for each team"""
+
+
         team_games = team_games.with_columns([
             # Calculate days since last game
             (pl.col("game_date") - pl.col("game_date").shift(1).over("team_name")).dt.total_days().alias("rest_days")
@@ -250,6 +252,8 @@ class FeatureEngineer:
 
     def add_season_trends(self, team_games: pl.DataFrame) -> pl.DataFrame:
         """Add season-long trend features"""
+
+
         team_games = team_games.with_columns([
             # Season win percentage (excluding current game)
             pl.col("win_numeric").shift(1).mean().over(["team_name", "season_id"]).alias("season_win_pct"),

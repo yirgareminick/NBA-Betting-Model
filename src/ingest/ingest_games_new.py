@@ -81,7 +81,7 @@ class NBADataIngestion:
             print(f"✓ Dataset downloaded to: {dataset_path}")
             return dataset_path
         except Exception as e:
-            raise RuntimeError(f"Failed to download dataset: {e}") from e
+            raise Exception(f"Failed to download dataset: {e}")
 
     def copy_database_to_project(self, source_path: str) -> Path:
         """Copy the SQLite database to the project's raw data directory"""
@@ -204,8 +204,7 @@ class NBADataIngestion:
             parsed = pd.to_datetime(series.iloc[:sample_size], errors='coerce')
             valid_dates = parsed.notna().sum()
             return valid_dates > 0  # At least one valid date
-        except (ValueError, TypeError, AttributeError) as e:
-            print(f"[warning] Date parsing check failed: {e}")
+        except Exception:
             return False
 
     def _filter_by_year_column(self, df: pd.DataFrame, col: str, year_start: int, year_end: int) -> pd.DataFrame:

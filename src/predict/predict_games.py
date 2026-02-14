@@ -105,7 +105,7 @@ class NBAPredictor:
                     return pd.DataFrame()
 
             except Exception as e:
-                print(f"⚠️  Live data fetch failed: {e}, using fallback")
+                pass  # Fall back to sample data
 
         # Fallback to sample data for development/testing
         games = pd.DataFrame({
@@ -123,20 +123,17 @@ class NBAPredictor:
         return games
 
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Prepare features for prediction from games data.
-        
-        Args:
-            games_df: DataFrame containing game information
-            
-        Returns:
-            DataFrame with engineered features ready for model prediction
-        """
+        """Prepare features for prediction from games data."""
+
+
         try:
             # Use minimal features directly for model compatibility
             return self._create_minimal_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
-            raise
+            raise e
+
+
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup."""
@@ -265,8 +262,7 @@ class NBAPredictor:
         # Create DataFrame with exact feature order expected by model
         features_df = pd.DataFrame(features_list)
         
-        # Ensure columns are in the exact order the model expects
-        # Note: 'is_home' appears twice - this is intentional to match trained model structure
+        # Ensure columns are in the exact order the model expects (including duplicate is_home)
         expected_order = [
             'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10', 
             'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',

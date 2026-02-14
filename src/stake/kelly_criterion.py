@@ -86,12 +86,13 @@ class KellyCriterion:
             logger.warning("No bets meet minimum edge requirement")
             return betting_df
 
-        # Calculate stakes for valid bets (optimized with apply)
-        valid_indices = betting_df[valid_bets].index
-        
-        for idx in valid_indices:
-            p_win = betting_df.loc[idx, 'best_bet_prob']
-            odds = betting_df.loc[idx, 'best_bet_odds']
+        # Calculate stakes for valid bets
+        for idx in betting_df[valid_bets].index:
+            row = betting_df.loc[idx]
+
+            p_win = row['best_bet_prob']
+            odds = row['best_bet_odds']
+            edge = row['best_bet_edge']
 
             # Calculate Kelly fraction and stake
             kelly_frac = self.calculate_kelly_fraction(p_win, odds)

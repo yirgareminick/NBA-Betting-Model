@@ -12,7 +12,9 @@ from models.train_model import NBAModelTrainer
 from predict.daily_report import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
-from constants import DEFAULT_BANKROLL
+
+# Constants
+DEFAULT_BANKROLL = 10000
 
 # ── Data ingestion and model training tasks ─────────────────────────
 @task
@@ -27,7 +29,7 @@ def ingest_raw(run_date: date):
         print(f"✓ Ingested: {len(df)} games")
         return df
     else:
-        raise RuntimeError("Failed to ingest games data")
+        raise Exception("Failed to ingest games data")
 
 @task
 def build_features(df):

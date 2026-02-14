@@ -1,4 +1,4 @@
-"""  
+"""
 Daily betting report generator with multiple output formats.
 """
 from datetime import date, datetime
@@ -7,7 +7,9 @@ from pathlib import Path
 import pandas as pd
 import json
 from .predict_games import predict_daily_games
-from ..constants import DEFAULT_BANKROLL
+
+# Default bankroll constant
+DEFAULT_BANKROLL = 10000
 
 
 class ReportFormatter:
@@ -52,9 +54,9 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
             recommended_bets = betting_recommendations['recommended_bet'].sum()
             total_stake = betting_recommendations['stake_amount'].sum()
             expected_value = betting_recommendations['expected_value'].sum()
-        except Exception as e:
+        except Exception:
             # If calculation fails, keep defaults
-            print(f"⚠️  Betting calculation failed: {e}")
+            pass
     
     # Simple report structure
     report = {

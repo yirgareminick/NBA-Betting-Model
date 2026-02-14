@@ -9,13 +9,8 @@ import polars as pl
 import requests
 from bs4 import BeautifulSoup
 
-# Constants
 RAW_DIR = Path("data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
-
-REQUEST_TIMEOUT = 15  # seconds
-RATE_LIMIT_DELAY = 2  # seconds between requests
-CACHE_TTL_DAYS = 7  # cache validity period
 
 def fetch_bbref_table(season: int) -> pl.DataFrame:
     url = f"https://www.basketball-reference.com/leagues/NBA_{season}_ratings.html"
@@ -42,10 +37,10 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
 
     # Add a small delay to avoid rate limiting
     import time
-    time.sleep(RATE_LIMIT_DELAY)
+    time.sleep(2)
 
     try:
-        resp = requests.get(url, timeout=REQUEST_TIMEOUT, headers=headers)
+        resp = requests.get(url, timeout=15, headers=headers)
         resp.raise_for_status()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 403:
@@ -92,7 +87,7 @@ def fetch_season(season: int) -> pl.DataFrame:
             from datetime import datetime, timedelta
             file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
 
-            if file_age < timedelta(days=CACHE_TTL_DAYS):
+            if file_age < timedelta(days=7):
                 print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
                 try:
                     return pl.read_csv(csv_path)

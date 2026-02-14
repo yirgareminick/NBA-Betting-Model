@@ -10,7 +10,7 @@ import subprocess
 import sys
 from datetime import datetime, date
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any
 import yaml
 import json
 
@@ -72,7 +72,7 @@ class AutomationBase:
         
         for config_file in config_files:
             if config_file.exists():
-                with open(config_file, 'r', encoding='utf-8') as f:
+                with open(config_file, 'r') as f:
                     file_config = yaml.safe_load(f)
                     if file_config:
                         config.update(file_config)
@@ -149,7 +149,7 @@ class AutomationBase:
         current_month = date.today().month
         return current_month >= 10 or current_month <= 6
         
-    def get_current_season_years(self) -> Tuple[int, int]:
+    def get_current_season_years(self) -> tuple[int, int]:
         """Get the current and previous season years."""
         current_year = date.today().year
         

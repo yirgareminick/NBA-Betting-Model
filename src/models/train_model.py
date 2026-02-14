@@ -10,25 +10,13 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from typing import Tuple
-import sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import classification_report, accuracy_score
 import joblib
 import yaml
 import warnings
-
-# Add parent directory to path for imports
-sys.path.append(str(Path(__file__).parent.parent))
-from constants import (
-    MODEL_RANDOM_STATE, MODEL_TEST_SIZE, MODEL_N_ESTIMATORS,
-    MODEL_MAX_DEPTH, MODEL_MIN_SAMPLES_SPLIT, MODEL_MIN_SAMPLES_LEAF
-)
-
-# Suppress specific warnings for cleaner output
-warnings.filterwarnings('ignore', category=UserWarning)
-warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings('ignore')
 
 
 class NBAModelTrainer:
@@ -53,12 +41,10 @@ class NBAModelTrainer:
         print(f"✓ Features: {len(df):,} records")
         return df
 
-    def prepare_training_data(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        """Prepare features and target for model training.
-        
-        Returns:
-            Tuple[pd.DataFrame, pd.Series]: (features, target)
-        """
+    def prepare_training_data(self, df: pd.DataFrame) -> tuple:
+        """Prepare features and target for model training."""
+
+
         # Select feature columns (exclude metadata and target)
         exclude_cols = ['game_id', 'game_date', 'team_name', 'opponent', 'target_win', 'venue']
         candidate_features = [col for col in df.columns if col not in exclude_cols]
@@ -97,11 +83,13 @@ class NBAModelTrainer:
     def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None,
                    use_temporal_split: bool = True) -> dict:
         """Train the model and return metrics with proper temporal validation."""
+
+
         if use_temporal_split and df is not None and 'game_date' in df.columns:
             # Temporal split to prevent data leakage
             print("📅 Using temporal train/test split...")
             df_sorted = df.sort_values('game_date').reset_index(drop=True)
-            split_idx = int(len(df_sorted) * (1 - MODEL_TEST_SIZE))  # Use constant
+            split_idx = int(len(df_sorted) * 0.8)  # 80% for training
 
             train_mask = np.arange(len(df_sorted)) < split_idx
             test_mask = np.arange(len(df_sorted)) >= split_idx
@@ -117,16 +105,16 @@ class NBAModelTrainer:
             # Fallback to random split (with warning)
             print("⚠️  Using random train/test split (may cause data leakage)")
             X_train, X_test, y_train, y_test = train_test_split(
-                X, y, test_size=MODEL_TEST_SIZE, random_state=MODEL_RANDOM_STATE, stratify=y
+                X, y, test_size=0.2, random_state=42, stratify=y
             )
 
         # Train model
         self.model = RandomForestClassifier(
-            n_estimators=MODEL_N_ESTIMATORS,
-            max_depth=MODEL_MAX_DEPTH,
-            min_samples_split=MODEL_MIN_SAMPLES_SPLIT,
-            min_samples_leaf=MODEL_MIN_SAMPLES_LEAF,
-            random_state=MODEL_RANDOM_STATE,
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=10,
+            min_samples_leaf=5,
+            random_state=42,
             n_jobs=-1
         )
 
@@ -161,12 +149,8 @@ class NBAModelTrainer:
 
         return metrics
 
-    def save_model(self, metrics: dict) -> Tuple[Path, Path]:
-        """Save the trained model and metadata.
-        
-        Returns:
-            Tuple[Path, Path]: (model_file_path, metadata_file_path)
-        """
+    def save_model(self, metrics: dict) -> tuple:
+        """Save the trained model and metadata."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Save model
@@ -183,7 +167,7 @@ class NBAModelTrainer:
         }
 
         metadata_file = self.model_dir / f"nba_model_{timestamp}_metadata.yml"
-        with open(metadata_file, 'w', encoding='utf-8') as f:
+        with open(metadata_file, 'w') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         # Also save as "latest" for easy loading
@@ -191,7 +175,7 @@ class NBAModelTrainer:
         latest_metadata = self.model_dir / "nba_model_latest_metadata.yml"
 
         joblib.dump(self.model, latest_model)
-        with open(latest_metadata, 'w', encoding='utf-8') as f:
+        with open(latest_metadata, 'w') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         print(f"💾 Model saved to: {model_file}")
