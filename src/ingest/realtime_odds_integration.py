@@ -153,7 +153,7 @@ class RealTimeOddsIntegrator:
 
     def merge_games_with_odds(self, games_df: pd.DataFrame, odds_df: pd.DataFrame = None) -> pd.DataFrame:
         """Merge game schedule with current odds."""
-        if odds_df is None or len(odds_df) == 0:
+        if odds_df is None or odds_df.empty:
             # Use simulated realistic odds
             return self._add_simulated_odds(games_df)
 
@@ -205,7 +205,7 @@ class RealTimeOddsIntegrator:
         fetcher = LiveNBADataFetcher()
         games = fetcher.get_todays_games(target_date)
 
-        if len(games) == 0:
+        if games.empty:
             return pd.DataFrame()
         
         # Get current odds
