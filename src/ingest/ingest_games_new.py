@@ -81,7 +81,7 @@ class NBADataIngestion:
             print(f"✓ Dataset downloaded to: {dataset_path}")
             return dataset_path
         except Exception as e:
-            raise Exception(f"Failed to download dataset: {e}")
+            raise RuntimeError(f"Failed to download dataset: {e}")
 
     def copy_database_to_project(self, source_path: str) -> Path:
         """Copy the SQLite database to the project's raw data directory"""
@@ -120,7 +120,7 @@ class NBADataIngestion:
                     print(f"📊 Using first available table: {table_name}")
 
             if table_name is None:
-                raise Exception("No tables found in database")
+                raise ValueError("No tables found in database")
 
             query = f"SELECT * FROM {table_name}"
             df = pd.read_sql_query(query, conn)
