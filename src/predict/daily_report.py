@@ -14,7 +14,7 @@ DEFAULT_BANKROLL = 10000
 
 class ReportFormatter:
     """Formats betting reports in various output formats."""
-    
+
     def __init__(self):
         self.project_root = Path(__file__).parent.parent.parent
         self.reports_dir = self.project_root / "reports"
