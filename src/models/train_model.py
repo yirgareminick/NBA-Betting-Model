@@ -16,7 +16,8 @@ from sklearn.metrics import classification_report, accuracy_score
 import joblib
 import yaml
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
 
 
 class NBAModelTrainer:
