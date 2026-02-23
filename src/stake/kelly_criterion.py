@@ -30,7 +30,7 @@ class KellyCriterion:
         config_file = project_root / "configs" / "model.yml"
 
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
                 return config.get('betting', {})
         except FileNotFoundError:
