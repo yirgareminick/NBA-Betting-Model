@@ -352,7 +352,7 @@ class FeatureEngineer:
         }
 
         metadata_file = str(output_file).replace('.parquet', '_metadata.yml')
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         print(f"✅ Features complete: {len(features):,} records, {len(features.columns)} cols")
