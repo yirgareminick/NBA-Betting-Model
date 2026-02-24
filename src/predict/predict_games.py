@@ -79,7 +79,7 @@ class NBAPredictor:
 
         self.model = joblib.load(self.model_path)
 
-        with open(self.metadata_path, 'r') as f:
+        with open(self.metadata_path, 'r', encoding='utf-8') as f:
             self.metadata = yaml.safe_load(f)
 
         self.feature_columns = self.metadata['feature_columns']
