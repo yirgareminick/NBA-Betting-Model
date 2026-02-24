@@ -27,7 +27,7 @@ class FeatureEngineer:
     def _load_config(self, config_path: Optional[Path]) -> Dict:
         """Load configuration from YAML files"""
         if config_path and config_path.exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, 'r', encoding='utf-8') as f:
                 return yaml.safe_load(f)
 
         # Default configuration
