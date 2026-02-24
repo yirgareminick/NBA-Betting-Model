@@ -168,7 +168,7 @@ class NBAModelTrainer:
         }
 
         metadata_file = self.model_dir / f"nba_model_{timestamp}_metadata.yml"
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         # Also save as "latest" for easy loading
