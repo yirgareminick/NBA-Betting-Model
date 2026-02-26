@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     config = {}
     if args.config and args.config.exists():
-        with open(args.config, 'r') as f:
+        with open(args.config, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f) or {}
 
     metrics = train_model(config)
