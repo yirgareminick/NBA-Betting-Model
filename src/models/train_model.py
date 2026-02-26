@@ -176,7 +176,7 @@ class NBAModelTrainer:
         latest_metadata = self.model_dir / "nba_model_latest_metadata.yml"
 
         joblib.dump(self.model, latest_model)
-        with open(latest_metadata, 'w') as f:
+        with open(latest_metadata, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         print(f"💾 Model saved to: {model_file}")
