@@ -250,7 +250,7 @@ class NBADataIngestion:
         }
 
         metadata_file = self.data_paths['processed'] / f"games_{year_start}_{year_end}_metadata.yml"
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         return output_file, metadata_file
