@@ -37,7 +37,7 @@ class NBADataIngestion:
         for config_type, config_path in config_files.items():
             if config_path.exists():
                 try:
-                    with open(config_path, 'r') as f:
+                    with open(config_path, 'r', encoding='utf-8') as f:
                         config[config_type] = yaml.safe_load(f)
                     print(f"✓ Loaded {config_type} config from {config_path}")
                 except Exception as e:
