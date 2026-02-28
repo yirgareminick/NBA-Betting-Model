@@ -90,10 +90,9 @@ class LiveNBADataFetcher:
         """Add simulated betting odds to games."""
         games_with_odds = games_df.copy()
         
-        for idx, _ in games_with_odds.iterrows():
-            base_odds = np.random.uniform(1.7, 2.3)
-            games_with_odds.loc[idx, 'home_odds'] = base_odds - 0.1  # Home advantage
-            games_with_odds.loc[idx, 'away_odds'] = base_odds + 0.1
+        base_odds = np.random.uniform(1.7, 2.3, size=len(games_with_odds))
+        games_with_odds['home_odds'] = base_odds - 0.1  # Home advantage
+        games_with_odds['away_odds'] = base_odds + 0.1
 
         return games_with_odds
 
