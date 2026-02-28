@@ -112,7 +112,7 @@ class LiveNBADataFetcher:
         }
 
 
-#CLI entry point for direct testing
+# CLI entry point for direct testing
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Fetch NBA games for a given date")
