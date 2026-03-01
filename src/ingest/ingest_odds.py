@@ -7,11 +7,12 @@ Usage:
     poetry run python src/ingest/ingest_odds.py --regions us --bookmakers draftkings,fan
 """
 
-import os
-import requests
-from pathlib import Path
-import polars as pl
 import argparse
+import os
+from pathlib import Path
+
+import polars as pl
+import requests
 from dotenv import load_dotenv
 
 
