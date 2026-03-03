@@ -4,16 +4,17 @@ NBA Basketball Games Data Ingestion Script
 Downloads and processes NBA games data from Kaggle with project configuration support
 """
 
-import kagglehub
-import pandas as pd
+import os
+import shutil
 import sqlite3
 import sys
-import os
-import yaml
-import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
+
+import kagglehub
+import pandas as pd
+import yaml
 
 class NBADataIngestion:
     """NBA Data Ingestion class with configuration management"""
