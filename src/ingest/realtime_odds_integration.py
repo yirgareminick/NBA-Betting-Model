@@ -6,12 +6,13 @@ This script integrates current betting odds with live game data for real-time pr
 It combines free NBA schedule data with your existing paid odds API.
 """
 
-import pandas as pd
-import numpy as np
-import requests
+import logging
 import os
 from datetime import datetime, date
-import logging
+
+import numpy as np
+import pandas as pd
+import requests
 
 logger = logging.getLogger(__name__)
 
