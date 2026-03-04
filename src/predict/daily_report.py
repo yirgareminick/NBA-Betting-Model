@@ -19,11 +19,11 @@ class ReportFormatter:
         self.project_root = Path(__file__).parent.parent.parent
         self.reports_dir = self.project_root / "reports"
         self.reports_dir.mkdir(exist_ok=True)
-    
+
     def format_currency(self, amount: float) -> str:
         """Format currency values."""
         return f"${amount:,.2f}"
-    
+
     def format_percentage(self, value: float) -> str:
         """Format percentage values."""
         return f"{value * 100:.2f}%"
