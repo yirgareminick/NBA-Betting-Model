@@ -28,8 +28,7 @@ def ingest_raw(run_date: date):
         df, output_file = result
         print(f"✓ Ingested: {len(df)} games")
         return df
-    else:
-        raise RuntimeError("Failed to ingest games data")
+    raise RuntimeError("Failed to ingest games data")
 
 @task
 def build_features(df):
