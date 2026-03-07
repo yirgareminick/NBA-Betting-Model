@@ -68,8 +68,7 @@ def parse_odds(json_data):
                     return None
                 if odds_val > 0:
                     return 100 / (odds_val + 100)
-                else:
-                    return abs(odds_val) / (abs(odds_val) + 100)
+                return abs(odds_val) / (abs(odds_val) + 100)
             home_prob = implied_prob(home_odds)
             away_prob = implied_prob(away_odds)
             records.append({
