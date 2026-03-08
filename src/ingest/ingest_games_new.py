@@ -93,8 +93,7 @@ class NBADataIngestion:
             print(f"📁 Copying database to project: {target_db}")
             shutil.copy2(source_db, target_db)
             return target_db
-        else:
-            raise FileNotFoundError(f"SQLite database not found at {source_db}")
+        raise FileNotFoundError(f"SQLite database not found at {source_db}")
 
     def get_available_tables(self, db_path: Path) -> List[str]:
         """Get list of available tables in SQLite database"""
