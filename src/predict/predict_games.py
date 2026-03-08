@@ -101,8 +101,7 @@ class NBAPredictor:
                     # Add current betting odds
                     games = fetcher.add_current_odds(games)
                     return games
-                else:
-                    return pd.DataFrame()
+                return pd.DataFrame()
 
             except Exception as e:
                 pass  # Fall back to sample data
