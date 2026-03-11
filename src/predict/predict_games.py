@@ -197,7 +197,7 @@ class NBAPredictor:
 
         # Apply home court advantage
         home_boost = 2.5 if is_home else -2.5
-        
+
         features = {
             'is_home': int(is_home),
             'avg_pts_last_10': profile['pts'] + home_boost,
