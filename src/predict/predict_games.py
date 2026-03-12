@@ -217,10 +217,8 @@ class NBAPredictor:
 
     def _create_minimal_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Create minimal features as absolute fallback."""
-
-        
         features_list = []
-        
+
         for _, game in games_df.iterrows():
             # Minimal features for home team (matching actual model with duplicate is_home)
             home_features = {
