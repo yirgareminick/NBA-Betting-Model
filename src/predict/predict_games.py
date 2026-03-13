@@ -103,7 +103,7 @@ class NBAPredictor:
                     return games
                 return pd.DataFrame()
 
-            except Exception as e:
+            except Exception:
                 pass  # Fall back to sample data
 
         # Fallback to sample data for development/testing
