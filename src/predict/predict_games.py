@@ -67,7 +67,7 @@ class NBAPredictor:
         if cache_key in self._model_cache:
             cached_data = self._model_cache[cache_key]
             self.model = cached_data['model']
-            self.feature_columns = cached_data['feature_columns'] 
+            self.feature_columns = cached_data['feature_columns']
             self.metadata = cached_data['metadata']
             return
             
