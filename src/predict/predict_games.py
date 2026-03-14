@@ -259,7 +259,7 @@ class NBAPredictor:
         
         # Ensure columns are in the exact order the model expects (including duplicate is_home)
         expected_order = [
-            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10', 
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
             'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
             'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
             'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed', 'is_home'
