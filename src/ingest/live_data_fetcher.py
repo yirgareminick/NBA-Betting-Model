@@ -54,7 +54,7 @@ class LiveNBADataFetcher:
         try:
             url = "http://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard"
             params = {'dates': target_date.strftime('%Y%m%d')}
-            
+
             response = self.session.get(url, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
