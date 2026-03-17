@@ -118,7 +118,7 @@ def fetch_season(season: int) -> pl.DataFrame:
             print(f"[fallback] Using existing {csv_path} as fallback")
             return pl.read_csv(csv_path)
         print(f"[error] No fallback data available for season {season}")
-        raise e
+        raise
 
 def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
     print(f"[start] Pulling team stats for seasons: {seasons}")
