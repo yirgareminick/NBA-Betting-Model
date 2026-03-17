@@ -130,7 +130,7 @@ class NBAPredictor:
             return self._create_minimal_features(games_df)
         except Exception as e:
             print(f"❌ Error preparing features: {e}")
-            raise e
+            raise
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup."""
