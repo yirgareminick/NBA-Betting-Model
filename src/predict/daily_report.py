@@ -2,7 +2,7 @@
 Daily betting report generator with multiple output formats.
 """
 from datetime import date, datetime
-from typing import Dict, Optional
+from typing import Dict
 from pathlib import Path
 import pandas as pd
 import json
