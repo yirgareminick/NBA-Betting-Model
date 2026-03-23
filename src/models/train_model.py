@@ -12,7 +12,7 @@ from pathlib import Path
 from datetime import datetime
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import accuracy_score
 import joblib
 import yaml
 import warnings
