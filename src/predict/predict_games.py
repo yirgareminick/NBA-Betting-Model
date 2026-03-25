@@ -125,7 +125,6 @@ class NBAPredictor:
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Prepare features for prediction from games data."""
 
-
         try:
             # Use minimal features directly for model compatibility
             return self._create_minimal_features(games_df)
