@@ -12,7 +12,6 @@ from datetime import datetime, date
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import yaml
-import json
 
 
 class AutomationBase:
