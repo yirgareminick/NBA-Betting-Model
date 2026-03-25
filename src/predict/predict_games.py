@@ -14,7 +14,8 @@ import joblib
 import yaml
 import warnings
 import sys
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
