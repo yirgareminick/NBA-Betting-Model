@@ -5,7 +5,7 @@ Manual Update Script for NBA Betting Model
 This script allows for manual, on-demand updates when needed.
 Useful for testing, emergency updates, or custom date ranges.
 
-Usage: 
+Usage:
     python scripts/manual_update.py                           # Update current season
     python scripts/manual_update.py --years 2023 2024        # Update specific years
     python scripts/manual_update.py --odds-only              # Update only odds
