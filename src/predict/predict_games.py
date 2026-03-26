@@ -290,7 +290,6 @@ class NBAPredictor:
     def predict_games(self, games_df: pd.DataFrame) -> pd.DataFrame:
         """Make predictions for upcoming games."""
 
-
         # Prepare features
         features = self.prepare_prediction_features(games_df)
 
