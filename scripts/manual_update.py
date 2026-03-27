@@ -29,7 +29,7 @@ from scripts.automation_base import AutomationBase
 class ManualUpdater(AutomationBase):
     """Manual update automation for NBA betting model with flexible options."""
 
-    def __init__(self, 
+    def __init__(self,
                  start_year: Optional[int] = None,
                  end_year: Optional[int] = None,
                  odds_only: bool = False,
