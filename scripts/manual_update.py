@@ -39,7 +39,7 @@ class ManualUpdater(AutomationBase):
                  bookmakers: List[str] = None,
                  lookback_days: int = 10):
         super().__init__("manual_update")
-        
+
         # Set default years if not provided
         current_year = date.today().year
         self.start_year = start_year or current_year
