@@ -50,7 +50,7 @@ class ManualUpdater(AutomationBase):
         self.games_only = games_only
         self.teams_only = teams_only
         self.features_only = features_only
-        
+
         # Configuration
         self.bookmakers = bookmakers or ["draftkings", "fanduel"]
         self.lookback_days = lookback_days
