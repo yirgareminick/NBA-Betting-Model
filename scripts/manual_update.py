@@ -44,7 +44,7 @@ class ManualUpdater(AutomationBase):
         current_year = date.today().year
         self.start_year = start_year or current_year
         self.end_year = end_year or current_year
-        
+
         # Update flags
         self.odds_only = odds_only
         self.games_only = games_only
