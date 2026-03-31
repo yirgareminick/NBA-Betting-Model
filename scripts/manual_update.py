@@ -57,7 +57,7 @@ class ManualUpdater(AutomationBase):
 
         # Validate configuration
         self._validate_configuration()
-        
+
     def _validate_configuration(self):
         """Validate the configuration parameters."""
         # Check year range
