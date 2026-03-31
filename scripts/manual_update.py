@@ -54,7 +54,7 @@ class ManualUpdater(AutomationBase):
         # Configuration
         self.bookmakers = bookmakers or ["draftkings", "fanduel"]
         self.lookback_days = lookback_days
-        
+
         # Validate configuration
         self._validate_configuration()
         
