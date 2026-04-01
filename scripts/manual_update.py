@@ -72,7 +72,7 @@ class ManualUpdater(AutomationBase):
         exclusive_flags = [self.odds_only, self.games_only, self.teams_only, self.features_only]
         if sum(exclusive_flags) > 1:
             raise ValueError("Only one of --odds-only, --games-only, --teams-only, --features-only can be specified")
-            
+
     def update_odds(self):
         """Update betting odds data."""
         bookmakers_str = ",".join(self.bookmakers)
