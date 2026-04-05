@@ -9,7 +9,7 @@ Usage:
     python scripts/manual_update.py                           # Update current season
     python scripts/manual_update.py --years 2023 2024        # Update specific years
     python scripts/manual_update.py --odds-only              # Update only odds
-    python scripts/manual_update.py --games-only --years 2024 # Update only 2024 games
+    python scripts/manual_update.py --games-only --years 2024 2024 # Update only 2024 games
     python scripts/manual_update.py --features-only          # Rebuild features only
 """
 
@@ -40,10 +40,10 @@ class ManualUpdater(AutomationBase):
                  lookback_days: int = 10):
         super().__init__("manual_update")
 
-        # Set default years if not provided
-        current_year = date.today().year
-        self.start_year = start_year or current_year
-        self.end_year = end_year or current_year
+        # Set default years to current NBA season when not provided
+        season_start, season_end = self.get_current_season_years()
+        self.start_year = start_year if start_year is not None else season_start
+        self.end_year = end_year if end_year is not None else season_end
 
         # Update flags
         self.odds_only = odds_only
@@ -176,7 +176,7 @@ Examples:
     python scripts/manual_update.py                           # Update current season
     python scripts/manual_update.py --years 2023 2024        # Update specific years
     python scripts/manual_update.py --odds-only              # Update only odds
-    python scripts/manual_update.py --games-only --years 2024 # Update only 2024 games
+    python scripts/manual_update.py --games-only --years 2024 2024 # Update only 2024 games
     python scripts/manual_update.py --features-only          # Rebuild features only
     python scripts/manual_update.py --bookmakers draftkings fanduel bovada
     python scripts/manual_update.py --dry-run                # Test without changes
