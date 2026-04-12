@@ -121,7 +121,19 @@ class ManualUpdater(AutomationBase):
     def run(self, send_notification: bool = False, dry_run: bool = False):
         """Execute the manual update process."""
         try:
-            self.logger.info(f"Manual update: {self.start_year}-{self.end_year}{' (DRY RUN)' if dry_run else ''}")
+            mode = "full"
+            if self.odds_only:
+                mode = "odds"
+            elif self.games_only:
+                mode = "games"
+            elif self.teams_only:
+                mode = "teams"
+            elif self.features_only:
+                mode = "features"
+
+            self.logger.info(
+                f"Manual update ({mode}): {self.start_year}-{self.end_year}{' (DRY RUN)' if dry_run else ''}"
+            )
             
             if dry_run:
                 return True
