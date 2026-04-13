@@ -275,4 +275,6 @@ This software is for educational and research purposes only. Sports betting invo
 - Incorporate player-level data and injury reports  
 - Build dashboard for model evaluation and backtesting  
 - Explore alternative modeling techniques (LightGBM, ensemble methods)
+ 
+Minor tweaks.
 
