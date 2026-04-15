@@ -276,5 +276,5 @@ This software is for educational and research purposes only. Sports betting invo
 - Build dashboard for model evaluation and backtesting  
 - Explore alternative modeling techniques (LightGBM, ensemble methods)
  
-Minor tweaks.
+Minor tweaks only.
 
