@@ -3,7 +3,7 @@
 """
 Manual Update Script for NBA Betting Model
 
-This script allows for manual, on-demand updates when needed.
+This script allows manual, on-demand updates when needed.
 Useful for testing, emergency updates, or custom date ranges.
 
 Usage:
