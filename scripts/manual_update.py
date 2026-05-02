@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Minor: tiny non-functional patch
+# Minor: tiny non-functional edit
 """
 Manual Update Script for NBA Betting Model
 
