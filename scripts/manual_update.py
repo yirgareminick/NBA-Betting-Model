@@ -120,7 +120,6 @@ class ManualUpdater(AutomationBase):
             raise
             
     def run(self, send_notification: bool = False, dry_run: bool = False):
-        """Execute the manual update process."""
         try:
             mode = "full"
             if self.odds_only:
@@ -137,6 +136,7 @@ class ManualUpdater(AutomationBase):
             )
             
             if dry_run:
+                self.logger.info("Dry run complete: no files were changed and no external jobs were executed")
                 return True
             
             # Execute based on flags
