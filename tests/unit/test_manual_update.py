@@ -50,5 +50,26 @@ class TestManualUpdaterDefaults(unittest.TestCase):
         self.assertEqual(updater.end_year, 2024)
 
 
+class TestManualUpdaterValidation(unittest.TestCase):
+    """Tests for ManualUpdater configuration validation."""
+
+    def test_mutually_exclusive_flags_raises_error(self):
+        """Ensure only one update flag can be set at a time."""
+        with self.assertRaises(ValueError) as context:
+            ManualUpdater(odds_only=True, games_only=True)
+        self.assertIn("only one of", str(context.exception).lower())
+
+    def test_three_flags_raises_error(self):
+        """Ensure setting three flags also raises error."""
+        with self.assertRaises(ValueError):
+            ManualUpdater(odds_only=True, games_only=True, teams_only=True)
+
+    def test_valid_single_flag_does_not_raise(self):
+        """Ensure a single flag does not raise an error."""
+        updater = ManualUpdater(odds_only=True)
+        self.assertTrue(updater.odds_only)
+        self.assertFalse(updater.games_only)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -136,6 +136,26 @@ class ManualUpdater(AutomationBase):
             )
             
             if dry_run:
+                # Describe planned actions for dry-run clarity
+                planned_actions = []
+                if self.odds_only:
+                    planned_actions.append(f"Update odds for {','.join(self.bookmakers)}")
+                elif self.games_only:
+                    planned_actions.append(f"Update games {self.start_year}-{self.end_year}")
+                elif self.teams_only:
+                    seasons = [str(year) for year in range(self.start_year, self.end_year + 1)]
+                    planned_actions.append(f"Update team stats for seasons: {', '.join(seasons)}")
+                elif self.features_only:
+                    planned_actions.append(f"Rebuild features with {self.lookback_days}d lookback")
+                else:
+                    planned_actions.extend([
+                        f"Update games {self.start_year}-{self.end_year}",
+                        f"Update team stats for seasons {self.start_year}-{self.end_year}",
+                        f"Update odds for {','.join(self.bookmakers)}",
+                        f"Rebuild features with {self.lookback_days}d lookback",
+                    ])
+
+                self.logger.info(f"Planned actions (dry-run): { '; '.join(planned_actions) }")
                 self.logger.info("Dry run complete: no files were changed and no external jobs were executed")
                 return True
             
