@@ -15,11 +15,30 @@ class TestManualUpdaterDryRun(unittest.TestCase):
 
     def test_dry_run_logs_message(self):
         updater = ManualUpdater()
-        with mock.patch.object(updater.logger, "info") as mock_info:
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script") as mock_run_script:
             result = updater.run(dry_run=True)
             self.assertTrue(result)
-            mock_info.assert_any_call(
-                "Dry run complete: no files were changed and no external jobs were executed"
+
+            # Ensure no external scripts were invoked during dry-run
+            mock_run_script.assert_not_called()
+
+            # Ensure a clear completion message was logged
+            self.assertTrue(
+                any(
+                    "Dry run complete: no files were changed and no external jobs were executed" in call[0][0]
+                    for call in mock_info.call_args_list
+                )
+            )
+
+            # Ensure planned actions were described in the dry-run
+            self.assertTrue(
+                any("Planned actions (dry-run):" in call[0][0] for call in mock_info.call_args_list)
+            )
+
+            # Ensure the initial manual update header was logged
+            self.assertTrue(
+                any("Manual update (" in call[0][0] for call in mock_info.call_args_list)
             )
 
 
