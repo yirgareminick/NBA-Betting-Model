@@ -32,9 +32,7 @@ class TestManualUpdaterDryRun(unittest.TestCase):
             )
 
             # Ensure planned actions were described in the dry-run
-            self.assertTrue(
-                any("Planned actions (dry-run):" in call[0][0] for call in mock_info.call_args_list)
-            )
+            self.assertTrue(any("Planned actions (dry-run):" in call[0][0] for call in mock_info.call_args_list))
 
             # Ensure the initial manual update header was logged
             self.assertTrue(
