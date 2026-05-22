@@ -20,7 +20,7 @@ class TestManualUpdaterDryRun(unittest.TestCase):
             result = updater.run(dry_run=True)
             self.assertTrue(result)
 
-            # Ensure no external scripts were invoked during dry-run
+            # Ensure no scripts ran
             mock_run_script.assert_not_called()
 
             # Ensure a clear completion message was logged
