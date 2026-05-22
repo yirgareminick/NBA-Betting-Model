@@ -11,7 +11,7 @@ from scripts.manual_update import ManualUpdater
 
 
 class TestManualUpdaterDryRun(unittest.TestCase):
-    """Ensure dry-run returns success and logs a clear completion message."""
+    """Ensure dry-run succeeds and logs planned actions and completion."""
 
     def test_dry_run_logs_message(self):
         updater = ManualUpdater()
