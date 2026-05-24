@@ -39,6 +39,58 @@ class TestManualUpdaterDryRun(unittest.TestCase):
                 any("Manual update (" in call[0][0] for call in mock_info.call_args_list)
             )
 
+    def test_dry_run_odds_only(self):
+        """Ensure dry-run with --odds-only logs appropriate action."""
+        updater = ManualUpdater(odds_only=True)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("Update odds for" in call[0][0] for call in mock_info.call_args_list)
+            )
+
+    def test_dry_run_games_only(self):
+        """Ensure dry-run with --games-only logs appropriate action."""
+        updater = ManualUpdater(games_only=True)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("Update games" in call[0][0] for call in mock_info.call_args_list)
+            )
+
+    def test_dry_run_features_only(self):
+        """Ensure dry-run with --features-only logs appropriate action."""
+        updater = ManualUpdater(features_only=True)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("Rebuild features" in call[0][0] for call in mock_info.call_args_list)
+            )
+
+    def test_dry_run_returns_success(self):
+        """Ensure dry-run always returns True (success)."""
+        for odds_only, games_only, features_only in [
+            (False, False, False),
+            (True, False, False),
+            (False, True, False),
+            (False, False, True),
+        ]:
+            with self.subTest(odds_only=odds_only, games_only=games_only, features_only=features_only):
+                updater = ManualUpdater(
+                    odds_only=odds_only,
+                    games_only=games_only,
+                    features_only=features_only
+                )
+                with mock.patch.object(updater.logger, "info"), \
+                    mock.patch.object(updater, "run_python_script"):
+                    result = updater.run(dry_run=True)
+                    self.assertTrue(result, "Dry-run should always return True")
+
 
 if __name__ == "__main__":
     unittest.main()
