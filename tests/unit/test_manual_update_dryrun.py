@@ -91,6 +91,35 @@ class TestManualUpdaterDryRun(unittest.TestCase):
                     result = updater.run(dry_run=True)
                     self.assertTrue(result, "Dry-run should always return True")
 
+    def test_invalid_year_range_raises(self):
+        """Ensure invalid year range (start > end) raises ValueError."""
+        with self.assertRaises(ValueError):
+            ManualUpdater(start_year=2025, end_year=2023)
+
+    def test_dry_run_teams_only(self):
+        """Ensure dry-run with --teams-only logs appropriate action."""
+        updater = ManualUpdater(teams_only=True)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("Update team stats" in call[0][0] for call in mock_info.call_args_list)
+            )
+
+    def test_dry_run_custom_bookmakers(self):
+        """Ensure dry-run with custom bookmakers log them in planned actions."""
+        custom_bookmakers = ["bovada", "betmgm", "caesars"]
+        updater = ManualUpdater(odds_only=True, bookmakers=custom_bookmakers)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("bovada" in call[0][0] and "betmgm" in call[0][0] 
+                    for call in mock_info.call_args_list)
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
