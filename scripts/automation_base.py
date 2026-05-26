@@ -269,8 +269,11 @@ class AutomationBase:
             quality_report = self.check_data_quality()
             message = f"NBA Model {self.script_name} {status}. "
             if 'feature_records' in quality_report:
-                message += f"Records: {quality_report['feature_records']:,}, "
-                message += f"Latest: {quality_report['latest_date']}"
+                records_value = quality_report['feature_records']
+                latest_date = quality_report.get('latest_date', 'N/A')
+                records_text = f"{records_value:,}" if isinstance(records_value, int) else str(records_value)
+                message += f"Records: {records_text}, "
+                message += f"Latest: {latest_date}"
             
             # You can set this via environment variable
             import os
