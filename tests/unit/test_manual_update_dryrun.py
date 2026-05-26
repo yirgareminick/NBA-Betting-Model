@@ -93,7 +93,7 @@ class TestManualUpdaterDryRun(unittest.TestCase):
 
     def test_invalid_year_range_raises(self):
         """Ensure invalid year range (start > end) raises ValueError."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(ValueError, "cannot be greater"):
             ManualUpdater(start_year=2025, end_year=2023)
 
     def test_dry_run_teams_only(self):
