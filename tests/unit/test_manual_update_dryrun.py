@@ -116,8 +116,7 @@ class TestManualUpdaterDryRun(unittest.TestCase):
             result = updater.run(dry_run=True)
             self.assertTrue(result)
             self.assertTrue(
-                any("bovada" in call[0][0] and "betmgm" in call[0][0] 
-                    for call in mock_info.call_args_list)
+                any(all(bookmaker in call[0][0] for bookmaker in custom_bookmakers) for call in mock_info.call_args_list)
             )
 
 
