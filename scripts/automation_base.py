@@ -116,6 +116,8 @@ class AutomationBase:
             self.logger.info(f"✓ {description}")
             if result.stdout.strip():
                 self.logger.debug(f"Output: {result.stdout.strip()}")
+            if getattr(result, 'stderr', '').strip():
+                self.logger.debug(f"Stderr: {result.stderr.strip()}")
             return result
             
         except subprocess.CalledProcessError as e:
