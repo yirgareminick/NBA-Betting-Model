@@ -42,40 +42,45 @@ class AutomationBase:
             '%(asctime)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-        
         # Setup file handler
         file_handler = logging.FileHandler(self.log_file)
         file_handler.setLevel(log_level)
         file_handler.setFormatter(formatter)
-        
+
         # Setup console handler
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(log_level)
         console_handler.setFormatter(formatter)
-        
-        # Setup logger
+
+        # Setup logger (clear existing handlers to avoid duplicates)
         self.logger = logging.getLogger(self.script_name)
+        for h in list(self.logger.handlers):
+            try:
+                self.logger.removeHandler(h)
+            except Exception:
+                pass
+        self.logger.propagate = False
         self.logger.setLevel(log_level)
         self.logger.addHandler(file_handler)
         self.logger.addHandler(console_handler)
-        
+
     def load_config(self) -> Dict[str, Any]:
         """Load configuration from YAML files."""
         config = {}
-        
+
         # Load main config files
         config_files = [
             self.project_root / "configs" / "paths.yml",
             self.project_root / "configs" / "model.yml"
         ]
-        
+
         for config_file in config_files:
             if config_file.exists():
                 with open(config_file, 'r') as f:
                     file_config = yaml.safe_load(f)
                     if file_config:
                         config.update(file_config)
-        
+
         return config
         
     def get_python_command(self) -> List[str]:
