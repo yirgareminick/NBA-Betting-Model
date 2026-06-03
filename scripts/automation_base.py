@@ -97,7 +97,7 @@ class AutomationBase:
         
     def run_command(self, description: str, command: List[str], 
                    check: bool = True, cwd: Optional[Path] = None, 
-                   allow_failure: bool = False) -> subprocess.CompletedProcess:
+                   allow_failure: bool = False, timeout: Optional[int] = None) -> subprocess.CompletedProcess:
         """Run a command with proper logging and error handling."""
         if cwd is None:
             cwd = self.project_root
@@ -110,7 +110,8 @@ class AutomationBase:
                 cwd=cwd,
                 capture_output=True,
                 text=True,
-                check=check
+                check=check,
+                timeout=timeout
             )
             
             self.logger.info(f"✓ {description}")
@@ -137,9 +138,16 @@ class AutomationBase:
                 if e.stderr:
                     self.logger.error(f"Stderr: {e.stderr.strip()}")
                 raise
+        except subprocess.TimeoutExpired as e:
+            # Handle timeouts explicitly
+            self.logger.error(f"Timeout: {description} (after {timeout}s)")
+            if allow_failure:
+                self.logger.warning("Continuing after timeout")
+                return subprocess.CompletedProcess(args=command, returncode=124)
+            raise
             
     def run_python_script(self, script_path: str, args: List[str] = None, 
-                         description: str = None, allow_failure: bool = False) -> subprocess.CompletedProcess:
+                         description: str = None, allow_failure: bool = False, timeout: Optional[int] = None) -> subprocess.CompletedProcess:
         """Run a Python script with the configured Python command."""
         if args is None:
             args = []
@@ -148,7 +156,7 @@ class AutomationBase:
             description = f"Running {script_path}"
             
         command = self.python_cmd + [script_path] + args
-        return self.run_command(description, command, allow_failure=allow_failure)
+        return self.run_command(description, command, allow_failure=allow_failure, timeout=timeout)
         
     def is_nba_season(self) -> bool:
         """Check if we're currently in NBA season (October through June)."""
