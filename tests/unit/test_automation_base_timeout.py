@@ -31,10 +31,19 @@ class TestAutomationTimeout(unittest.TestCase):
         dummy = DummyAutomation()
 
         # Make subprocess.run raise TimeoutExpired
-        with mock.patch("subprocess.run", side_effect=subprocess.TimeoutExpired(cmd="cmd", timeout=1)):
+        timeout_error = subprocess.TimeoutExpired(
+            cmd="cmd",
+            timeout=1,
+            output="partial out",
+            stderr="partial err",
+        )
+        with mock.patch("subprocess.run", side_effect=timeout_error):
             result = dummy.run_python_script("script.py", args=[], allow_failure=True, timeout=1)
             self.assertIsInstance(result, subprocess.CompletedProcess)
             self.assertEqual(result.returncode, 124)
+            self.assertEqual(result.args, ["python", "script.py"])
+            self.assertEqual(result.stdout, "partial out")
+            self.assertEqual(result.stderr, "partial err")
 
 
 if __name__ == "__main__":

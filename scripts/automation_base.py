@@ -140,10 +140,18 @@ class AutomationBase:
                 raise
         except subprocess.TimeoutExpired as e:
             # Handle timeouts explicitly
-            self.logger.error(f"Timeout: {description} (after {timeout}s)")
+            timeout_seconds = e.timeout if e.timeout is not None else timeout
+            self.logger.error(f"Timeout: {description} (after {timeout_seconds}s)")
             if allow_failure:
                 self.logger.warning("Continuing after timeout")
-                return subprocess.CompletedProcess(args=command, returncode=124)
+                stdout = e.output if isinstance(e.output, str) else ""
+                stderr = e.stderr if isinstance(e.stderr, str) else ""
+                return subprocess.CompletedProcess(
+                    args=command,
+                    returncode=124,
+                    stdout=stdout,
+                    stderr=stderr,
+                )
             raise
             
     def run_python_script(self, script_path: str, args: List[str] = None, 
