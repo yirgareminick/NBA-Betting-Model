@@ -38,12 +38,14 @@ class TestAutomationTimeout(unittest.TestCase):
             stderr="partial err",
         )
         with mock.patch("subprocess.run", side_effect=timeout_error):
-            result = dummy.run_python_script("script.py", args=[], allow_failure=True, timeout=1)
+            with mock.patch.object(dummy.logger, "error") as mock_error:
+                result = dummy.run_python_script("script.py", args=[], allow_failure=True, timeout=1)
             self.assertIsInstance(result, subprocess.CompletedProcess)
             self.assertEqual(result.returncode, 124)
             self.assertEqual(result.args, ["python", "script.py"])
             self.assertEqual(result.stdout, "partial out")
             self.assertEqual(result.stderr, "partial err")
+            mock_error.assert_any_call("Timeout: Running script.py (after 1s)")
 
 
 if __name__ == "__main__":
