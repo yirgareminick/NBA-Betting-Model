@@ -30,6 +30,13 @@ class TestManualUpdaterDryRun(unittest.TestCase):
                     for call in mock_info.call_args_list
                 )
             )
+            self.assertEqual(
+                sum(
+                    "Dry run complete: no files were changed and no external jobs were executed" in call[0][0]
+                    for call in mock_info.call_args_list
+                ),
+                1,
+            )
 
             # Ensure planned actions were described in the dry-run
             self.assertTrue(any("Planned actions (dry-run):" in call[0][0] for call in mock_info.call_args_list))
