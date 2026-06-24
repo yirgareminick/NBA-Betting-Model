@@ -122,13 +122,16 @@ class TestManualUpdaterDryRun(unittest.TestCase):
 
     def test_dry_run_teams_only(self):
         """Ensure dry-run with --teams-only logs appropriate action."""
-        updater = ManualUpdater(teams_only=True)
+        updater = ManualUpdater(teams_only=True, start_year=2023, end_year=2024)
         with mock.patch.object(updater.logger, "info") as mock_info, \
             mock.patch.object(updater, "run_python_script"):
             result = updater.run(dry_run=True)
             self.assertTrue(result)
             self.assertTrue(
                 any("Update team stats" in call[0][0] for call in mock_info.call_args_list)
+            )
+            self.assertTrue(
+                any("2023, 2024" in call[0][0] for call in mock_info.call_args_list)
             )
 
     def test_dry_run_custom_bookmakers(self):
