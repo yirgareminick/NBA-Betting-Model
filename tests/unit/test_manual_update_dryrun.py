@@ -39,6 +39,9 @@ class TestManualUpdaterDryRun(unittest.TestCase):
                 any("Manual update (" in call[0][0] for call in mock_info.call_args_list)
             )
             self.assertTrue(
+                any("Manual update (full):" in call[0][0] for call in mock_info.call_args_list)
+            )
+            self.assertTrue(
                 any("(DRY RUN)" in call[0][0] for call in mock_info.call_args_list)
             )
 
