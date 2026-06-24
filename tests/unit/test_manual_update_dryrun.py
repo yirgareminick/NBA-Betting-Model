@@ -72,6 +72,17 @@ class TestManualUpdaterDryRun(unittest.TestCase):
                 any("Rebuild features" in call[0][0] for call in mock_info.call_args_list)
             )
 
+    def test_dry_run_features_only_custom_lookback(self):
+        """Ensure dry-run features-only logs the configured lookback days."""
+        updater = ManualUpdater(features_only=True, lookback_days=14)
+        with mock.patch.object(updater.logger, "info") as mock_info, \
+            mock.patch.object(updater, "run_python_script"):
+            result = updater.run(dry_run=True)
+            self.assertTrue(result)
+            self.assertTrue(
+                any("Rebuild features with 14d lookback" in call[0][0] for call in mock_info.call_args_list)
+            )
+
     def test_dry_run_returns_success(self):
         """Ensure dry-run always returns True (success)."""
         for odds_only, games_only, features_only in [
