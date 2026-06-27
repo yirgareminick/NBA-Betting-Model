@@ -54,13 +54,16 @@ class TestManualUpdaterDryRun(unittest.TestCase):
 
     def test_dry_run_odds_only(self):
         """Ensure dry-run with --odds-only logs appropriate action."""
-        updater = ManualUpdater(odds_only=True)
+        updater = ManualUpdater(odds_only=True, start_year=2022, end_year=2023)
         with mock.patch.object(updater.logger, "info") as mock_info, \
             mock.patch.object(updater, "run_python_script"):
             result = updater.run(dry_run=True)
             self.assertTrue(result)
             self.assertTrue(
                 any("Update odds for" in call[0][0] for call in mock_info.call_args_list)
+            )
+            self.assertTrue(
+                any("Manual update (odds): 2022-2023" in call[0][0] for call in mock_info.call_args_list)
             )
 
     def test_dry_run_games_only(self):
