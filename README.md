@@ -31,8 +31,8 @@ NBA-Betting-Model/
 │   └── performance/              # Performance analytics
 ├── scripts/                      # Automation scripts
 │   ├── daily_predictions.py      # Simple daily predictions
-y   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
-y   ├── daily_update.py           # Data refresh automation
+│   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
+│   ├── daily_update.py           # Data refresh automation
 │   ├── weekly_refresh.py         # Weekly maintenance
 │   └── scheduler.py              # Python-based task scheduler
 ├── src/                          # Source code

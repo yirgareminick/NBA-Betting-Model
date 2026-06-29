@@ -146,7 +146,7 @@ class TestManualUpdaterDryRun(unittest.TestCase):
             result = updater.run(dry_run=True)
             self.assertTrue(result)
             self.assertTrue(
-                any(all(bookmaker in call[0][0] for bookmaker in custom_bookmakers) for call in mock_info.call_args_list)
+                any("Update odds for bovada, betmgm, caesars" in call[0][0] for call in mock_info.call_args_list)
             )
 
 

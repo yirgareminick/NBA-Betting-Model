@@ -1,8 +1,6 @@
-"""Project-wide constants.
+"""Project-wide constants for the NBA betting project."""
 
-This file intentionally contains a tiny comment for a minimal, non-functional change.
-"""
+PROJECT_NAME = "nba-betting-model"
+VERSION = "0.1.0"
 
-__all__ = []
-
-# Updated May 5
+__all__ = ["PROJECT_NAME", "VERSION"]
