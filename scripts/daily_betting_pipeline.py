@@ -87,7 +87,9 @@ class DailyBettingPipeline:
             try:
                 from models.train_model import train_model
                 metrics = train_model()
-                self.log_message(f"Model retrained: {metrics['best_model']}")
+                # Log a sensible metric if available
+                acc = metrics.get('test_accuracy') if isinstance(metrics, dict) else None
+                self.log_message(f"Model retrained: test_accuracy={acc}" if acc is not None else "Model retrained")
                 return True
             except Exception as e:
                 self.log_message(f"Retrain failed: {e}", "ERROR")
@@ -156,8 +158,11 @@ class DailyBettingPipeline:
             self.log_message(f"Tracking failed: {e}", "ERROR")
             return {'error': str(e)}
     
-    def send_notifications(self, report_data: dict):
-        """Log notification summary (placeholder for future notification system)."""
+    def send_notifications(self, report_data: dict, notify_config: dict = None):
+        """Log notification summary (placeholder for future notification system).
+
+        `notify_config` is reserved for future notification integrations.
+        """
         recommended_bets = report_data.get('recommended_bets', 0)
         expected_value = report_data.get('expected_value', 0)
         self.log_message(f"Daily summary: {recommended_bets} bets, ${expected_value:.2f} EV")
