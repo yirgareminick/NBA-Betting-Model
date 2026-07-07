@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# Minor: tiny non-functional patch
 """
 Manual Update Script for NBA Betting Model
 
@@ -221,7 +220,8 @@ Environment Variables:
     SLACK_WEBHOOK_URL Slack webhook for notifications
         """
     )
-    
+
+
     # Year specification
     parser.add_argument(
         "--years",
@@ -333,3 +333,6 @@ Environment Variables:
 
 if __name__ == "__main__":
     main()
+
+
+__all__ = ["ManualUpdater", "main"]
