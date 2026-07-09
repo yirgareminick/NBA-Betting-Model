@@ -210,3 +210,6 @@ Examples:
 
 if __name__ == "__main__":
     main()
+
+
+__all__ = ["DailyUpdater", "main"]
