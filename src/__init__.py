@@ -1,6 +1,6 @@
 from .features import FeatureEngineer
 from .models import __version__ as models_version
-from .models import NBAModelTrainer
+from .models.train_model import NBAModelTrainer
 from .predict import NBAPredictor, predict_daily_games
 from .stake import KellyCriterion, calculate_daily_bets
 
