@@ -312,3 +312,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+__all__ = ["DailyBettingPipeline", "parse_arguments", "main"]
