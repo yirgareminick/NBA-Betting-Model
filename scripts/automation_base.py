@@ -302,3 +302,6 @@ class AutomationBase:
             import os
             webhook_url = os.getenv('SLACK_WEBHOOK_URL') or os.getenv('DISCORD_WEBHOOK_URL')
             self.send_notification(message, webhook_url)
+
+
+__all__ = ["AutomationBase"]
