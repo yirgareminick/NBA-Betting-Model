@@ -232,11 +232,9 @@ class TestErrorHandling(unittest.TestCase):
             'best_bet_edge': [0.05]
         })
         
-        # Zero bankroll should result in zero stakes
         betting_recommendations, _ = calculate_daily_bets(predictions, 0)
         self.assertEqual(betting_recommendations['stake_amount'].sum(), 0)
 
 
 if __name__ == '__main__':
-    # Run the tests
     unittest.main(verbosity=2)
