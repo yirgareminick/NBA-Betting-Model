@@ -1,7 +1,7 @@
 """
 Base module for NBA Betting Model automation scripts.
 
-This module provides common functionality for logging, error handling,
+Functionality for logging, error handling,
 configuration, and utility functions used across all automation scripts.
 """
 
