@@ -334,11 +334,15 @@ class NBAPredictor:
         """Calculate betting edges based on model probabilities vs market odds."""
         predictions_with_edges = predictions_df.copy()
 
-        # Calculate implied probabilities from odds
-        predictions_with_edges['home_implied_prob'] = 1 / predictions_with_edges['home_odds']
-        predictions_with_edges['away_implied_prob'] = 1 / predictions_with_edges['away_odds']
+        def _safe_implied_prob(odds: pd.Series) -> pd.Series:
+            valid_mask = odds.notna() & (odds > 0)
+            implied_prob = pd.Series(pd.NA, index=odds.index, dtype="Float64")
+            implied_prob.loc[valid_mask] = 1 / odds.loc[valid_mask]
+            return implied_prob
 
-        # Calculate edges (model prob - implied prob)
+        predictions_with_edges['home_implied_prob'] = _safe_implied_prob(predictions_with_edges['home_odds'])
+        predictions_with_edges['away_implied_prob'] = _safe_implied_prob(predictions_with_edges['away_odds'])
+
         predictions_with_edges['home_edge'] = (
             predictions_with_edges['home_prob'] - predictions_with_edges['home_implied_prob']
         )
@@ -346,9 +350,11 @@ class NBAPredictor:
             predictions_with_edges['away_prob'] - predictions_with_edges['away_implied_prob']
         )
 
-        # Determine best bet for each game
+        comparison = predictions_with_edges['home_edge'].gt(predictions_with_edges['away_edge'])
+        comparison = comparison.fillna(False)
+
         predictions_with_edges['best_bet_team'] = np.where(
-            predictions_with_edges['home_edge'] > predictions_with_edges['away_edge'],
+            comparison,
             predictions_with_edges['home_team'],
             predictions_with_edges['away_team']
         )
@@ -359,13 +365,13 @@ class NBAPredictor:
         )
 
         predictions_with_edges['best_bet_prob'] = np.where(
-            predictions_with_edges['home_edge'] > predictions_with_edges['away_edge'],
+            comparison,
             predictions_with_edges['home_prob'],
             predictions_with_edges['away_prob']
         )
 
         predictions_with_edges['best_bet_odds'] = np.where(
-            predictions_with_edges['home_edge'] > predictions_with_edges['away_edge'],
+            comparison,
             predictions_with_edges['home_odds'],
             predictions_with_edges['away_odds']
         )

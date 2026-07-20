@@ -143,6 +143,25 @@ class TestNBAPredictor(unittest.TestCase):
 
 
 class TestPredictDailyGames(unittest.TestCase):
+    def test_calculate_betting_edges_handles_missing_odds(self):
+        """Missing odds should not crash edge calculations."""
+        predictor = NBAPredictor.__new__(NBAPredictor)
+        predictions_df = pd.DataFrame({
+            'game_id': ['game1'],
+            'game_date': [date.today()],
+            'home_team': ['LAL'],
+            'away_team': ['BOS'],
+            'home_prob': [0.6],
+            'away_prob': [0.4],
+            'home_odds': [None],
+            'away_odds': [2.0],
+        })
+
+        result = predictor.calculate_betting_edges(predictions_df)
+
+        self.assertTrue(pd.isna(result.loc[0, 'home_implied_prob']))
+        self.assertTrue(pd.isna(result.loc[0, 'home_edge']))
+
     """Test cases for daily game prediction function."""
     
     @patch('predict.predict_games.NBAPredictor')
