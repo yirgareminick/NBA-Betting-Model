@@ -41,7 +41,7 @@ class ManualUpdater(AutomationBase):
         super().__init__("manual_update")
 
         # Set default years to current NBA season when not provided
-        season_start, season_end = self._get_default_season_years()
+        season_start, season_end = self.get_current_season_years(date.today())
         self.start_year = start_year if start_year is not None else season_start
         self.end_year = end_year if end_year is not None else season_end
 
@@ -57,13 +57,6 @@ class ManualUpdater(AutomationBase):
 
         # Validate configuration
         self._validate_configuration()
-
-    def _get_default_season_years(self) -> tuple[int, int]:
-        """Return the default start/end years for the current NBA season."""
-        today = date.today()
-        if today.month <= 6:
-            return today.year - 1, today.year
-        return today.year, today.year + 1
 
     def _validate_configuration(self):
         """Validate the configuration parameters."""

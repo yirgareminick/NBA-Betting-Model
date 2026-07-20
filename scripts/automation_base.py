@@ -171,12 +171,13 @@ class AutomationBase:
         current_month = date.today().month
         return current_month >= 10 or current_month <= 6
         
-    def get_current_season_years(self) -> tuple[int, int]:
+    def get_current_season_years(self, today: Optional[date] = None) -> tuple[int, int]:
         """Get the current and previous season years."""
-        current_year = date.today().year
+        current_date = today or date.today()
+        current_year = current_date.year
         
         # If it's January-June, we're in the same season that started last year
-        if date.today().month <= 6:
+        if current_date.month <= 6:
             return current_year - 1, current_year
         else:
             return current_year, current_year + 1
