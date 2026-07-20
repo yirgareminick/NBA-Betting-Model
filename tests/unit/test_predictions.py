@@ -49,6 +49,25 @@ class TestNBAPredictor(unittest.TestCase):
         
         self.assertIsNotNone(predictor.model)
         self.assertEqual(predictor.feature_columns, ['feature1', 'feature2', 'is_home'])
+
+    @patch('predict.predict_games.joblib.load')
+    @patch('predict.predict_games.yaml.safe_load')
+    @patch('builtins.open')
+    @patch('pathlib.Path.exists', return_value=True)
+    def test_predictor_uses_matching_metadata_for_custom_model_path(self, mock_exists, mock_open, mock_yaml, mock_joblib):
+        """Custom model paths should resolve to their matching metadata file."""
+        mock_model = MagicMock()
+        mock_model.predict.return_value = np.array([1, 0])
+        mock_model.predict_proba.return_value = np.array([[0.4, 0.6], [0.7, 0.3]])
+
+        mock_joblib.return_value = mock_model
+        mock_yaml.return_value = {'feature_columns': ['feature1', 'feature2', 'is_home']}
+
+        custom_model_path = self.project_root / 'models' / 'nba_model_random_forest_20251116_110515.joblib'
+        predictor = NBAPredictor(model_path=custom_model_path)
+
+        expected_metadata_path = self.project_root / 'models' / 'nba_model_random_forest_20251116_110515_metadata.yml'
+        self.assertEqual(predictor.metadata_path, expected_metadata_path)
     
     def test_get_upcoming_games(self):
         """Test upcoming games generation."""

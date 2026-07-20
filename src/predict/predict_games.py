@@ -49,7 +49,7 @@ class NBAPredictor:
         """
         self.project_root = Path(__file__).parent.parent.parent
         self.model_path = model_path or self.project_root / "models" / "nba_model_latest.joblib"
-        self.metadata_path = self.project_root / "models" / "nba_model_latest_metadata.yml"
+        self.metadata_path = self.model_path.with_name(f"{self.model_path.stem}_metadata.yml")
 
         # Add simple cache for model and features
         self._model_cache = {}
@@ -332,8 +332,6 @@ class NBAPredictor:
 
     def calculate_betting_edges(self, predictions_df: pd.DataFrame) -> pd.DataFrame:
         """Calculate betting edges based on model probabilities vs market odds."""
-        # Calculate edges
-
         predictions_with_edges = predictions_df.copy()
 
         # Calculate implied probabilities from odds
