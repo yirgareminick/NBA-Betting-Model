@@ -176,7 +176,7 @@ class RealTimeOddsIntegrator:
         return merged
 
     def _add_simulated_odds(self, games_df: pd.DataFrame, missing_only: bool = False) -> pd.DataFrame:
-        """Add simulated realistic odds for development/fallback."""
+        """Add deterministic realistic odds for development/fallback."""
         games_with_odds = games_df.copy()
 
         for idx, game in games_with_odds.iterrows():
@@ -184,8 +184,8 @@ class RealTimeOddsIntegrator:
             if missing_only and not pd.isna(game.get('home_odds')):
                 continue
 
-            # Simulate realistic NBA odds
-            base_odds = np.random.uniform(1.7, 2.3)
+            # Use a stable sequence of realistic NBA odds for reproducible behavior
+            base_odds = 1.95 + (idx % 3) * 0.1
             home_advantage = 0.1  # Home teams typically favored
 
             games_with_odds.loc[idx, 'home_odds'] = base_odds - home_advantage
