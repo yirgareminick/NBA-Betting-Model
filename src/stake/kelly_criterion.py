@@ -134,8 +134,9 @@ class KellyCriterion:
         win_returns = stakes * (odds - 1)  # Profit on win
         loss_returns = -stakes              # Loss on loss
         
-        # Vectorized simulation using numpy
-        random_outcomes = np.random.random((num_simulations, len(stakes)))
+        # Vectorized simulation using numpy with deterministic pseudo-random values
+        rng = np.random.default_rng(42)
+        random_outcomes = rng.random((num_simulations, len(stakes)))
         wins = random_outcomes < p_wins[np.newaxis, :]
         
         # Calculate returns for each simulation
