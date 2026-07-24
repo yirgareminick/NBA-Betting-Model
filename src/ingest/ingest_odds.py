@@ -19,8 +19,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_KEY = os.getenv("ODDS_API_KEY")
-if not API_KEY:
-    raise ValueError("Set ODDS_API_KEY in .env file. Get your free key at: https://the-odds-api.com/")
 
 SPORT = "basketball_nba"
 ENDPOINT = f"https://api.the-odds-api.com/v4/sports/{SPORT}/odds"
@@ -28,6 +26,9 @@ RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 def fetch_odds(regions="us", markets="h2h", odds_format="american", bookmakers=None):
+    if not API_KEY:
+        raise ValueError("Set ODDS_API_KEY in .env file. Get your free key at: https://the-odds-api.com/")
+
     params = {
         "apiKey": API_KEY,
         "regions": regions,
