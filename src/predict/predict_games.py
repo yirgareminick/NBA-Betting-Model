@@ -98,14 +98,15 @@ class NBAPredictor:
                 fetcher = LiveNBADataFetcher()
                 games = fetcher.get_todays_games(target_date)
 
-                if not games.empty:
+                if isinstance(games, pd.DataFrame) and not games.empty:
                     # Add current betting odds
                     games = fetcher.add_current_odds(games)
                     return games
+
                 return pd.DataFrame()
 
-            except Exception:
-                pass  # Fall back to sample data
+            except Exception as exc:
+                print(f"⚠️  Live data lookup failed: {exc}")
 
         # Fallback to sample data for development/testing
         games = pd.DataFrame({
