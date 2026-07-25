@@ -279,7 +279,7 @@ class NBADataIngestion:
 
             if filtered_df.empty:
                 print(f"❌ No data found for years {year_start}-{year_end}")
-                return None
+                return pd.DataFrame(columns=df.columns)
 
             # Save results
             output_file, metadata_file = self.save_data_and_metadata(
@@ -293,7 +293,7 @@ class NBADataIngestion:
 
         except Exception as e:
             print(f"❌ Ingestion failed: {e}")
-            return None
+            return pd.DataFrame()
 
 def main():
     """Main execution function"""
