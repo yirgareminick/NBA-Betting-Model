@@ -63,13 +63,16 @@ def parse_odds(json_data):
             def implied_prob(odds_val):
                 if odds_val is None:
                     return None
+
                 try:
                     odds_val = float(odds_val)
-                except Exception:
+                except (TypeError, ValueError):
                     return None
-                if odds_val > 0:
-                    return 100 / (odds_val + 100)
-                return abs(odds_val) / (abs(odds_val) + 100)
+
+                if odds_val <= 0:
+                    return None
+
+                return 100 / (odds_val + 100)
             home_prob = implied_prob(home_odds)
             away_prob = implied_prob(away_odds)
             records.append({
