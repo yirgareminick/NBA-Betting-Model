@@ -29,7 +29,7 @@ class NBAModelTrainer:
         self.feature_columns = None
         self.project_root = Path(__file__).parent.parent.parent
         self.model_dir = self.project_root / "models"
-        self.model_dir.mkdir(exist_ok=True)
+        self.model_dir.mkdir(parents=True, exist_ok=True)
 
     def load_features(self) -> pd.DataFrame:
         """Load processed features from parquet file."""

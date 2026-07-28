@@ -18,7 +18,7 @@ class ReportFormatter:
     def __init__(self):
         self.project_root = Path(__file__).parent.parent.parent
         self.reports_dir = self.project_root / "reports"
-        self.reports_dir.mkdir(exist_ok=True)
+        self.reports_dir.mkdir(parents=True, exist_ok=True)
 
     def format_currency(self, amount: float) -> str:
         """Format currency values."""

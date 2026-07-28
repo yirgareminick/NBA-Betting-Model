@@ -385,7 +385,7 @@ class NBAPredictor:
             target_date = date.today()
 
         predictions_dir = self.project_root / "data" / "predictions"
-        predictions_dir.mkdir(exist_ok=True)
+        predictions_dir.mkdir(parents=True, exist_ok=True)
 
         filename = f"predictions_{target_date.strftime('%Y%m%d')}.csv"
         filepath = predictions_dir / filename
