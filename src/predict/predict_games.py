@@ -14,8 +14,11 @@ import joblib
 import yaml
 import warnings
 import sys
+import logging
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
+
+logger = logging.getLogger(__name__)
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -106,7 +109,7 @@ class NBAPredictor:
                 return pd.DataFrame()
 
             except Exception as exc:
-                print(f"⚠️  Live data lookup failed: {exc}")
+                logger.exception("Live data lookup failed")
 
         # Fallback to sample data for development/testing
         games = pd.DataFrame({
@@ -129,8 +132,8 @@ class NBAPredictor:
         try:
             # Use minimal features directly for model compatibility
             return self._create_minimal_features(games_df)
-        except Exception as e:
-            print(f"❌ Error preparing features: {e}")
+        except Exception:
+            logger.exception("Error preparing features")
             raise
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
@@ -147,8 +150,8 @@ class NBAPredictor:
                 team_stats['is_home'] = int(is_home)
                 return team_stats
 
-        except Exception as e:
-            print(f"⚠️  Failed to get real stats for {team}: {e}")
+        except Exception:
+            logger.exception(f"Failed to get real stats for {team}")
 
         # Fallback to historical averages
         return self._get_historical_averages(team, opponent, is_home)
@@ -177,8 +180,8 @@ class NBAPredictor:
                     'season_avg_pts': recent_stats.get('avg_pts', 112.0),
                     'season_avg_pts_allowed': recent_stats.get('avg_pts_allowed', 110.0),
                 }
-        except Exception as e:
-            print(f"❌ Error fetching real stats for {team}: {e}")
+        except Exception:
+            logger.exception(f"Error fetching real stats for {team}")
 
         return None
 
