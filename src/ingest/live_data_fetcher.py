@@ -83,7 +83,8 @@ class LiveNBADataFetcher:
 
             return pd.DataFrame(games)
 
-        except Exception:
+        except Exception as exc:
+            print(f"Error in fallback fetch: {exc}")
             return pd.DataFrame()
 
     def add_current_odds(self, games_df: pd.DataFrame) -> pd.DataFrame:
