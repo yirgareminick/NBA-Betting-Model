@@ -1,8 +1,12 @@
+import logging
+
 import pandas as pd
 import numpy as np
 import requests
 from datetime import datetime, date, timedelta
 from nba_api.live.nba.endpoints import scoreboard
+
+logger = logging.getLogger(__name__)
 
 
 class LiveNBADataFetcher:
@@ -46,7 +50,7 @@ class LiveNBADataFetcher:
             return pd.DataFrame(games)
 
         except Exception as e:
-            print(f"Error fetching NBA games: {e}")
+            logger.exception("Error fetching NBA games")
             return self._get_fallback_games(target_date)
 
     def _get_fallback_games(self, target_date: date) -> pd.DataFrame:
@@ -84,7 +88,7 @@ class LiveNBADataFetcher:
             return pd.DataFrame(games)
 
         except Exception as exc:
-            print(f"Error in fallback fetch: {exc}")
+            logger.exception("Error in fallback fetch")
             return pd.DataFrame()
 
     def add_current_odds(self, games_df: pd.DataFrame) -> pd.DataFrame:
