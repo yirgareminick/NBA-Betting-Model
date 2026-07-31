@@ -36,7 +36,7 @@ class RealTimeOddsIntegrator:
             DataFrame containing current NBA moneyline odds from various bookmakers
         """
         if not self.odds_api_key:
-            print("⚠️  No odds API key found, using simulated odds")
+            logger.warning("No odds API key found, using simulated odds")
             return pd.DataFrame()
 
         # Fetch odds
@@ -101,7 +101,7 @@ class RealTimeOddsIntegrator:
             return odds_df
 
         except Exception as e:
-            print(f"❌ Error fetching odds: {e}")
+            logger.exception("Error fetching odds")
             return pd.DataFrame()
 
     def _normalize_team_name(self, team_name: str) -> str:
@@ -170,7 +170,7 @@ class RealTimeOddsIntegrator:
         # Fill missing odds with simulated values
         missing_odds = merged['home_odds'].isna()
         if missing_odds.any():
-            print(f"⚠️  {missing_odds.sum()} games missing odds, using simulated values")
+            logger.warning("%s games missing odds, using simulated values", missing_odds.sum())
             merged = self._add_simulated_odds(merged, missing_only=True)
 
         return merged

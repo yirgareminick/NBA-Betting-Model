@@ -1,10 +1,13 @@
 """
 Daily betting report generator with multiple output formats.
 """
+import logging
 from datetime import date, datetime
 from typing import Dict
 from pathlib import Path
 from .predict_games import predict_daily_games
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["ReportFormatter", "generate_daily_report", "DEFAULT_BANKROLL"]
 
@@ -36,7 +39,7 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
     if target_date is None:
         target_date = date.today()
     
-    print(f"📊 Generating daily report for {target_date}")
+    logger.info("Generating daily report for %s", target_date)
     
     # Get daily games predictions
     predictions = predict_daily_games(target_date)
@@ -56,7 +59,7 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
             expected_value = betting_recommendations['expected_value'].sum()
         except Exception as exc:
             # If calculation fails, keep defaults and log the error
-            print(f"⚠️  Betting calculation failed: {exc}")
+            logger.exception("Betting calculation failed")
     
     # Simple report structure
     report = {
@@ -71,10 +74,10 @@ def generate_daily_report(target_date: date = None, bankroll: float = DEFAULT_BA
         'summary': f"Daily report generated for {target_date}"
     }
     
-    print(f"✅ Report generated successfully!")
+    logger.info("Report generated successfully")
     return report
 
 
 if __name__ == "__main__":
     report = generate_daily_report()
-    print(f"Report: {report}")
+    logger.info("Report: %s", report)
