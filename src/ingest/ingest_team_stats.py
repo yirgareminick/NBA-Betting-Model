@@ -4,17 +4,20 @@ Each season is saved into data/raw/team_stats_{season}.csv.
 """
 
 from __future__ import annotations
+import logging
 from pathlib import Path
 import polars as pl
 import requests
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 RAW_DIR = Path("data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 def fetch_bbref_table(season: int) -> pl.DataFrame:
     url = f"https://www.basketball-reference.com/leagues/NBA_{season}_ratings.html"
-    print(f"[fetch] Requesting: {url}")
+    logger.info("Requesting: %s", url)
 
     # Add headers to avoid 403 errors
     headers = {
@@ -44,22 +47,22 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
         resp.raise_for_status()
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 403:
-            print(f"[error] Access forbidden (403) - possibly rate limited or off-season data not available")
+            logger.warning("Access forbidden (403) - possibly rate limited or off-season data not available")
             raise ValueError(f"Access forbidden for season {season} - possibly off-season") from e
         raise
     except requests.exceptions.Timeout:
-        print(f"[error] Request timed out for season {season}")
+        logger.warning("Request timed out for season %s", season)
         raise ValueError(f"Request timed out fetching data for season {season}")
     except requests.exceptions.RequestException as e:
-        print(f"[error] Failed to fetch data: {e}")
+        logger.warning("Failed to fetch data: %s", e)
         raise ValueError(f"Failed to fetch data for season {season}") from e
 
     soup = BeautifulSoup(resp.text, "lxml")
     table = soup.select_one("table#ratings")
     if table is None:
-        print(f"[error] Could not find ratings table for season {season}")
+        logger.warning("Could not find ratings table for season %s", season)
         raise ValueError(f"Could not find 'ratings' table on page for season {season}")
-    print("[fetch] Ratings table found.")
+    logger.info("Ratings table found.")
 
     # Use pandas as bridge since polars cannot read HTML directly
     import pandas as pd
@@ -67,7 +70,7 @@ def fetch_bbref_table(season: int) -> pl.DataFrame:
     try:
         pd_df = pd.read_html(StringIO(str(table)), header=[0, 1])[0]
     except Exception as e:
-        print(f"[error] Failed to parse HTML table: {e}")
+        logger.warning("Failed to parse HTML table: %s", e)
         raise ValueError(f"Failed to parse data table for season {season}") from e
 
     pd_df.columns = [
@@ -88,40 +91,40 @@ def fetch_season(season: int) -> pl.DataFrame:
             file_age = datetime.now() - datetime.fromtimestamp(csv_path.stat().st_mtime)
 
             if file_age < timedelta(days=7):
-                print(f"[cache] Using recent {csv_path} (age: {file_age.days} days)")
+                logger.info("Using recent %s (age: %s days)", csv_path, file_age.days)
                 try:
                     return pl.read_csv(csv_path)
                 except Exception as e:
-                    print(f"[error] Failed to read cached file: {e}")
-                    print("[cache] Cache file may be corrupted, attempting fresh scrape")
+                    logger.warning("Failed to read cached file: %s", e)
+                    logger.info("Cache file may be corrupted, attempting fresh scrape")
             else:
-                print(f"[cache] {csv_path} exists but is old ({file_age.days} days) — attempting fresh scrape")
+                logger.info("%s exists but is old (%s days) — attempting fresh scrape", csv_path, file_age.days)
         except Exception as e:
-            print(f"[error] Failed to check cache file age: {e}")
-            print("[cache] Cache validation failed, attempting fresh scrape")
+            logger.warning("Failed to check cache file age: %s", e)
+            logger.info("Cache validation failed, attempting fresh scrape")
 
     try:
         df = fetch_bbref_table(season)
         try:
-            print(f"[save] Writing data to: {csv_path}")
+            logger.info("Writing data to: %s", csv_path)
             df.write_csv(csv_path)
-            print(f"[save] Successfully saved data for season {season}")
+            logger.info("Successfully saved data for season %s", season)
         except Exception as e:
-            print(f"[warning] Failed to save data to {csv_path}: {e}")
-            print("[warning] Continuing with in-memory data")
+            logger.warning("Failed to save data to %s: %s", csv_path, e)
+            logger.info("Continuing with in-memory data")
         return df
     except Exception as e:
-        print(f"[error] Failed to fetch season {season}: {e}")
+        logger.exception("Failed to fetch season %s", season)
 
         # Fallback to existing file if scraping fails
         if csv_path.exists():
-            print(f"[fallback] Using existing {csv_path} as fallback")
+            logger.info("Using existing %s as fallback", csv_path)
             return pl.read_csv(csv_path)
-        print(f"[error] No fallback data available for season {season}")
+        logger.error("No fallback data available for season %s", season)
         raise
 
 def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
-    print(f"[start] Pulling team stats for seasons: {seasons}")
+    logger.info("Pulling team stats for seasons: %s", seasons)
 
     all_data = []
     failed_seasons = []
@@ -131,7 +134,7 @@ def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
             df = fetch_season(season)
             all_data.append(df)
         except Exception as e:
-            print(f"[warning] Failed to fetch season {season}: {e}")
+            logger.warning("Failed to fetch season %s: %s", season, e)
             failed_seasons.append(season)
             continue
 
@@ -139,7 +142,7 @@ def pull_team_stats(seasons: list[int]) -> pl.DataFrame:
         raise ValueError(f"Failed to fetch data for all seasons: {failed_seasons}")
 
     if failed_seasons:
-        print(f"[warning] Some seasons failed: {failed_seasons}")
+        logger.warning("Some seasons failed: %s", failed_seasons)
 
     return pl.concat(all_data)
 
@@ -148,4 +151,4 @@ if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--seasons", nargs="+", required=True, type=int)
     args = a.parse_args()
-    print(pull_team_stats(args.seasons).head())
+    logger.info("%s", pull_team_stats(args.seasons).head())
