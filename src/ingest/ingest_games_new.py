@@ -12,9 +12,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple, List
 
+import logging
 import kagglehub
 import pandas as pd
 import yaml
+
+logger = logging.getLogger(__name__)
 
 class NBADataIngestion:
     """NBA Data Ingestion class with configuration management"""
@@ -42,9 +45,9 @@ class NBADataIngestion:
                         config[config_type] = yaml.safe_load(f)
                     print(f"✓ Loaded {config_type} config from {config_path}")
                 except Exception as e:
-                    print(f"⚠️  Warning: Could not load {config_type} config: {e}")
+                    logger.warning("Could not load %s config: %s", config_type, e)
             else:
-                print(f"⚠️  Config file not found: {config_path}")
+                logger.warning("Config file not found: %s", config_path)
 
         return config
 
@@ -153,7 +156,7 @@ class NBADataIngestion:
         date_columns = self.identify_date_columns(df)
 
         if not date_columns:
-            print("⚠️  No date columns found. Returning full dataset.")
+            logger.warning("No date columns found. Returning full dataset.")
             return df
 
         print(f"📅 Found date columns: {date_columns}")
@@ -174,10 +177,10 @@ class NBADataIngestion:
                     return filtered_df
 
             except Exception as e:
-                print(f"❌ Failed to filter using {col}: {e}")
+                logger.warning("Failed to filter using %s: %s", col, e)
                 continue
 
-        print("⚠️  Could not filter by year range. Returning full dataset.")
+        logger.warning("Could not filter by year range. Returning full dataset.")
         return df
 
     def _is_year_column(self, series: pd.Series) -> bool:
@@ -292,7 +295,7 @@ class NBADataIngestion:
             return filtered_df, str(output_file)
 
         except Exception as e:
-            print(f"❌ Ingestion failed: {e}")
+            logger.exception("Ingestion failed")
             return pd.DataFrame()
 
 def main():

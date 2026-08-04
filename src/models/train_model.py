@@ -5,6 +5,7 @@ This is a basic implementation to complete the pipeline.
 In production, this would be replaced with more sophisticated ML models.
 """
 
+import logging
 import polars as pl
 import pandas as pd
 import numpy as np
@@ -16,6 +17,8 @@ from sklearn.metrics import accuracy_score
 import joblib
 import yaml
 import warnings
+
+logger = logging.getLogger(__name__)
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
@@ -39,7 +42,7 @@ class NBAModelTrainer:
             raise FileNotFoundError(f"Features file not found: {features_file}")
 
         df = pl.read_parquet(features_file).to_pandas()
-        print(f"✓ Features: {len(df):,} records")
+        logger.info("✓ Features: %s records", len(df))
         return df
 
     def prepare_training_data(self, df: pd.DataFrame) -> tuple:
@@ -77,7 +80,7 @@ class NBAModelTrainer:
         X = X.replace([np.inf, -np.inf], np.nan)
         X = X.fillna(X.mean(numeric_only=True))
 
-        print(f"✓ Prepared: {len(self.feature_columns)} features, {len(X)} samples")
+        logger.info("✓ Prepared: %s features, %s samples", len(self.feature_columns), len(X))
 
         return X, y
 
@@ -88,7 +91,7 @@ class NBAModelTrainer:
 
         if use_temporal_split and df is not None and 'game_date' in df.columns:
             # Temporal split to prevent data leakage
-            print("📅 Using temporal train/test split...")
+            logger.info("📅 Using temporal train/test split...")
             df_sorted = df.sort_values('game_date').reset_index(drop=True)
             split_idx = int(len(df_sorted) * 0.8)  # 80% for training
 
@@ -100,11 +103,11 @@ class NBAModelTrainer:
 
             train_dates = df_sorted.iloc[train_mask]['game_date']
             test_dates = df_sorted.iloc[test_mask]['game_date']
-            print(f"   Train: {len(X_train):,} games ({train_dates.min().date()} to {train_dates.max().date()})")
-            print(f"   Test:  {len(X_test):,} games ({test_dates.min().date()} to {test_dates.max().date()})")
+            logger.info("   Train: %s games (%s to %s)", len(X_train), train_dates.min().date(), train_dates.max().date())
+            logger.info("   Test:  %s games (%s to %s)", len(X_test), test_dates.min().date(), test_dates.max().date())
         else:
             # Fallback to random split (with warning)
-            print("⚠️  Using random train/test split (may cause data leakage)")
+            logger.warning("⚠️  Using random train/test split (may cause data leakage)")
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42, stratify=y
             )
@@ -146,7 +149,7 @@ class NBAModelTrainer:
             ))
         }
 
-        print(f"✓ Model trained: {test_score:.3f} accuracy")
+        logger.info("✓ Model trained: %s accuracy", f"{test_score:.3f}")
 
         return metrics
 
@@ -179,16 +182,16 @@ class NBAModelTrainer:
         with open(latest_metadata, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
-        print(f"💾 Model saved to: {model_file}")
-        print(f"📄 Metadata saved to: {metadata_file}")
+        logger.info("💾 Model saved to: %s", model_file)
+        logger.info("📄 Metadata saved to: %s", metadata_file)
 
         return model_file, metadata_file
 
     def train_and_save(self, use_temporal_split: bool = True) -> dict:
         """Complete training pipeline."""
-        print("=" * 80)
-        print("🏀 NBA MODEL TRAINING PIPELINE")
-        print("=" * 80)
+        logger.info("%s", "=" * 80)
+        logger.info("🏀 NBA MODEL TRAINING PIPELINE")
+        logger.info("%s", "=" * 80)
 
         # Load data
         df = self.load_features()
@@ -202,11 +205,11 @@ class NBAModelTrainer:
         # Save model
         model_file, metadata_file = self.save_model(metrics)
 
-        print("=" * 80)
-        print("✅ MODEL TRAINING COMPLETED")
-        print(f"📊 Test Accuracy: {metrics['test_accuracy']:.3f}")
-        print(f"📁 Model File: {model_file}")
-        print("=" * 80)
+        logger.info("%s", "=" * 80)
+        logger.info("✅ MODEL TRAINING COMPLETED")
+        logger.info("📊 Test Accuracy: %s", f"{metrics['test_accuracy']:.3f}")
+        logger.info("📁 Model File: %s", model_file)
+        logger.info("%s", "=" * 80)
 
         return metrics
 
@@ -230,7 +233,7 @@ if __name__ == "__main__":
             config = yaml.safe_load(f) or {}
 
     metrics = train_model(config)
-    print(f"\n📋 Final metrics:")
-    print(f"  - Accuracy: {metrics['test_accuracy']:.3f}")
-    print(f"  - CV Score: {metrics['cv_mean']:.3f} ± {metrics['cv_std']:.3f}")
-    print(f"  - Features: {metrics['n_features']}")
+    logger.info("\n📋 Final metrics:")
+    logger.info("  - Accuracy: %s", f"{metrics['test_accuracy']:.3f}")
+    logger.info("  - CV Score: %s ± %s", f"{metrics['cv_mean']:.3f}", f"{metrics['cv_std']:.3f}")
+    logger.info("  - Features: %s", metrics['n_features'])

@@ -10,11 +10,14 @@ Data Sources:
 - Odds: The Odds API real-time odds (via ingest_odds.py)
 """
 
+import logging
 import polars as pl
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Optional
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 class FeatureEngineer:
@@ -90,7 +93,7 @@ class FeatureEngineer:
             (pl.col("pts_home") - pl.col("pts_away")).alias("point_diff")
         ])
 
-        print(f"✓ Games: {len(df):,} records")
+        logger.info("✓ Games: %s records", len(df))
         return df
 
     def create_team_game_features(self, games_df) -> pl.DataFrame:
@@ -174,7 +177,7 @@ class FeatureEngineer:
             (pl.col("venue") == "home").alias("is_home")
         ])
 
-        print(f"✓ Team records: {len(team_games):,}")
+        logger.info("✓ Team records: %s", len(team_games))
         return team_games
 
     def create_rolling_features(self, team_games: pl.DataFrame,
@@ -231,7 +234,7 @@ class FeatureEngineer:
             pl.col("game_id").shift(1).count().over("team_name").alias("games_played")
         ])
 
-        print(f"✓ Rolling features: {lookback}g lookback")
+        logger.info("✓ Rolling features: %sg lookback", lookback)
         return rolling_features
 
     def add_rest_days(self, team_games: pl.DataFrame) -> pl.DataFrame:
@@ -306,12 +309,12 @@ class FeatureEngineer:
         available_columns = [col for col in feature_columns if col in filtered.columns]
         features = filtered.select(available_columns)
 
-        print(f"✓ Features: {len(features):,} records, {len(available_columns)} cols")
+        logger.info("✓ Features: %s records, %s cols", len(features), len(available_columns))
         return features
 
     def build_features(self, output_file: str = None) -> pl.DataFrame:
         """Main feature engineering pipeline"""
-        print("🏀 Feature Engineering Pipeline")
+        logger.info("🏀 Feature Engineering Pipeline")
 
         # Load data
         games_df = self.load_games_data()
@@ -351,7 +354,7 @@ class FeatureEngineer:
         with open(metadata_file, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
-        print(f"✅ Features complete: {len(features):,} records, {len(features.columns)} cols")
+        logger.info("✅ Features complete: %s records, %s cols", len(features), len(features.columns))
 
         return features
 
@@ -380,5 +383,5 @@ if __name__ == "__main__":
         config_path = None
 
     features = build_features(config_path, args.output)
-    print(f"\n📋 Sample features:")
-    print(features.head().to_pandas().to_string())
+    logger.info("\n📋 Sample features:")
+    logger.info("%s", features.head().to_pandas().to_string())
