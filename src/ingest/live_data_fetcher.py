@@ -130,7 +130,7 @@ if __name__ == "__main__":
         try:
             target_date = datetime.strptime(args.date, "%Y-%m-%d").date()
         except Exception as e:
-            print(f"Invalid date format: {e}")
+            logger.warning("Invalid date format: %s", e)
             target_date = date.today()
     else:
         target_date = date.today()
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     games_df = fetcher.get_todays_games(target_date)
     
     if not games_df.empty:
-        print(f"\n✅ Found {len(games_df)} game(s) for {target_date}")
-        print(games_df[['home_team', 'away_team', 'game_status']].to_string(index=False))
+        logger.info("\n✅ Found %s game(s) for %s", len(games_df), target_date)
+        logger.info("%s", games_df[['home_team', 'away_team', 'game_status']].to_string(index=False))
     else:
-        print(f"\n📭 No games found for {target_date}")
+        logger.info("\n📭 No games found for %s", target_date)
