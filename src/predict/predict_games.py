@@ -456,9 +456,9 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     if target_date is None:
         target_date = date.today()
 
-    print("=" * 80)
-    print(f"🏀 NBA DAILY PREDICTIONS - {target_date}")
-    print("=" * 80)
+    logger.info("%s", "=" * 80)
+    logger.info("🏀 NBA DAILY PREDICTIONS - %s", target_date)
+    logger.info("%s", "=" * 80)
 
     # Initialize predictor
     predictor = NBAPredictor()
@@ -467,7 +467,7 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     games = predictor.get_upcoming_games(target_date)
 
     if games.empty:
-        print("📭 No games found for prediction")
+        logger.info("📭 No games found for prediction")
         return pd.DataFrame()
 
     # Make predictions
@@ -479,13 +479,13 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     # Save predictions
     predictor.save_predictions(predictions_with_edges, target_date)
 
-    print("=" * 80)
-    print("✅ DAILY PREDICTIONS COMPLETED")
-    print("=" * 80)
+    logger.info("%s", "=" * 80)
+    logger.info("✅ DAILY PREDICTIONS COMPLETED")
+    logger.info("%s", "=" * 80)
 
     return predictions_with_edges
 
 
 if __name__ == "__main__":
     predictions = predict_daily_games()
-    print(predictions[['home_team', 'away_team', 'predicted_winner', 'confidence', 'best_bet_edge']].head())
+    logger.info("%s", predictions[['home_team', 'away_team', 'predicted_winner', 'confidence', 'best_bet_edge']].head().to_string())
