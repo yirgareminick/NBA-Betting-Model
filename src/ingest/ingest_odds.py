@@ -9,6 +9,7 @@ Usage:
 
 import argparse
 import os
+import logging
 from pathlib import Path
 
 import polars as pl
@@ -24,6 +25,8 @@ SPORT = "basketball_nba"
 ENDPOINT = f"https://api.the-odds-api.com/v4/sports/{SPORT}/odds"
 RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
+
+logger = logging.getLogger(__name__)
 
 def fetch_odds(regions="us", markets="h2h", odds_format="american", bookmakers=None):
     if not API_KEY:
@@ -109,4 +112,4 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     df = pull_odds_to_csv(regions=args.regions, bookmakers=(args.bookmakers or "").split(","), out_csv=args.out_csv)
-    print(df.head())
+    logger.info("%s", df.head().to_string())
