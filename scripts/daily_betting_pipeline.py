@@ -32,10 +32,6 @@ from stake.kelly_criterion import calculate_daily_bets
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
-from stake.kelly_criterion import calculate_daily_bets
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 
 class DailyBettingPipeline:
