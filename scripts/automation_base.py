@@ -204,27 +204,15 @@ class AutomationBase:
         features_file = self.project_root / "data" / "processed" / "nba_features.parquet"
         if features_file.exists():
             try:
-                # Try to get record count using polars
-                cmd = self.python_cmd + ["-c", 
-                    "import polars as pl; "
-                    f"df = pl.read_parquet('{features_file}'); "
-                    f"print(len(df), df['game_date'].max(), sep=',')"]
-                result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
-                
-                if result.returncode == 0:
-                    parts = result.stdout.strip().split(',')
-                    if len(parts) >= 2:
-                        count, latest_date = parts[0], parts[1]
-                        quality_report['feature_records'] = int(count)
-                        quality_report['latest_date'] = latest_date
-                        self.logger.info(f"Feature records: {count}")
-                        self.logger.info(f"Latest game date: {latest_date}")
-                    else:
-                        quality_report['feature_records'] = "parse_error"
-                        quality_report['latest_date'] = "parse_error"
-                else:
-                    quality_report['feature_records'] = "error"
-                    quality_report['latest_date'] = "error"
+                import polars as pl
+                df = pl.read_parquet(str(features_file))
+                record_count = len(df)
+                latest_date = str(df['game_date'].max()) if record_count > 0 else "none"
+
+                quality_report['feature_records'] = record_count
+                quality_report['latest_date'] = latest_date
+                self.logger.info(f"Feature records: {record_count}")
+                self.logger.info(f"Latest game date: {latest_date}")
             except Exception as e:
                 self.logger.warning(f"Could not read features file: {e}")
                 quality_report['feature_records'] = "error"
