@@ -53,6 +53,13 @@ class LiveNBADataFetcher:
             logger.exception("Error fetching NBA games")
             return self._get_fallback_games(target_date)
 
+    def _parse_fallback_json(self, response):
+        try:
+            return response.json()
+        except ValueError as e:
+            logger.warning("Invalid JSON from fallback API: %s", e)
+            return {}
+
     def _get_fallback_games(self, target_date: date) -> pd.DataFrame:
         """Fallback using ESPN API."""
         try:
@@ -61,16 +68,20 @@ class LiveNBADataFetcher:
 
             response = self.session.get(url, params=params, timeout=10)
             response.raise_for_status()
-            data = response.json()
+            data = self._parse_fallback_json(response)
 
             games = []
-            for event in data.get('events', []):
+            for event in data.get('events', []) if isinstance(data.get('events'), list) else []:
+                if not isinstance(event, dict):
+                    continue
                 competition = event.get('competitions', [{}])[0]
-                competitors = competition.get('competitors', [])
+                if not isinstance(competition, dict):
+                    continue
+                competitors = competition.get('competitors', []) if isinstance(competition.get('competitors', []), list) else []
 
                 if len(competitors) >= 2:
-                    home_team = next((c['team']['abbreviation'] for c in competitors if c.get('homeAway') == 'home'), None)
-                    away_team = next((c['team']['abbreviation'] for c in competitors if c.get('homeAway') != 'home'), None)
+                    home_team = next((c.get('team', {}).get('abbreviation') for c in competitors if isinstance(c, dict) and c.get('homeAway') == 'home'), None)
+                    away_team = next((c.get('team', {}).get('abbreviation') for c in competitors if isinstance(c, dict) and c.get('homeAway') != 'home'), None)
 
                     if home_team and away_team:
                         games.append({

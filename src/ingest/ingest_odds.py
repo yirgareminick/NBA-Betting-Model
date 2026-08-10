@@ -28,6 +28,21 @@ RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 
+
+def _parse_json_response(response):
+    try:
+        data = response.json()
+    except ValueError as e:
+        logger.error("Invalid JSON response from odds API: %s", e)
+        raise ValueError("Invalid JSON from odds API") from e
+
+    if not isinstance(data, list):
+        logger.error("Unexpected odds API response format: %s", type(data).__name__)
+        raise ValueError("Unexpected odds API response format")
+
+    return data
+
+
 def fetch_odds(regions="us", markets="h2h", odds_format="american", bookmakers=None):
     if not API_KEY:
         raise ValueError("Set ODDS_API_KEY in .env file. Get your free key at: https://the-odds-api.com/")
@@ -45,21 +60,41 @@ def fetch_odds(regions="us", markets="h2h", odds_format="american", bookmakers=N
             params["bookmakers"] = ",".join(filtered)
     resp = requests.get(ENDPOINT, params=params, timeout=10)
     resp.raise_for_status()
-    return resp.json()
+    return _parse_json_response(resp)
 
 def parse_odds(json_data):
     records = []
     for game in json_data:
+        if not isinstance(game, dict):
+            logger.warning("Skipping malformed game entry: %s", type(game).__name__)
+            continue
+
         game_id = game.get("id")
         ct = game.get("commence_time")
         home = game.get("home_team")
         away = game.get("away_team")
+
+        if not home or not away:
+            logger.warning("Skipping odds game with missing teams: %s", game_id)
+            continue
+
         for book in game.get("bookmakers", []):
-            book_name = book.get("key")
-            h2h = next((m for m in book.get("markets", []) if m["key"] == "h2h"), None)
-            if not h2h:
+            if not isinstance(book, dict):
                 continue
-            odds = {o["name"]: o["price"] for o in h2h["outcomes"]}
+
+            book_name = book.get("key")
+            if not book_name:
+                continue
+
+            h2h = next((m for m in book.get("markets", []) if isinstance(m, dict) and m.get("key") == "h2h"), None)
+            if not h2h or not isinstance(h2h.get("outcomes"), list):
+                continue
+
+            odds = {
+                o.get("name"): o.get("price")
+                for o in h2h.get("outcomes", [])
+                if isinstance(o, dict)
+            }
             home_odds = odds.get(home)
             away_odds = odds.get(away)
             # Calculate implied probabilities for American odds
