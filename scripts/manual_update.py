@@ -14,6 +14,7 @@ Usage:
 """
 
 import argparse
+import logging
 import sys
 from datetime import date
 from pathlib import Path
@@ -22,6 +23,9 @@ from typing import List, Optional
 # Add the project root to the Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 from scripts.automation_base import AutomationBase
 
@@ -327,7 +331,7 @@ Environment Variables:
     except ValueError as e:
         parser.error(str(e))
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f"Error: {e}")
         sys.exit(1)
 
 

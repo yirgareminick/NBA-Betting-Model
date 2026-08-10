@@ -11,14 +11,18 @@ Usage:
     python tests/run_tests.py --coverage
 """
 
+import argparse
+import logging
 import sys
 import unittest
-import argparse
 from pathlib import Path
 import importlib.util
 
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 
 def discover_tests(test_dir: Path, pattern: str = "test_*.py"):
@@ -43,7 +47,7 @@ def discover_tests(test_dir: Path, pattern: str = "test_*.py"):
 
 def run_unit_tests():
     """Run unit tests."""
-    print("🧪 Running unit tests...")
+    logger.info("🧪 Running unit tests...")
     
     unit_dir = Path(__file__).parent / "unit"
     suite = discover_tests(unit_dir)
@@ -56,7 +60,7 @@ def run_unit_tests():
 
 def run_integration_tests():
     """Run integration tests."""
-    print("🔗 Running integration tests...")
+    logger.info("🔗 Running integration tests...")
     
     integration_dir = Path(__file__).parent / "integration"
     suite = discover_tests(integration_dir)
@@ -69,13 +73,13 @@ def run_integration_tests():
 
 def run_all_tests():
     """Run all tests."""
-    print("🏀 NBA test suite")
+    logger.info("🏀 NBA test suite")
     
     unit_success = run_unit_tests()
-    print()
+    logger.info("")
     integration_success = run_integration_tests()
     
-    print(f"✅ Unit: {'PASSED' if unit_success else 'FAILED'}, Integration: {'PASSED' if integration_success else 'FAILED'}")
+    logger.info(f"✅ Unit: {'PASSED' if unit_success else 'FAILED'}, Integration: {'PASSED' if integration_success else 'FAILED'}")
     
     overall_success = unit_success and integration_success
     
@@ -87,10 +91,10 @@ def run_with_coverage():
     try:
         import coverage
     except ImportError:
-        print("❌ Coverage package not installed. Install with: pip install coverage")
+        logger.error("❌ Coverage package not installed. Install with: pip install coverage")
         return False
     
-    print("📊 Running with coverage...")
+    logger.info("📊 Running with coverage...")
     
     # Start coverage
     cov = coverage.Coverage(source=['src'])
@@ -104,19 +108,19 @@ def run_with_coverage():
         cov.stop()
         cov.save()
         
-        print("\n📊 Coverage Report:")
+        logger.info("📊 Coverage Report:")
         cov.report()
         
         # Generate HTML report
         html_dir = Path(__file__).parent.parent / "reports" / "coverage"
         html_dir.mkdir(parents=True, exist_ok=True)
         cov.html_report(directory=str(html_dir))
-        print(f"\n📊 HTML coverage report generated: {html_dir}/index.html")
+        logger.info(f"📊 HTML coverage report generated: {html_dir}/index.html")
         
         return success
         
     except Exception as e:
-        print(f"❌ Coverage analysis failed: {e}")
+        logger.error(f"❌ Coverage analysis failed: {e}")
         return False
 
 
@@ -142,10 +146,10 @@ def main():
         sys.exit(0 if success else 1)
         
     except KeyboardInterrupt:
-        print("\n⚠️  Tests interrupted by user")
+        logger.warning("\n⚠️  Tests interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"❌ Test runner failed: {e}")
+        logger.error(f"❌ Test runner failed: {e}")
         sys.exit(1)
 
 
