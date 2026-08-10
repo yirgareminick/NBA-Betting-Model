@@ -21,8 +21,9 @@ import importlib.util
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
+from scripts.logging_config import setup_basic_logging
+setup_basic_logging()
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 
 def discover_tests(test_dir: Path, pattern: str = "test_*.py"):

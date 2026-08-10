@@ -23,25 +23,27 @@ from datetime import date, datetime
 from pathlib import Path
 import yaml
 
-# Add src to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+sys.path.append(str(project_root / "src"))
 
+from scripts.logging_config import setup_basic_logging
+from scripts.automation_base import AutomationBase
 from predict.daily_report import generate_daily_report
 from predict.predict_games import predict_daily_games
 from stake.kelly_criterion import calculate_daily_bets
 
+setup_basic_logging()
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 
-class DailyBettingPipeline:
+class DailyBettingPipeline(AutomationBase):
     """Enhanced daily betting pipeline with full automation."""
     
     def __init__(self, config: dict = None):
+        super().__init__("daily_betting_pipeline")
         self.config = config or self._load_config()
         self.project_root = Path(__file__).parent.parent
-        self.logs_dir = self.project_root / "logs"
-        self.logs_dir.mkdir(exist_ok=True)
         
     def _load_config(self) -> dict:
         """Load configuration from file."""
@@ -57,17 +59,9 @@ class DailyBettingPipeline:
             }
     
     def log_message(self, message: str, level: str = "INFO"):
-        """Log message to file and console."""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_entry = f"[{timestamp}] {level}: {message}"
-        
-        logger.log(getattr(logging, level, logging.INFO), log_entry)
-        
-        # Also log to file
-        log_file = self.logs_dir / f"daily_pipeline_{date.today().strftime('%Y%m%d')}.log"
-        with open(log_file, 'a') as f:
-            f.write(log_entry + "\n")
-    
+        """Proxy to the shared AutomationBase logger."""
+        self.logger.log(getattr(logging, level, logging.INFO), message)
+
     def check_model_performance(self) -> dict:
         """Check current model performance and determine if retraining is needed."""
         try:

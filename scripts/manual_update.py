@@ -24,8 +24,9 @@ from typing import List, Optional
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+from scripts.logging_config import setup_basic_logging
+setup_basic_logging()
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 from scripts.automation_base import AutomationBase
 
