@@ -179,6 +179,21 @@ class NBAModelTrainer:
         latest_metadata = self.model_dir / "nba_model_latest_metadata.yml"
 
         joblib.dump(self.model, latest_model)
+        # Compute SHA256 checksum of the model file for integrity verification
+        try:
+            import hashlib
+            def _file_sha256(path: Path) -> str:
+                h = hashlib.sha256()
+                with open(path, 'rb') as fh:
+                    for chunk in iter(lambda: fh.read(8192), b''):
+                        h.update(chunk)
+                return h.hexdigest()
+
+            sha = _file_sha256(latest_model)
+            metadata['model_sha256'] = sha
+        except Exception as e:
+            logger.warning("Failed to compute model checksum: %s", e)
+
         with open(latest_metadata, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
