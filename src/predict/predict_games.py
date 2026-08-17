@@ -19,9 +19,6 @@ warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
 logger = logging.getLogger(__name__)
-if not logging.getLogger().handlers:
-    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -133,56 +130,11 @@ class NBAPredictor:
         """Prepare features for prediction from games data."""
 
         try:
-            return self._create_prediction_features(games_df)
+            # Use minimal features directly for model compatibility
+            return self._create_minimal_features(games_df)
         except Exception:
             logger.exception("Error preparing features")
             raise
-
-    def _create_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Create prediction features for all games in the DataFrame."""
-        if games_df.empty:
-            return pd.DataFrame(columns=self.feature_columns or [])
-
-        features_list = []
-        for _, game in games_df.iterrows():
-            game_date = game.get('game_date', date.today())
-            if isinstance(game_date, pd.Timestamp):
-                game_date = game_date.date()
-            elif isinstance(game_date, str):
-                try:
-                    game_date = pd.to_datetime(game_date).date()
-                except Exception:
-                    game_date = date.today()
-
-            home_team = str(game.get('home_team', '')).strip()
-            away_team = str(game.get('away_team', '')).strip()
-
-            home_stats = self._build_team_features(home_team, away_team, True, game_date)
-            away_stats = self._build_team_features(away_team, home_team, False, game_date)
-
-            features_list.append(self._build_feature_row(home_stats, away_stats, True))
-            features_list.append(self._build_feature_row(away_stats, home_stats, False))
-
-        features_df = pd.DataFrame(features_list)
-
-        for col in self.feature_columns or []:
-            if col not in features_df.columns:
-                features_df[col] = 0.0
-
-        return features_df[self.feature_columns] if self.feature_columns else features_df
-
-    def _build_feature_row(self, team_stats: Dict, opponent_stats: Dict, is_home: bool) -> Dict:
-        """Map team and opponent stats into a model feature row."""
-        feature_row = {}
-        for column in self.feature_columns or []:
-            if column == 'is_home':
-                feature_row[column] = int(is_home)
-            elif column.startswith('opponent_'):
-                feature_name = column.replace('opponent_', '')
-                feature_row[column] = opponent_stats.get(feature_name, 0.0)
-            else:
-                feature_row[column] = team_stats.get(column, 0.0)
-        return feature_row
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup."""
@@ -194,7 +146,7 @@ class NBAPredictor:
                 for key in ['win_pct_last_10', 'win_pct_last_5', 'season_win_pct']:
                     if key in team_stats:
                         team_stats[key] = max(0.0, min(1.0, team_stats[key]))
-
+                
                 team_stats['is_home'] = int(is_home)
                 return team_stats
 
@@ -216,21 +168,17 @@ class NBAPredictor:
             if recent_stats and recent_stats.get('games_played', 0) > 0:
                 # Convert live stats to model features
                 return {
-                    'avg_pts_last_10': recent_stats.get('avg_pts', 115.0),
-                    'avg_pts_allowed_last_10': recent_stats.get('avg_pts_allowed', 112.0),
-                    'avg_point_diff_last_10': recent_stats.get('avg_pts', 115.0) - recent_stats.get('avg_pts_allowed', 112.0),
-                    'avg_rebounds_last_10': recent_stats.get('avg_rebounds', 44.0),
-                    'avg_assists_last_10': recent_stats.get('avg_assists', 26.0),
-                    'avg_fg_pct_last_10': recent_stats.get('avg_fg_pct', 0.460),
-                    'avg_3p_pct_last_10': recent_stats.get('avg_3p_pct', 0.360),
+                    'avg_pts_last_10': recent_stats.get('avg_pts', 110.0),
+                    'avg_pts_allowed_last_10': recent_stats.get('avg_pts_allowed', 108.0),
+                    'avg_point_diff_last_10': recent_stats.get('avg_pts', 110.0) - recent_stats.get('avg_pts_allowed', 108.0),
                     'win_pct_last_10': recent_stats.get('win_pct', 0.5),
                     'win_pct_last_5': recent_stats.get('win_pct', 0.5),  # Use same as 10-game for now
-                    'avg_point_diff_last_5': recent_stats.get('avg_pts', 115.0) - recent_stats.get('avg_pts_allowed', 112.0),
+                    'avg_point_diff_last_5': recent_stats.get('avg_pts', 110.0) - recent_stats.get('avg_pts_allowed', 108.0),
                     'rest_days': self._calculate_rest_days(team, game_date),
                     'game_number_in_season': self._estimate_game_number(game_date),
                     'season_win_pct': recent_stats.get('win_pct', 0.5),
-                    'season_avg_pts': recent_stats.get('avg_pts', 115.0),
-                    'season_avg_pts_allowed': recent_stats.get('avg_pts_allowed', 112.0),
+                    'season_avg_pts': recent_stats.get('avg_pts', 112.0),
+                    'season_avg_pts_allowed': recent_stats.get('avg_pts_allowed', 110.0),
                 }
         except Exception:
             logger.exception(f"Error fetching real stats for {team}")
@@ -259,10 +207,6 @@ class NBAPredictor:
             'avg_pts_last_10': profile['pts'] + home_boost,
             'avg_pts_allowed_last_10': profile['pts_allowed'] - (home_boost * 0.5),
             'avg_point_diff_last_10': (profile['pts'] - profile['pts_allowed']) + home_boost,
-            'avg_rebounds_last_10': profile.get('rebounds', 44.0),
-            'avg_assists_last_10': profile.get('assists', 26.0),
-            'avg_fg_pct_last_10': profile.get('fg_pct', 0.450),
-            'avg_3p_pct_last_10': profile.get('fg3_pct', 0.350),
             'win_pct_last_10': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
             'win_pct_last_5': min(0.95, max(0.05, profile['win_pct'] + (0.05 if is_home else -0.05))),
             'avg_point_diff_last_5': (profile['pts'] - profile['pts_allowed']) + home_boost,
@@ -460,7 +404,7 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
         target_date = date.today()
 
     logger.info("%s", "=" * 80)
-    logger.info("🏀 NBA DAILY PREDICTIONS - %s", target_date)
+    logger.info("NBA DAILY PREDICTIONS - %s", target_date)
     logger.info("%s", "=" * 80)
 
     # Initialize predictor
@@ -470,7 +414,7 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     games = predictor.get_upcoming_games(target_date)
 
     if games.empty:
-        logger.info("📭 No games found for prediction")
+        logger.info("No games found for prediction")
         return pd.DataFrame()
 
     # Make predictions
@@ -483,7 +427,7 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
     predictor.save_predictions(predictions_with_edges, target_date)
 
     logger.info("%s", "=" * 80)
-    logger.info("✅ DAILY PREDICTIONS COMPLETED")
+    logger.info("DAILY PREDICTIONS COMPLETED")
     logger.info("%s", "=" * 80)
 
     return predictions_with_edges
@@ -491,4 +435,4 @@ def predict_daily_games(target_date: date = None) -> pd.DataFrame:
 
 if __name__ == "__main__":
     predictions = predict_daily_games()
-    logger.info("%s", predictions[['home_team', 'away_team', 'predicted_winner', 'confidence', 'best_bet_edge']].head().to_string())
+    logger.info("%s", predictions[['home_team', 'away_team', 'predicted_winner', 'confidence', 'best_bet_edge']].head())

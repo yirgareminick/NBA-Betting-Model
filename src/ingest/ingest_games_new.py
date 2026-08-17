@@ -43,7 +43,7 @@ class NBADataIngestion:
                 try:
                     with open(config_path, 'r', encoding='utf-8') as f:
                         config[config_type] = yaml.safe_load(f)
-                    logger.info("✓ Loaded %s config from %s", config_type, config_path)
+                    logger.info("Loaded %s config from %s", config_type, config_path)
                 except Exception as e:
                     logger.warning("Could not load %s config: %s", config_type, e)
             else:
@@ -79,10 +79,10 @@ class NBADataIngestion:
 
     def download_kaggle_dataset(self) -> str:
         """Download the Kaggle basketball dataset"""
-        logger.info("📥 Downloading Kaggle dataset...")
+        logger.info("Downloading Kaggle dataset...")
         try:
             dataset_path = kagglehub.dataset_download("wyattowalsh/basketball")
-            logger.info("✓ Dataset downloaded to: %s", dataset_path)
+            logger.info("Dataset downloaded to: %s", dataset_path)
             return dataset_path
         except Exception as e:
             raise RuntimeError(f"Failed to download dataset: {e}")
@@ -93,7 +93,7 @@ class NBADataIngestion:
         target_db = self.data_paths['raw'] / "nba.sqlite"
 
         if source_db.exists():
-            logger.info("📁 Copying database to project: %s", target_db)
+            logger.info("Copying database to project: %s", target_db)
             shutil.copy2(source_db, target_db)
             return target_db
         raise FileNotFoundError(f"SQLite database not found at {source_db}")
@@ -117,10 +117,10 @@ class NBADataIngestion:
 
                 if games_tables:
                     table_name = games_tables[0]
-                    logger.info("📊 Using table: %s", table_name)
+                    logger.info("Using table: %s", table_name)
                 else:
                     table_name = tables[0] if tables else None
-                    logger.info("📊 Using first available table: %s", table_name)
+                    logger.info("Using first available table: %s", table_name)
 
             if table_name is None:
                 raise ValueError("No tables found in database")
@@ -137,7 +137,7 @@ class NBADataIngestion:
         if not csv_path.exists():
             raise FileNotFoundError(f"game.csv not found at {csv_path}")
 
-        logger.info("📊 Loading data from: %s", csv_path)
+        logger.info("Loading data from: %s", csv_path)
         return pd.read_csv(csv_path)
 
     def identify_date_columns(self, df: pd.DataFrame) -> List[str]:
@@ -159,11 +159,11 @@ class NBADataIngestion:
             logger.warning("No date columns found. Returning full dataset.")
             return df
 
-        logger.info("📅 Found date columns: %s", date_columns)
+        logger.info("Found date columns: %s", date_columns)
 
         for col in date_columns:
             try:
-                logger.info("🔍 Attempting to filter using column: %s", col)
+                logger.info("Attempting to filter using column: %s", col)
 
                 if self._is_year_column(df[col]):
                     filtered_df = self._filter_by_year_column(df, col, year_start, year_end)
@@ -173,8 +173,7 @@ class NBADataIngestion:
                     continue
 
                 if not filtered_df.empty:
-                    logger.info("✓ Successfully filtered using %s: %s records", col, len(filtered_df))
-                    return filtered_df
+                    logger.info("Successfully filtered using %s: %s records", col, len(filtered_df))
                     return filtered_df
 
             except Exception as e:
@@ -275,14 +274,14 @@ class NBADataIngestion:
                 df = self.load_data_from_csv(dataset_path)
                 data_source = "csv"
 
-            logger.info("📊 Original dataset: %s rows, %s columns", df.shape[0], df.shape[1])
+            logger.info("Original dataset: %s rows, %s columns", df.shape[0], df.shape[1])
 
             # Filter by year range
             filtered_df = self.filter_by_year_range(df, year_start, year_end)
-            logger.info("📊 Filtered dataset: %s rows", filtered_df.shape[0])
+            logger.info("Filtered dataset: %s rows", filtered_df.shape[0])
 
             if filtered_df.empty:
-                logger.warning("❌ No data found for years %s-%s", year_start, year_end)
+                logger.warning("No data found for years %s-%s", year_start, year_end)
                 return pd.DataFrame(columns=df.columns)
 
             # Save results
@@ -290,8 +289,8 @@ class NBADataIngestion:
                 filtered_df, year_start, year_end, data_source
             )
 
-            logger.info("✅ Data saved to: %s", output_file)
-            logger.info("📄 Metadata saved to: %s", metadata_file)
+            logger.info("Data saved to: %s", output_file)
+            logger.info("Metadata saved to: %s", metadata_file)
 
             return filtered_df, str(output_file)
 
@@ -307,15 +306,15 @@ def main():
     use_sqlite = sys.argv[3].lower() in ['true', '1', 'yes', 'sqlite'] if len(sys.argv) > 3 else True
 
     logger.info("%s", "=" * 80)
-    logger.info("🏀 NBA GAMES DATA INGESTION")
+    logger.info("NBA GAMES DATA INGESTION")
     logger.info("%s", "=" * 80)
-    logger.info("📅 Year range: %s - %s", year_start, year_end)
-    logger.info("💾 Data source: %s", 'SQLite database' if use_sqlite else 'CSV files')
+    logger.info("Year range: %s - %s", year_start, year_end)
+    logger.info("Data source: %s", 'SQLite database' if use_sqlite else 'CSV files')
     logger.info("%s", "=" * 80)
 
     # Validate inputs
     if year_start > year_end:
-        logger.error("❌ Error: Start year cannot be greater than end year")
+        logger.error("Start year cannot be greater than end year")
         sys.exit(1)
 
     # Initialize ingestion
@@ -327,26 +326,26 @@ def main():
     if result:
         df, output_file = result
         logger.info("%s", "=" * 80)
-        logger.info("🎉 INGESTION COMPLETED SUCCESSFULLY")
-        logger.info("📊 Records processed: %s", len(df))
-        logger.info("📁 Output file: %s", output_file)
+        logger.info("INGESTION COMPLETED SUCCESSFULLY")
+        logger.info("Records processed: %s", len(df))
+        logger.info("Output file: %s", output_file)
         if os.path.exists(output_file):
-            logger.info("💾 File size: %.2f MB", os.path.getsize(output_file) / (1024*1024))
+            logger.info("File size: %.2f MB", os.path.getsize(output_file) / (1024*1024))
         logger.info("%s", "=" * 80)
 
         # Show sample
-        logger.info("\n📋 Sample of processed data:\n%s", df.head().to_string())
+        logger.info("Sample of processed data:\n%s", df.head().to_string())
 
         # Show basic stats
-        logger.info("\n📈 Data Summary:")
+        logger.info("Data Summary:")
         logger.info("   • Columns: %s", df.shape[1])
         logger.info("   • Date range: %s-%s", year_start, year_end)
         logger.info("   • Missing values: %s", df.isnull().sum().sum())
 
     else:
-        logger.info("%s", "=" * 80)
-        logger.error("❌ INGESTION FAILED")
-        logger.info("%s", "=" * 80)
+        logger.error("%s", "=" * 80)
+        logger.error("INGESTION FAILED")
+        logger.error("%s", "=" * 80)
         sys.exit(1)
 
 if __name__ == "__main__":

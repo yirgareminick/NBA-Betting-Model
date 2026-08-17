@@ -53,13 +53,6 @@ class LiveNBADataFetcher:
             logger.exception("Error fetching NBA games")
             return self._get_fallback_games(target_date)
 
-    def _parse_fallback_json(self, response):
-        try:
-            return response.json()
-        except ValueError as e:
-            logger.warning("Invalid JSON from fallback API: %s", e)
-            return {}
-
     def _get_fallback_games(self, target_date: date) -> pd.DataFrame:
         """Fallback using ESPN API."""
         try:
@@ -68,20 +61,16 @@ class LiveNBADataFetcher:
 
             response = self.session.get(url, params=params, timeout=10)
             response.raise_for_status()
-            data = self._parse_fallback_json(response)
+            data = response.json()
 
             games = []
-            for event in data.get('events', []) if isinstance(data.get('events'), list) else []:
-                if not isinstance(event, dict):
-                    continue
+            for event in data.get('events', []):
                 competition = event.get('competitions', [{}])[0]
-                if not isinstance(competition, dict):
-                    continue
-                competitors = competition.get('competitors', []) if isinstance(competition.get('competitors', []), list) else []
+                competitors = competition.get('competitors', [])
 
                 if len(competitors) >= 2:
-                    home_team = next((c.get('team', {}).get('abbreviation') for c in competitors if isinstance(c, dict) and c.get('homeAway') == 'home'), None)
-                    away_team = next((c.get('team', {}).get('abbreviation') for c in competitors if isinstance(c, dict) and c.get('homeAway') != 'home'), None)
+                    home_team = next((c['team']['abbreviation'] for c in competitors if c.get('homeAway') == 'home'), None)
+                    away_team = next((c['team']['abbreviation'] for c in competitors if c.get('homeAway') != 'home'), None)
 
                     if home_team and away_team:
                         games.append({
@@ -150,7 +139,7 @@ if __name__ == "__main__":
     games_df = fetcher.get_todays_games(target_date)
     
     if not games_df.empty:
-        logger.info("\n✅ Found %s game(s) for %s", len(games_df), target_date)
+        logger.info("Found %s game(s) for %s", len(games_df), target_date)
         logger.info("%s", games_df[['home_team', 'away_team', 'game_status']].to_string(index=False))
     else:
-        logger.info("\n📭 No games found for %s", target_date)
+        logger.info("No games found for %s", target_date)
