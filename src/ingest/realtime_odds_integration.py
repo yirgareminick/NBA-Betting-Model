@@ -17,14 +17,6 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def _parse_json_response(response):
-    try:
-        return response.json()
-    except ValueError as e:
-        logger.error("Invalid JSON response from realtime odds API: %s", e)
-        raise ValueError("Invalid JSON from realtime odds API") from e
-
-
 class RealTimeOddsIntegrator:
     """Integrates real-time odds with live game schedule."""
 
@@ -62,65 +54,14 @@ class RealTimeOddsIntegrator:
             response = requests.get(url, params=params, timeout=30)
             response.raise_for_status()
 
-            data = _parse_json_response(response)
-            if not isinstance(data, list):
-                logger.error("Realtime odds API returned unexpected structure: %s", type(data).__name__)
-                return pd.DataFrame()
-
+            data = response.json()
             odds_data = []
 
             for game in data:
-                if not isinstance(game, dict):
-                    logger.warning("Skipping malformed game entry in realtime odds feed")
-                    continue
+                game_date = datetime.strptime(game['commence_time'][:10], '%Y-%m-%d').date()
 
-                commence_time = game.get('commence_time')
-                if not isinstance(commence_time, str) or len(commence_time) < 10:
-                    logger.warning("Skipping game with invalid commence_time: %s", game.get('id'))
-                    continue
-
-                try:
-                    game_date = datetime.strptime(commence_time[:10], '%Y-%m-%d').date()
-                except ValueError:
-                    logger.warning("Skipping game with bad commence_time format: %s", commence_time)
-                    continue
-
-                home_team = game.get('home_team')
-                away_team = game.get('away_team')
-                if not home_team or not away_team:
-                    logger.warning("Skipping game with missing team fields: %s", game.get('id'))
-                    continue
-
-                bookmaker_odds = {}
-
-                for bookmaker in game.get('bookmakers', []) or []:
-                    if not isinstance(bookmaker, dict):
-                        continue
-                    for market in bookmaker.get('markets', []) or []:
-                        if not isinstance(market, dict) or market.get('key') != 'h2h':
-                            continue
-                        for outcome in market.get('outcomes', []) or []:
-                            if not isinstance(outcome, dict):
-                                continue
-                            team_name = outcome.get('name')
-                            odds = outcome.get('price')
-
-                            if not team_name:
-                                continue
-
-                            bookmaker_odds.setdefault(bookmaker.get('key'), {})[team_name] = odds
-
-                # Create odds record
-                if bookmaker_odds:
-                    # Use average odds across bookmakers
-                    home_odds = []
-                    away_odds = []
-
-                    for bm_data in bookmaker_odds.values():
-                        if home_team in bm_data:
-                            home_odds.append(bm_data[home_team])
-                        if away_team in bm_data:
-                            away_odds.append(bm_data[away_team])
+                # Extract team names and odds
+                teams = [game['home_team'], game['away_team']]
                 bookmaker_odds = {}
 
                 for bookmaker in game.get('bookmakers', []):
