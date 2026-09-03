@@ -106,8 +106,6 @@ class NBAPredictor:
                     games = fetcher.add_current_odds(games)
                     return games
 
-                return pd.DataFrame()
-
             except Exception as exc:
                 logger.exception("Live data lookup failed")
 
