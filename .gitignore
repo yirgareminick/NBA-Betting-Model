@@ -232,7 +232,7 @@ pyrightconfig.json
 data/
 models/*.joblib
 models/*.pkl
-models/*_metadata.yml
+!models/*_metadata.yml
 output.png
 *.joblib
 *.parquet
