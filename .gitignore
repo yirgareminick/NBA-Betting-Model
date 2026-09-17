@@ -230,9 +230,11 @@ pyrightconfig.json
 
 # Data files and model artifacts
 data/
+!models/
 models/*.joblib
 models/*.pkl
 !models/*_metadata.yml
+models/*_metadata.yml.bak
 output.png
 *.joblib
 *.parquet

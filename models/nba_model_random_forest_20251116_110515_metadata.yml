@@ -1,0 +1,26 @@
+config:
+  cv_folds: 5
+  random_state: 42
+  test_size: 0.2
+created_at: '2025-11-16T11:05:15.272100'
+feature_columns:
+- is_home
+- avg_pts_last_10
+- avg_pts_allowed_last_10
+- avg_point_diff_last_10
+- win_pct_last_10
+- win_pct_last_5
+- avg_point_diff_last_5
+- rest_days
+- game_number_in_season
+- season_win_pct
+- season_avg_pts
+- season_avg_pts_allowed
+- is_home
+metrics:
+  best_model: random_forest
+  ensemble_used: false
+  test_accuracy: 0.6086486486486486
+model_file: /Users/yirgareminick/Documents/NBA-Betting-Model/models/nba_model_random_forest_20251116_110515.joblib
+model_sha256: 5ac96161a9fa0c53b590650e20988046310cccc13014dd6531d08a404d240999
+model_type: random_forest
