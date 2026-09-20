@@ -15,6 +15,7 @@ import yaml
 import warnings
 import sys
 import logging
+import hashlib
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=FutureWarning)
 
@@ -84,9 +85,21 @@ class NBAPredictor:
         self.model = joblib.load(self.model_path)
 
         with open(self.metadata_path, 'r', encoding='utf-8') as f:
-            self.metadata = yaml.safe_load(f)
+            self.metadata = yaml.safe_load(f) or {}
 
         self.feature_columns = self.metadata['feature_columns']
+
+        expected_sha = self.metadata.get('model_sha256')
+        if expected_sha:
+            digest = hashlib.sha256()
+            with open(self.model_path, 'rb') as model_file:
+                for chunk in iter(lambda: model_file.read(8192), b''):
+                    digest.update(chunk)
+
+            if digest.hexdigest() != expected_sha:
+                raise ValueError(f"Model integrity check failed: {self.model_path}")
+        else:
+            logger.warning("Model metadata has no model_sha256: %s", self.metadata_path)
 
     def get_upcoming_games(self, target_date: date = None) -> pd.DataFrame:
         """Get upcoming games for prediction using real-time data."""
