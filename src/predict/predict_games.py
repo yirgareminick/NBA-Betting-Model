@@ -89,6 +89,9 @@ class NBAPredictor:
         with open(self.metadata_path, 'r', encoding='utf-8') as f:
             self.metadata = yaml.safe_load(f) or {}
 
+        if not isinstance(self.metadata.get('feature_columns'), list):
+            raise ValueError(f"Invalid metadata: 'feature_columns' missing or not a list in {self.metadata_path}")
+
         self.feature_columns = self.metadata['feature_columns']
 
         expected_sha = self.metadata.get('model_sha256')
