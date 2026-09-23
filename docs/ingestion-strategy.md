@@ -192,5 +192,5 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
 
 ---
 
-*Last updated: July 2026*
+*Last updated: Sep 2026*
 *Next review: Quarterly or when NBA schedule changes*
