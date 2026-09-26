@@ -146,6 +146,8 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
 
 ## Getting Started
 
+> Note: the repository currently provides daily automation via [scripts/daily_update.py](../scripts/daily_update.py) and manual/forced maintenance workflows via [scripts/manual_update.py](../scripts/manual_update.py). The current implementation does not include a standalone `weekly_refresh.py` or `daily_predictions.py` script; the supported workflows are the daily pipeline and manual refresh scripts shown below.
+
 1. **Set up environment variables**:
    ```bash
    export KAGGLE_USERNAME=your_username
@@ -163,17 +165,17 @@ Odds Data ↗                     → Bet Sizing → Final Recommendations
 
 3. **Use automation scripts**:
    ```bash
-   # Daily update
+   # Daily update during the season
    python scripts/daily_update.py
-   
-   # Weekly full refresh  
-   python scripts/weekly_refresh.py
-   
-   # Emergency manual update
-   python scripts/manual_update.py
-   
+
+   # Manual maintenance or full refresh when needed
+   python scripts/manual_update.py --years 2024 2025
+
+   # Emergency manual update (odds/games/teams/features only)
+   python scripts/manual_update.py --odds-only
+
    # Enhanced daily pipeline (recommended)
-   python scripts/daily_betting_pipeline.py
+   python scripts/daily_betting_pipeline.py --bankroll 15000
    ```
 
 4. **Monitor and optimize**:

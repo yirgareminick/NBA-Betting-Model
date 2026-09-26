@@ -30,11 +30,10 @@ NBA-Betting-Model/
 ├── reports/                      # Generated reports
 │   └── performance/              # Performance analytics
 ├── scripts/                      # Automation scripts
-│   ├── daily_predictions.py      # Simple daily predictions
 │   ├── daily_betting_pipeline.py # Enhanced pipeline with monitoring
 │   ├── daily_update.py           # Data refresh automation
-│   ├── weekly_refresh.py         # Weekly maintenance
-│   └── scheduler.py              # Python-based task scheduler
+│   ├── manual_update.py          # Manual maintenance and refresh workflow
+│   └── logging_config.py        # Shared logging setup
 ├── src/                          # Source code
 │   ├── features/                 # Feature engineering
 │   │   └── build_features.py     # NBA feature pipeline
@@ -44,9 +43,7 @@ NBA-Betting-Model/
 │   │   ├── ingest_team_stats.py  # Team statistics
 │   │   └── live_data_fetcher.py  # Real-time NBA data
 │   ├── models/                   # ML training and tracking
-│   │   ├── train_model.py        # Basic model training
-│   │   ├── advanced_trainer.py   # Ensemble methods
-│   │   └── performance_tracker.py # Model monitoring
+│   │   └── train_model.py        # Model training and serialization
 │   ├── predict/                  # Prediction system
 │   │   ├── predict_games.py      # Game prediction engine
 │   │   └── daily_report.py       # Report generation
@@ -133,24 +130,18 @@ python src/models/advanced_trainer.py
 
 ### 4. **Daily Operations**
 
-#### Simple Predictions (Recommended for beginners)
+#### Current automation workflows
 ```bash
-# Generate predictions only
-python scripts/daily_predictions.py --predictions-only
+# Daily refresh automation
+python scripts/daily_update.py
 
-# Full betting analysis
-python scripts/daily_predictions.py --bankroll 10000
-```
+# Manual maintenance or forced refresh
+python scripts/manual_update.py --years 2024 2025
 
-#### Enhanced Pipeline (Recommended for production)
-```bash
-# Complete daily pipeline with monitoring
+# Full betting pipeline with monitoring
 python scripts/daily_betting_pipeline.py --bankroll 15000
 
-# Force model retraining
-python scripts/daily_betting_pipeline.py --retrain
-
-# Dry run (no actual betting recommendations saved)
+# Dry run (no changes saved)
 python scripts/daily_betting_pipeline.py --dry-run --notify
 ```
 
