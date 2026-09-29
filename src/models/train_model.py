@@ -53,16 +53,16 @@ class NBAModelTrainer:
         exclude_cols = ['game_id', 'game_date', 'team_name', 'opponent', 'target_win', 'venue']
         candidate_features = [col for col in df.columns if col not in exclude_cols]
 
-        # Only include numeric columns
+        # Only include numeric columns while preserving order and removing duplicates
         numeric_features = []
         for col in candidate_features:
             if pd.api.types.is_numeric_dtype(df[col]):
                 numeric_features.append(col)
 
-        self.feature_columns = numeric_features
+        self.feature_columns = list(dict.fromkeys(numeric_features))
 
-        # Handle the boolean 'is_home' column separately if it exists
-        if 'is_home' in df.columns:
+        # Handle the boolean 'is_home' column separately if it exists, without duplicating it
+        if 'is_home' in df.columns and 'is_home' not in self.feature_columns:
             self.feature_columns.append('is_home')
 
         # Prepare features and target
@@ -114,10 +114,12 @@ class NBAModelTrainer:
 
         # Train model
         self.model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            min_samples_split=10,
-            min_samples_leaf=5,
+            n_estimators=300,
+            max_depth=None,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            max_features='sqrt',
+            class_weight='balanced_subsample',
             random_state=42,
             n_jobs=-1
         )

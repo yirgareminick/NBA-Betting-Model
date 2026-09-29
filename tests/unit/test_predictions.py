@@ -16,6 +16,7 @@ from unittest.mock import Mock, patch, MagicMock
 sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
 
 from predict.predict_games import NBAPredictor, predict_daily_games
+from models.train_model import NBAModelTrainer
 
 
 class TestNBAPredictor(unittest.TestCase):
@@ -140,6 +141,29 @@ class TestNBAPredictor(unittest.TestCase):
         # Should have all required feature columns
         for col in predictor.feature_columns:
             self.assertIn(col, features.columns)
+
+    def test_prepare_training_data_has_unique_feature_columns(self):
+        """Training features must not duplicate 'is_home' or any other column."""
+        trainer = NBAModelTrainer.__new__(NBAModelTrainer)
+        df = pd.DataFrame({
+            'game_id': [1, 2],
+            'game_date': [pd.Timestamp('2024-01-01'), pd.Timestamp('2024-01-02')],
+            'team_name': ['LAL', 'BOS'],
+            'opponent': ['BOS', 'LAL'],
+            'target_win': [1, 0],
+            'venue': ['home', 'away'],
+            'is_home': [True, False],
+            'avg_pts_last_10': [110.0, 112.0],
+            'avg_pts_allowed_last_10': [108.0, 109.0],
+            'rest_days': [2, 1],
+            'season_win_pct': [0.55, 0.50],
+        })
+
+        X, y = trainer.prepare_training_data(df)
+
+        self.assertEqual(X.columns.tolist().count('is_home'), 1)
+        self.assertEqual(len(X.columns), len(set(X.columns)))
+        self.assertEqual(len(y), len(df))
 
 
 class TestPredictDailyGames(unittest.TestCase):
