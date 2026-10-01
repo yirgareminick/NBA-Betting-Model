@@ -11,7 +11,8 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
 import joblib
@@ -86,7 +87,7 @@ class NBAModelTrainer:
 
     def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None,
                    use_temporal_split: bool = True) -> dict:
-        """Train the model and return metrics with proper temporal validation."""
+        """Train the best-performing model and return metrics with proper temporal validation."""
 
 
         if use_temporal_split and df is not None and 'game_date' in df.columns:
@@ -112,18 +113,44 @@ class NBAModelTrainer:
                 X, y, test_size=0.2, random_state=42, stratify=y
             )
 
-        # Train model
-        self.model = RandomForestClassifier(
-            n_estimators=300,
-            max_depth=None,
-            min_samples_split=5,
-            min_samples_leaf=2,
-            max_features='sqrt',
-            class_weight='balanced_subsample',
-            random_state=42,
-            n_jobs=-1
-        )
+        candidate_models = {
+            'logistic_regression': LogisticRegression(
+                max_iter=2000,
+                class_weight='balanced',
+                solver='lbfgs'
+            ),
+            'gradient_boosting': GradientBoostingClassifier(
+                random_state=42
+            ),
+            'random_forest': RandomForestClassifier(
+                n_estimators=300,
+                max_depth=None,
+                min_samples_split=5,
+                min_samples_leaf=2,
+                max_features='sqrt',
+                class_weight='balanced_subsample',
+                random_state=42,
+                n_jobs=-1
+            )
+        }
 
+        best_name = None
+        best_model = None
+        best_cv_mean = -np.inf
+
+        for name, model in candidate_models.items():
+            cv_scores = cross_val_score(model, X_train, y_train, cv=3)
+            mean_score = float(cv_scores.mean())
+            logger.info("📊 %s CV accuracy: %.4f", name, mean_score)
+            if mean_score > best_cv_mean:
+                best_cv_mean = mean_score
+                best_name = name
+                best_model = model
+
+        if best_model is None:
+            raise ValueError("No candidate models were available for training")
+
+        self.model = best_model
         self.model.fit(X_train, y_train)
 
         # Evaluate
@@ -131,27 +158,26 @@ class NBAModelTrainer:
         test_score = self.model.score(X_test, y_test)
 
         # Cross-validation
-        cv_scores = cross_val_score(self.model, X_train, y_train, cv=5)
-
-        # Predictions for detailed metrics
-        y_pred = self.model.predict(X_test)
+        cv_scores = cross_val_score(self.model, X_train, y_train, cv=3)
 
         metrics = {
             'train_accuracy': float(train_score),
             'test_accuracy': float(test_score),
             'cv_mean': float(cv_scores.mean()),
             'cv_std': float(cv_scores.std()),
-            'model_type': 'RandomForestClassifier',
+            'model_type': best_name,
             'n_features': len(self.feature_columns),
             'n_train_samples': len(X_train),
             'n_test_samples': len(X_test),
-            'feature_importance': dict(zip(
+        }
+
+        if hasattr(self.model, 'feature_importances_'):
+            metrics['feature_importance'] = dict(zip(
                 self.feature_columns,
                 [float(x) for x in self.model.feature_importances_]
             ))
-        }
 
-        logger.info("✓ Model trained: %s accuracy", f"{test_score:.3f}")
+        logger.info("✓ Selected model: %s with test accuracy %.3f", best_name, test_score)
 
         return metrics
 

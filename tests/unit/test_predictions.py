@@ -165,6 +165,32 @@ class TestNBAPredictor(unittest.TestCase):
         self.assertEqual(len(X.columns), len(set(X.columns)))
         self.assertEqual(len(y), len(df))
 
+    def test_prepare_prediction_features_uses_model_schema_with_unique_columns(self):
+        """Prediction input must match the saved model schema exactly and avoid duplicate columns."""
+        predictor = NBAPredictor.__new__(NBAPredictor)
+        predictor.feature_columns = [
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
+            'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
+            'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
+            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+        ]
+
+        games_df = pd.DataFrame({
+            'game_id': ['game1'],
+            'game_date': [date.today()],
+            'home_team': ['LAL'],
+            'away_team': ['BOS'],
+            'home_odds': [1.8],
+            'away_odds': [2.0],
+        })
+
+        features = predictor.prepare_prediction_features(games_df)
+
+        self.assertIsInstance(features, pd.DataFrame)
+        self.assertEqual(features.columns.tolist(), predictor.feature_columns)
+        self.assertEqual(features.columns.tolist().count('is_home'), 1)
+        self.assertEqual(len(features), 2)
+
 
 class TestPredictDailyGames(unittest.TestCase):
     def test_calculate_betting_edges_handles_missing_odds(self):

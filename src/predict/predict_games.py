@@ -143,14 +143,60 @@ class NBAPredictor:
         return games
 
     def prepare_prediction_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Prepare features for prediction from games data."""
+        """Prepare features for prediction from games data using the trained model schema."""
+        metadata = getattr(self, 'metadata', None) or {}
+        feature_columns = getattr(self, 'feature_columns', None) or metadata.get('feature_columns')
+        if not isinstance(feature_columns, list) or not feature_columns:
+            feature_columns = [
+                'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
+                'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
+                'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
+                'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+            ]
 
-        try:
-            # Use minimal features directly for model compatibility
-            return self._create_minimal_features(games_df)
-        except Exception:
-            logger.exception("Error preparing features")
-            raise
+        feature_rows = []
+
+        for _, game in games_df.iterrows():
+            if 'game_date' in game and game['game_date'] is not None:
+                game_date = game['game_date']
+                if isinstance(game_date, str):
+                    game_date = pd.to_datetime(game_date).date()
+                elif hasattr(game_date, 'date'):
+                    game_date = game_date.date()
+            else:
+                game_date = date.today()
+
+            home_team = game.get('home_team', game.get('team_name'))
+            away_team = game.get('away_team', game.get('opponent'))
+
+            if pd.isna(home_team) or pd.isna(away_team):
+                continue
+
+            home_features = self._build_team_features(str(home_team), str(away_team), True, game_date)
+            away_features = self._build_team_features(str(away_team), str(home_team), False, game_date)
+
+            feature_rows.append(self._normalize_feature_row(home_features, feature_columns))
+            feature_rows.append(self._normalize_feature_row(away_features, feature_columns))
+
+        if not feature_rows:
+            return pd.DataFrame(columns=feature_columns)
+
+        features_df = pd.DataFrame(feature_rows)
+        features_df = features_df.reindex(columns=feature_columns, fill_value=0)
+        return features_df
+
+    def _normalize_feature_row(self, feature_row: Dict, feature_columns: list) -> Dict:
+        """Align a team feature dict to the exact model schema without duplicating fields."""
+        normalized = {}
+        for column in feature_columns:
+            value = feature_row.get(column)
+            if value is None:
+                value = 0
+            if column == 'is_home':
+                normalized[column] = int(bool(value))
+            else:
+                normalized[column] = float(value)
+        return normalized
 
     def _build_team_features(self, team: str, opponent: str, is_home: bool, game_date: date) -> Dict:
         """Build features for a single team in a specific matchup."""
@@ -236,11 +282,16 @@ class NBAPredictor:
         return features
 
     def _create_minimal_features(self, games_df: pd.DataFrame) -> pd.DataFrame:
-        """Create minimal features as absolute fallback."""
-        features_list = []
+        """Legacy fallback for minimal feature generation without duplicate columns."""
+        feature_columns = [
+            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
+            'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
+            'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
+            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed'
+        ]
 
+        feature_rows = []
         for _, game in games_df.iterrows():
-            # Minimal features for home team (matching actual model with duplicate is_home)
             home_features = {
                 'is_home': 1,
                 'avg_pts_last_10': 112.0,
@@ -255,9 +306,6 @@ class NBAPredictor:
                 'season_avg_pts': 112.0,
                 'season_avg_pts_allowed': 110.0,
             }
-            features_list.append(home_features)
-            
-            # Minimal features for away team (matching actual model with duplicate is_home)
             away_features = {
                 'is_home': 0,
                 'avg_pts_last_10': 110.0,
@@ -272,23 +320,10 @@ class NBAPredictor:
                 'season_avg_pts': 110.0,
                 'season_avg_pts_allowed': 112.0,
             }
-            features_list.append(away_features)
-            
-        # Create DataFrame with exact feature order expected by model
-        features_df = pd.DataFrame(features_list)
-        
-        # Ensure columns are in the exact order the model expects (including duplicate is_home)
-        expected_order = [
-            'is_home', 'avg_pts_last_10', 'avg_pts_allowed_last_10',
-            'avg_point_diff_last_10', 'win_pct_last_10', 'win_pct_last_5',
-            'avg_point_diff_last_5', 'rest_days', 'game_number_in_season',
-            'season_win_pct', 'season_avg_pts', 'season_avg_pts_allowed', 'is_home'
-        ]
-        
-        # Reorder columns to match model expectations
-        features_df = features_df[expected_order]
-        
-        return features_df
+            feature_rows.append(self._normalize_feature_row(home_features, feature_columns))
+            feature_rows.append(self._normalize_feature_row(away_features, feature_columns))
+
+        return pd.DataFrame(feature_rows, columns=feature_columns)
 
     def _calculate_rest_days(self, team: str, game_date: date) -> int:
         """Calculate rest days since last game (simplified)."""
