@@ -5,6 +5,7 @@ This is a basic implementation to complete the pipeline.
 In production, this would be replaced with more sophisticated ML models.
 """
 
+import hashlib
 import logging
 import polars as pl
 import pandas as pd
@@ -181,34 +182,55 @@ class NBAModelTrainer:
 
         return metrics
 
+    @staticmethod
+    def _file_sha256(path: Path) -> str:
+        """Compute a SHA256 checksum for a file."""
+        digest = hashlib.sha256()
+        with open(path, 'rb') as file_handle:
+            for chunk in iter(lambda: file_handle.read(8192), b''):
+                digest.update(chunk)
+        return digest.hexdigest()
+
     def save_model(self, metrics: dict) -> tuple:
         """Save the trained model and metadata."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        config = getattr(self, 'config', {}) or {}
+        project_root = getattr(self, 'project_root', Path(__file__).resolve().parents[2])
+        model_dir = getattr(self, 'model_dir', project_root / 'models')
+        feature_columns = getattr(self, 'feature_columns', []) or []
 
         # Save model
-        model_file = self.model_dir / f"nba_model_{timestamp}.joblib"
+        model_file = model_dir / f"nba_model_{timestamp}.joblib"
         joblib.dump(self.model, model_file)
+        model_sha256 = self._file_sha256(model_file)
 
         # Save metadata
+        model_type = self.model.__class__.__name__ if self.model is not None else 'unknown'
         metadata = {
             'created_at': datetime.now().isoformat(),
-            'model_file': str(model_file),
-            'feature_columns': self.feature_columns,
+            'model_file': str(model_file.name),
+            'model_type': model_type,
+            'model_sha256': model_sha256,
+            'feature_columns': feature_columns,
             'metrics': metrics,
-            'config': self.config
+            'config': config
         }
 
-        metadata_file = self.model_dir / f"nba_model_{timestamp}_metadata.yml"
+        metadata_file = model_dir / f"nba_model_{timestamp}_metadata.yml"
         with open(metadata_file, 'w', encoding='utf-8') as f:
             yaml.dump(metadata, f, default_flow_style=False)
 
         # Also save as "latest" for easy loading
-        latest_model = self.model_dir / "nba_model_latest.joblib"
-        latest_metadata = self.model_dir / "nba_model_latest_metadata.yml"
+        latest_model = model_dir / "nba_model_latest.joblib"
+        latest_metadata = model_dir / "nba_model_latest_metadata.yml"
 
         joblib.dump(self.model, latest_model)
+        latest_metadata_payload = dict(metadata)
+        latest_metadata_payload['model_file'] = str(latest_model.name)
+        latest_metadata_payload['model_type'] = model_type
+        latest_metadata_payload['model_sha256'] = self._file_sha256(latest_model)
         with open(latest_metadata, 'w', encoding='utf-8') as f:
-            yaml.dump(metadata, f, default_flow_style=False)
+            yaml.dump(latest_metadata_payload, f, default_flow_style=False)
 
         logger.info("💾 Model saved to: %s", model_file)
         logger.info("📄 Metadata saved to: %s", metadata_file)

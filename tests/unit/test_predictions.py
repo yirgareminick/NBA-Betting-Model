@@ -7,6 +7,7 @@ Tests for the NBA game prediction and model loading functionality.
 import unittest
 import pandas as pd
 import numpy as np
+import yaml
 import sys
 from pathlib import Path
 from datetime import date
@@ -190,6 +191,23 @@ class TestNBAPredictor(unittest.TestCase):
         self.assertEqual(features.columns.tolist(), predictor.feature_columns)
         self.assertEqual(features.columns.tolist().count('is_home'), 1)
         self.assertEqual(len(features), 2)
+
+    def test_save_model_writes_matching_sha256(self):
+        """Saved metadata should include a checksum for the model file it points to."""
+        trainer = NBAModelTrainer.__new__(NBAModelTrainer)
+        trainer.model = {"kind": "dummy-model"}
+        trainer.feature_columns = ['is_home', 'avg_pts_last_10']
+        trainer.model_dir = self.project_root / 'models'
+        trainer.model_dir.mkdir(exist_ok=True)
+
+        model_path, metadata_path = trainer.save_model({'test_accuracy': 0.5})
+
+        with open(metadata_path, 'r', encoding='utf-8') as f:
+            metadata = yaml.safe_load(f)
+
+        self.assertIn('model_sha256', metadata)
+        self.assertEqual(len(metadata['model_sha256']), 64)
+        self.assertTrue((self.project_root / 'models' / model_path.name).exists())
 
 
 class TestPredictDailyGames(unittest.TestCase):
