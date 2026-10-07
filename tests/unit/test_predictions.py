@@ -56,6 +56,21 @@ class TestNBAPredictor(unittest.TestCase):
     @patch('predict.predict_games.yaml.safe_load')
     @patch('builtins.open')
     @patch('pathlib.Path.exists', return_value=True)
+    def test_predictor_uses_fallback_model_for_dummy_artifact(self, mock_exists, mock_open, mock_yaml, mock_joblib):
+        """A stale or placeholder model artifact should not crash prediction startup."""
+        mock_joblib.return_value = {'kind': 'dummy-model'}
+        mock_yaml.return_value = {'feature_columns': ['is_home', 'avg_pts_last_10']}
+
+        predictor = NBAPredictor()
+
+        self.assertTrue(hasattr(predictor.model, 'predict_proba'))
+        self.assertTrue(hasattr(predictor.model, 'predict'))
+        self.assertEqual(predictor.feature_columns, ['is_home', 'avg_pts_last_10'])
+
+    @patch('predict.predict_games.joblib.load')
+    @patch('predict.predict_games.yaml.safe_load')
+    @patch('builtins.open')
+    @patch('pathlib.Path.exists', return_value=True)
     def test_predictor_uses_matching_metadata_for_custom_model_path(self, mock_exists, mock_open, mock_yaml, mock_joblib):
         """Custom model paths should resolve to their matching metadata file."""
         mock_model = MagicMock()
@@ -70,7 +85,7 @@ class TestNBAPredictor(unittest.TestCase):
 
         expected_metadata_path = self.project_root / 'models' / 'nba_model_random_forest_20251116_110515_metadata.yml'
         self.assertEqual(predictor.metadata_path, expected_metadata_path)
-    
+
     def test_get_upcoming_games(self):
         """Test upcoming games generation."""
         # Create predictor without loading actual model
