@@ -86,6 +86,28 @@ class TestNBAPredictor(unittest.TestCase):
         expected_metadata_path = self.project_root / 'models' / 'nba_model_random_forest_20251116_110515_metadata.yml'
         self.assertEqual(predictor.metadata_path, expected_metadata_path)
 
+    @patch('predict.predict_games.joblib.load')
+    @patch('predict.predict_games.yaml.safe_load')
+    @patch('builtins.open')
+    @patch('pathlib.Path.exists', return_value=True)
+    def test_predictor_fallback_model_returns_two_class_probabilities(self, mock_exists, mock_open, mock_yaml, mock_joblib):
+        """Fallback classifiers must emit a proper two-column probability matrix for the prediction pipeline."""
+        mock_joblib.return_value = {'kind': 'dummy-model'}
+        mock_yaml.return_value = {'feature_columns': ['is_home', 'avg_pts_last_10']}
+
+        predictor = NBAPredictor()
+        games_df = pd.DataFrame([
+            {'game_id': 'g1', 'game_date': date.today(), 'home_team': 'LAL', 'away_team': 'BOS', 'home_odds': 1.8, 'away_odds': 2.0},
+            {'game_id': 'g2', 'game_date': date.today(), 'home_team': 'GSW', 'away_team': 'PHX', 'home_odds': 2.1, 'away_odds': 1.75},
+        ])
+
+        predictions = predictor.predict_games(games_df)
+
+        self.assertIn('home_prob', predictions.columns)
+        self.assertIn('away_prob', predictions.columns)
+        self.assertTrue(np.allclose(predictions['home_prob'] + predictions['away_prob'], 1.0))
+        self.assertTrue(np.all((predictions[['home_prob', 'away_prob']] >= 0).to_numpy()))
+
     def test_get_upcoming_games(self):
         """Test upcoming games generation."""
         # Create predictor without loading actual model

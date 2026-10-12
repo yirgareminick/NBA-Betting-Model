@@ -71,8 +71,11 @@ class NBAPredictor:
     def _build_fallback_model(self, feature_count: int = 0):
         """Create a minimal sklearn classifier when the saved artifact is stale or placeholder data."""
         feature_count = max(1, int(feature_count) if feature_count else 12)
-        X = np.zeros((1, feature_count), dtype=float)
-        y = np.array([0], dtype=int)
+        X = np.array([
+            [0.0] * feature_count,
+            [1.0] * feature_count,
+        ], dtype=float)
+        y = np.array([0, 1], dtype=int)
         fallback_model = DummyClassifier(strategy='prior')
         fallback_model.fit(X, y)
         return fallback_model
