@@ -206,10 +206,14 @@ class TestErrorHandling(unittest.TestCase):
     def test_empty_predictions_handling(self):
         """Test handling of empty predictions."""
         empty_predictions = pd.DataFrame()
-        
-        # Should handle gracefully
-        with self.assertRaises(Exception):
-            calculate_daily_bets(empty_predictions, 10000)
+
+        # Empty prediction sets should be handled gracefully without crashing.
+        betting_recommendations, simulation_results = calculate_daily_bets(empty_predictions, 10000)
+
+        self.assertIsInstance(betting_recommendations, pd.DataFrame)
+        self.assertTrue(betting_recommendations.empty)
+        self.assertIsInstance(simulation_results, dict)
+        self.assertEqual(simulation_results['mean_return'], 0.0)
     
     def test_malformed_predictions_handling(self):
         """Test handling of malformed prediction data."""

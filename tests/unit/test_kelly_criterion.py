@@ -146,9 +146,13 @@ class TestDailyBetsCalculation(unittest.TestCase):
     def test_empty_predictions_handling(self):
         """Test handling of empty predictions DataFrame."""
         empty_df = pd.DataFrame()
-        
-        with self.assertRaises(Exception):
-            calculate_daily_bets(empty_df, self.bankroll)
+
+        betting_recommendations, simulation_results = calculate_daily_bets(empty_df, self.bankroll)
+
+        self.assertIsInstance(betting_recommendations, pd.DataFrame)
+        self.assertTrue(betting_recommendations.empty)
+        self.assertIsInstance(simulation_results, dict)
+        self.assertEqual(simulation_results['mean_return'], 0.0)
 
 
 if __name__ == '__main__':
