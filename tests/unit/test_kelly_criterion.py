@@ -154,6 +154,22 @@ class TestDailyBetsCalculation(unittest.TestCase):
         self.assertIsInstance(simulation_results, dict)
         self.assertEqual(simulation_results['mean_return'], 0.0)
 
+    def test_empty_predictions_keeps_schema(self):
+        """Empty predictions should preserve original schema and add bet columns."""
+        empty_df = pd.DataFrame({
+            'game_id': pd.Series(dtype=str),
+            'best_bet_prob': pd.Series(dtype=float),
+            'best_bet_odds': pd.Series(dtype=float),
+            'best_bet_edge': pd.Series(dtype=float),
+        })
+
+        betting_recommendations, simulation_results = calculate_daily_bets(empty_df, self.bankroll)
+
+        self.assertEqual(set(empty_df.columns).union({'recommended_bet', 'stake_amount', 'expected_value', 'kelly_fraction'}),
+                         set(betting_recommendations.columns))
+        self.assertTrue(betting_recommendations.empty)
+        self.assertEqual(simulation_results['mean_return'], 0.0)
+
 
 if __name__ == '__main__':
     # Run the tests

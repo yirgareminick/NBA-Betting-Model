@@ -161,13 +161,18 @@ def calculate_daily_bets(predictions_df: pd.DataFrame, bankroll: float,
     """Main function to calculate daily betting recommendations."""
     logger.info("Starting daily betting analysis")
 
-    if predictions_df is None or predictions_df.empty:
-        empty_bets = pd.DataFrame({
-            'recommended_bet': pd.Series(dtype=bool),
-            'stake_amount': pd.Series(dtype=float),
-            'expected_value': pd.Series(dtype=float),
-            'kelly_fraction': pd.Series(dtype=float),
-        })
+    if predictions_df is None:
+        predictions_df = pd.DataFrame()
+
+    if predictions_df.empty:
+        empty_bets = predictions_df.copy()
+        for column, dtype in {
+            'recommended_bet': bool,
+            'stake_amount': float,
+            'expected_value': float,
+            'kelly_fraction': float,
+        }.items():
+            empty_bets[column] = pd.Series(dtype=dtype)
         return empty_bets, {
             'mean_return': 0.0,
             'std_return': 0.0,
