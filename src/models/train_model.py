@@ -13,9 +13,11 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, TimeSeriesSplit
 from sklearn.metrics import accuracy_score
+from sklearn.pipeline import Pipeline
 import joblib
 import yaml
 import warnings
@@ -90,25 +92,29 @@ class NBAModelTrainer:
                    use_temporal_split: bool = True) -> dict:
         """Train the best-performing model and return metrics with proper temporal validation."""
 
+        X = X.copy()
+        y = y.copy()
+
+        if df is not None and 'game_date' in df.columns:
+            df_sorted = df.sort_values('game_date').reset_index(drop=True)
+            sorted_index = df_sorted.index
+            X = X.loc[sorted_index].copy()
+            y = y.loc[sorted_index].copy()
 
         if use_temporal_split and df is not None and 'game_date' in df.columns:
-            # Temporal split to prevent data leakage
             logger.info("📅 Using temporal train/test split...")
             df_sorted = df.sort_values('game_date').reset_index(drop=True)
-            split_idx = int(len(df_sorted) * 0.8)  # 80% for training
+            split_idx = max(1, int(len(df_sorted) * 0.8))
+            split_idx = min(split_idx, len(df_sorted) - 1)
 
-            train_mask = np.arange(len(df_sorted)) < split_idx
-            test_mask = np.arange(len(df_sorted)) >= split_idx
+            X_train, X_test = X.iloc[:split_idx].copy(), X.iloc[split_idx:].copy()
+            y_train, y_test = y.iloc[:split_idx].copy(), y.iloc[split_idx:].copy()
 
-            X_train, X_test = X.iloc[train_mask], X.iloc[test_mask]
-            y_train, y_test = y.iloc[train_mask], y.iloc[test_mask]
-
-            train_dates = df_sorted.iloc[train_mask]['game_date']
-            test_dates = df_sorted.iloc[test_mask]['game_date']
+            train_dates = df_sorted.iloc[:split_idx]['game_date']
+            test_dates = df_sorted.iloc[split_idx:]['game_date']
             logger.info("   Train: %s games (%s to %s)", len(X_train), train_dates.min().date(), train_dates.max().date())
             logger.info("   Test:  %s games (%s to %s)", len(X_test), test_dates.min().date(), test_dates.max().date())
         else:
-            # Fallback to random split (with warning)
             logger.warning("⚠️  Using random train/test split (may cause data leakage)")
             X_train, X_test, y_train, y_test = train_test_split(
                 X, y, test_size=0.2, random_state=42, stratify=y
@@ -135,31 +141,38 @@ class NBAModelTrainer:
             )
         }
 
+        def build_pipeline(model):
+            return Pipeline([
+                ('imputer', SimpleImputer(strategy='median')),
+                ('model', model),
+            ])
+
         best_name = None
-        best_model = None
+        best_pipeline = None
         best_cv_mean = -np.inf
 
         for name, model in candidate_models.items():
-            cv_scores = cross_val_score(model, X_train, y_train, cv=3)
+            pipeline = build_pipeline(model)
+            cv = TimeSeriesSplit(n_splits=min(3, max(2, len(X_train) // 10))) if use_temporal_split and df is not None and 'game_date' in df.columns else 3
+            cv_scores = cross_val_score(pipeline, X_train, y_train, cv=cv)
             mean_score = float(cv_scores.mean())
             logger.info("📊 %s CV accuracy: %.4f", name, mean_score)
             if mean_score > best_cv_mean:
                 best_cv_mean = mean_score
                 best_name = name
-                best_model = model
+                best_pipeline = pipeline
 
-        if best_model is None:
+        if best_pipeline is None:
             raise ValueError("No candidate models were available for training")
 
-        self.model = best_model
+        self.model = best_pipeline
         self.model.fit(X_train, y_train)
 
-        # Evaluate
         train_score = self.model.score(X_train, y_train)
         test_score = self.model.score(X_test, y_test)
 
-        # Cross-validation
-        cv_scores = cross_val_score(self.model, X_train, y_train, cv=3)
+        cv = TimeSeriesSplit(n_splits=min(3, max(2, len(X_train) // 10))) if use_temporal_split and df is not None and 'game_date' in df.columns else 3
+        cv_scores = cross_val_score(self.model, X_train, y_train, cv=cv)
 
         metrics = {
             'train_accuracy': float(train_score),
@@ -172,10 +185,11 @@ class NBAModelTrainer:
             'n_test_samples': len(X_test),
         }
 
-        if hasattr(self.model, 'feature_importances_'):
+        model_step = self.model.named_steps['model'] if hasattr(self.model, 'named_steps') else self.model
+        if hasattr(model_step, 'feature_importances_'):
             metrics['feature_importance'] = dict(zip(
                 self.feature_columns,
-                [float(x) for x in self.model.feature_importances_]
+                [float(x) for x in model_step.feature_importances_]
             ))
 
         logger.info("✓ Selected model: %s with test accuracy %.3f", best_name, test_score)

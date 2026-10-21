@@ -62,16 +62,29 @@ class FeatureEngineer:
         if not self.data_paths['games'].exists():
             raise FileNotFoundError(f"Games data not found at {self.data_paths['games']}")
 
-        # Load with polars and optimize data types for memory efficiency
+        # Read scores as decimal-friendly floats so values like 96.0 parse cleanly.
+        # They are validated as integer-like before being cast to Int16 to avoid silent corruption.
         df = pl.read_csv(
             self.data_paths['games'],
-            dtypes={
+            schema_overrides={
                 'game_id': pl.Utf8,
-                'pts_home': pl.Int16,
-                'pts_away': pl.Int16,
-                'season': pl.Int16
+                'pts_home': pl.Float32,
+                'pts_away': pl.Float32,
+                'season': pl.Int16,
             }
         )
+
+        for column_name in ('pts_home', 'pts_away'):
+            non_integral = df.filter(
+                pl.col(column_name).is_not_null()
+                & (pl.col(column_name) - pl.col(column_name).round(0)).abs() > 1e-6
+            )
+            if non_integral.height:
+                bad_values = non_integral.select(pl.col(column_name).head(5)).to_list()
+                raise ValueError(
+                    f"{column_name} contains non-integer scores: {bad_values}. "
+                    "Values must be integer-like (e.g. 96.0 is valid, 96.5 is not)."
+                )
 
         # Clean and standardize
         df = df.with_columns([
@@ -84,6 +97,10 @@ class FeatureEngineer:
             # Standardize team names (use strip_chars for polars)
             pl.col("team_name_home").str.strip_chars().alias("team_name_home"),
             pl.col("team_name_away").str.strip_chars().alias("team_name_away"),
+
+            # Preserve integer score values after validation
+            pl.col("pts_home").cast(pl.Int16).alias("pts_home"),
+            pl.col("pts_away").cast(pl.Int16).alias("pts_away"),
 
             # Create win indicators
             (pl.col("pts_home") > pl.col("pts_away")).alias("home_win"),
