@@ -77,16 +77,36 @@ class NBAModelTrainer:
         for col in X.select_dtypes(include=['bool']).columns:
             X[col] = X[col].astype(int)
 
-        # Handle missing values
-        X = X.fillna(X.mean(numeric_only=True))
-
-        # Remove any infinite values
+        # Convert infinities to missing values; imputation belongs inside each
+        # training fold and is performed by the model pipeline.
         X = X.replace([np.inf, -np.inf], np.nan)
-        X = X.fillna(X.mean(numeric_only=True))
 
         logger.info("✓ Prepared: %s features, %s samples", len(self.feature_columns), len(X))
 
         return X, y
+
+    @staticmethod
+    def _chronological_cv_splits(dates: pd.Series, max_splits: int = 3) -> list:
+        """Build expanding-window folds without splitting rows from the same date."""
+        date_values = pd.to_datetime(dates, errors='coerce')
+        if date_values.isna().any():
+            raise ValueError("game_date contains missing or invalid dates")
+
+        unique_dates = pd.Index(date_values.unique()).sort_values()
+        n_splits = min(max_splits, len(unique_dates) - 1)
+        if n_splits < 2:
+            raise ValueError("At least three unique game dates are required for temporal CV")
+
+        date_splitter = TimeSeriesSplit(n_splits=n_splits)
+        row_dates = date_values.reset_index(drop=True)
+        splits = []
+        for train_date_idx, validation_date_idx in date_splitter.split(unique_dates):
+            train_dates = unique_dates[train_date_idx]
+            validation_dates = unique_dates[validation_date_idx]
+            train_rows = np.flatnonzero(row_dates.isin(train_dates).to_numpy())
+            validation_rows = np.flatnonzero(row_dates.isin(validation_dates).to_numpy())
+            splits.append((train_rows, validation_rows))
+        return splits
 
     def train_model(self, X: pd.DataFrame, y: pd.Series, df: pd.DataFrame = None,
                    use_temporal_split: bool = True) -> dict:
@@ -95,23 +115,34 @@ class NBAModelTrainer:
         X = X.copy()
         y = y.copy()
 
-        if df is not None and 'game_date' in df.columns:
-            df_sorted = df.sort_values('game_date').reset_index(drop=True)
-            sorted_index = df_sorted.index
-            X = X.loc[sorted_index].copy()
-            y = y.loc[sorted_index].copy()
+        temporal = use_temporal_split and df is not None and 'game_date' in df.columns
+        if len(X) != len(y) or (df is not None and len(df) != len(X)):
+            raise ValueError("X, y, and df must contain the same number of rows")
 
-        if use_temporal_split and df is not None and 'game_date' in df.columns:
+        if temporal:
+            dates = pd.to_datetime(df['game_date'], errors='coerce')
+            if dates.isna().any():
+                raise ValueError("game_date contains missing or invalid dates")
+            order = np.argsort(dates.to_numpy(), kind='stable')
+            X = X.iloc[order].reset_index(drop=True)
+            y = y.iloc[order].reset_index(drop=True)
+            dates = dates.iloc[order].reset_index(drop=True)
+
+        if temporal:
             logger.info("📅 Using temporal train/test split...")
-            df_sorted = df.sort_values('game_date').reset_index(drop=True)
-            split_idx = max(1, int(len(df_sorted) * 0.8))
-            split_idx = min(split_idx, len(df_sorted) - 1)
+            unique_dates = pd.Index(dates.unique()).sort_values()
+            if len(unique_dates) < 2:
+                raise ValueError("At least two unique game dates are required for temporal split")
+            split_date_idx = min(max(1, int(len(unique_dates) * 0.8)), len(unique_dates) - 1)
+            test_start_date = unique_dates[split_date_idx]
+            train_mask = dates < test_start_date
+            test_mask = ~train_mask
 
-            X_train, X_test = X.iloc[:split_idx].copy(), X.iloc[split_idx:].copy()
-            y_train, y_test = y.iloc[:split_idx].copy(), y.iloc[split_idx:].copy()
+            X_train, X_test = X.loc[train_mask].copy(), X.loc[test_mask].copy()
+            y_train, y_test = y.loc[train_mask].copy(), y.loc[test_mask].copy()
 
-            train_dates = df_sorted.iloc[:split_idx]['game_date']
-            test_dates = df_sorted.iloc[split_idx:]['game_date']
+            train_dates = dates.loc[train_mask]
+            test_dates = dates.loc[test_mask]
             logger.info("   Train: %s games (%s to %s)", len(X_train), train_dates.min().date(), train_dates.max().date())
             logger.info("   Test:  %s games (%s to %s)", len(X_test), test_dates.min().date(), test_dates.max().date())
         else:
@@ -143,7 +174,7 @@ class NBAModelTrainer:
 
         def build_pipeline(model):
             return Pipeline([
-                ('imputer', SimpleImputer(strategy='median')),
+                ('imputer', SimpleImputer(strategy='median', keep_empty_features=True)),
                 ('model', model),
             ])
 
@@ -153,7 +184,7 @@ class NBAModelTrainer:
 
         for name, model in candidate_models.items():
             pipeline = build_pipeline(model)
-            cv = TimeSeriesSplit(n_splits=min(3, max(2, len(X_train) // 10))) if use_temporal_split and df is not None and 'game_date' in df.columns else 3
+            cv = self._chronological_cv_splits(train_dates) if temporal else 3
             cv_scores = cross_val_score(pipeline, X_train, y_train, cv=cv)
             mean_score = float(cv_scores.mean())
             logger.info("📊 %s CV accuracy: %.4f", name, mean_score)
@@ -171,7 +202,7 @@ class NBAModelTrainer:
         train_score = self.model.score(X_train, y_train)
         test_score = self.model.score(X_test, y_test)
 
-        cv = TimeSeriesSplit(n_splits=min(3, max(2, len(X_train) // 10))) if use_temporal_split and df is not None and 'game_date' in df.columns else 3
+        cv = self._chronological_cv_splits(train_dates) if temporal else 3
         cv_scores = cross_val_score(self.model, X_train, y_train, cv=cv)
 
         metrics = {

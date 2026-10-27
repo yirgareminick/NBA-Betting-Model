@@ -5,8 +5,10 @@ Tests for the NBA game prediction and model loading functionality.
 """
 
 import unittest
+import tempfile
 import pandas as pd
 import numpy as np
+import polars as pl
 import yaml
 import sys
 from pathlib import Path
@@ -18,6 +20,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent / "src"))
 
 from predict.predict_games import NBAPredictor, predict_daily_games
 from models.train_model import NBAModelTrainer
+from features.build_features import FeatureEngineer
 
 
 class TestNBAPredictor(unittest.TestCase):
@@ -203,6 +206,69 @@ class TestNBAPredictor(unittest.TestCase):
         self.assertEqual(len(X.columns), len(set(X.columns)))
         self.assertEqual(len(y), len(df))
 
+    def test_prepare_training_data_preserves_missing_values_for_fold_local_imputation(self):
+        """Missing features must not be imputed using values from future rows."""
+        trainer = NBAModelTrainer.__new__(NBAModelTrainer)
+        df = pd.DataFrame({
+            'game_id': [1, 2, 3],
+            'game_date': pd.to_datetime(['2024-01-01', '2024-01-02', '2024-01-03']),
+            'target_win': [1, 0, 1],
+            'avg_pts_last_10': [100.0, np.nan, 200.0],
+        })
+
+        X, _ = trainer.prepare_training_data(df)
+
+        self.assertTrue(pd.isna(X.loc[1, 'avg_pts_last_10']))
+
+    def test_temporal_cv_keeps_same_date_rows_together_and_in_future_validation(self):
+        """Temporal folds must not divide games sharing a date across train and validation."""
+        dates = pd.Series(pd.to_datetime([
+            '2024-01-01', '2024-01-01', '2024-01-02', '2024-01-02',
+            '2024-01-03', '2024-01-03', '2024-01-04', '2024-01-04',
+            '2024-01-05', '2024-01-05', '2024-01-06', '2024-01-06',
+        ]))
+
+        for train_idx, validation_idx in NBAModelTrainer._chronological_cv_splits(dates):
+            train_dates = dates.iloc[train_idx]
+            validation_dates = dates.iloc[validation_idx]
+            self.assertLess(train_dates.max(), validation_dates.min())
+            self.assertEqual(len(train_dates.unique()), train_dates.nunique())
+
+
+class TestFeatureEngineerScoreParsing(unittest.TestCase):
+    def test_load_games_data_accepts_decimal_formatted_integer_scores(self):
+        """CSV scores such as 96.0 should load and become integer score columns."""
+        engineer = FeatureEngineer.__new__(FeatureEngineer)
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            games_path = Path(temporary_dir) / 'games.csv'
+            games_path.write_text(
+                'game_id,game_date,pts_home,pts_away,season,team_name_home,team_name_away\n'
+                'g1,2024-01-01,96.0,94.0,2024,Lakers,Celtics\n',
+                encoding='utf-8',
+            )
+            engineer.data_paths = {'games': games_path}
+
+            games = engineer.load_games_data()
+
+        self.assertEqual(games.get_column('pts_home').to_list(), [96])
+        self.assertEqual(games.get_column('pts_away').to_list(), [94])
+        self.assertEqual(games.get_column('home_win').to_list(), [True])
+
+    def test_load_games_data_rejects_non_integer_scores(self):
+        """Decimal values that are not whole points should fail rather than truncate."""
+        engineer = FeatureEngineer.__new__(FeatureEngineer)
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            games_path = Path(temporary_dir) / 'games.csv'
+            games_path.write_text(
+                'game_id,game_date,pts_home,pts_away,season,team_name_home,team_name_away\n'
+                'g1,2024-01-01,96.5,94.0,2024,Lakers,Celtics\n',
+                encoding='utf-8',
+            )
+            engineer.data_paths = {'games': games_path}
+
+            with self.assertRaisesRegex(ValueError, 'non-integer scores'):
+                engineer.load_games_data()
+
     def test_prepare_prediction_features_uses_model_schema_with_unique_columns(self):
         """Prediction input must match the saved model schema exactly and avoid duplicate columns."""
         predictor = NBAPredictor.__new__(NBAPredictor)
@@ -234,17 +300,16 @@ class TestNBAPredictor(unittest.TestCase):
         trainer = NBAModelTrainer.__new__(NBAModelTrainer)
         trainer.model = {"kind": "dummy-model"}
         trainer.feature_columns = ['is_home', 'avg_pts_last_10']
-        trainer.model_dir = self.project_root / 'models'
-        trainer.model_dir.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory() as temporary_dir:
+            trainer.model_dir = Path(temporary_dir)
+            model_path, metadata_path = trainer.save_model({'test_accuracy': 0.5})
 
-        model_path, metadata_path = trainer.save_model({'test_accuracy': 0.5})
+            with open(metadata_path, 'r', encoding='utf-8') as f:
+                metadata = yaml.safe_load(f)
 
-        with open(metadata_path, 'r', encoding='utf-8') as f:
-            metadata = yaml.safe_load(f)
-
-        self.assertIn('model_sha256', metadata)
-        self.assertEqual(len(metadata['model_sha256']), 64)
-        self.assertTrue((self.project_root / 'models' / model_path.name).exists())
+            self.assertIn('model_sha256', metadata)
+            self.assertEqual(len(metadata['model_sha256']), 64)
+            self.assertTrue(model_path.exists())
 
 
 class TestPredictDailyGames(unittest.TestCase):
