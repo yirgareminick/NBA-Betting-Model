@@ -76,8 +76,8 @@ class FeatureEngineer:
 
         for column_name in ('pts_home', 'pts_away'):
             non_integral = df.filter(
-                pl.col(column_name).is_not_null()
-                & ((pl.col(column_name) - pl.col(column_name).round(0)).abs() > 1e-6)
+                pl.col(column_name).is_not_null(),
+                (pl.col(column_name) - pl.col(column_name).round(0)).abs() > 1e-6,
             )
             if non_integral.height:
                 bad_values = non_integral.get_column(column_name).head(5).to_list()
