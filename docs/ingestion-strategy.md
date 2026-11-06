@@ -86,6 +86,52 @@ python src/features/build_features.py
 **Implementation**: Prefect workflows + cloud scheduling
 **Monitoring**: Data quality alerts, cost tracking
 
+## Operational Runbook
+
+The repository currently supports three operational layers for ingestion and refreshes:
+
+| Script | Role | Typical Trigger | Notes |
+|---|---|---|---|
+| `scripts/daily_update.py` | Standard daily refresh | Once per day during the season | Updates odds, recent games, and team stats on the correct cadence; builds features afterward |
+| `scripts/manual_update.py` | On-demand or emergency refresh | When data is missing, backfilled, or manually corrected | Supports `--odds-only`, `--games-only`, `--teams-only`, and `--features-only` execution |
+| `scripts/daily_betting_pipeline.py` | Full prediction pipeline | End-of-day betting workflow | Runs model checks, prediction generation, staking logic, and reporting |
+
+### Recommended Run Cadence
+
+```bash
+# Daily season schedule (evening after games finish)
+python scripts/daily_update.py
+
+# Weekly or ad-hoc refresh when needed
+python scripts/manual_update.py --years 2024 2025
+
+# Emergency odds refresh only
+python scripts/manual_update.py --odds-only --bookmakers draftkings fanduel
+
+# Dry-run validation before a production refresh
+python scripts/manual_update.py --dry-run
+```
+
+### Example Cron Setup
+
+```cron
+# 6:00 AM - refresh opening odds for the current day
+0 6 * * * cd /path/to/NBA-Betting-Model && python scripts/manual_update.py --odds-only --bookmakers draftkings,fanduel >/tmp/nba_odds.log 2>&1
+
+# 11:30 PM - nightly refresh after games complete
+30 23 * * * cd /path/to/NBA-Betting-Model && python scripts/daily_update.py >/tmp/nba_daily_update.log 2>&1
+
+# Tuesday/Wednesday team stat refresh if needed
+0 9 * * 2,3 cd /path/to/NBA-Betting-Model && python scripts/manual_update.py --teams-only --years $(date +%Y) $(date +%Y) >/tmp/nba_team_stats.log 2>&1
+```
+
+### Pipeline Dependencies and Failure Handling
+
+- Odds ingestion should run before feature building and daily predictions because most downstream models rely on current line data.
+- Game ingestion should be treated as the source-of-truth for date coverage and should be backfilled before attempting feature retraining.
+- Team stat ingestion is intentionally throttled (Tuesday/Wednesday only in the daily updater) to stay within rate limits while still refreshing roster/efficiency context.
+- Manual refresh mode is the preferred recovery path whenever a scheduled job fails or a dataset needs backfill.
+
 ## Cost & Rate Limit Management
 
 ### Kaggle API (Games Data)
