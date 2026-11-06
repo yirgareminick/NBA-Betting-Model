@@ -33,7 +33,8 @@ class TestNBAPredictor(unittest.TestCase):
     @patch('predict.predict_games.joblib.load')
     @patch('predict.predict_games.yaml.safe_load')
     @patch('builtins.open')
-    def test_predictor_initialization_with_mock_model(self, mock_open, mock_yaml, mock_joblib):
+    @patch('pathlib.Path.exists', return_value=True)
+    def test_predictor_initialization_with_mock_model(self, mock_exists, mock_open, mock_yaml, mock_joblib):
         """Test predictor initialization with mocked model."""
         # Mock the model and metadata
         mock_model = MagicMock()
